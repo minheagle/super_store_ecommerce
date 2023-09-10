@@ -1,12 +1,14 @@
 package com.shopee.clone.util;
 
-import com.shopee.clone.entity.mongodb.user.User;
+import com.shopee.clone.domain.User;
+//import com.shopee.clone.entity.mongodb.user.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -23,7 +25,7 @@ public class JWTProvider {
 
     public String generateJwtToken(Authentication authentication) {
 
-        User userPrincipal = (User) authentication.getPrincipal();
+        UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
 
         return Jwts.builder()
                 .setSubject((userPrincipal.getUsername()))
