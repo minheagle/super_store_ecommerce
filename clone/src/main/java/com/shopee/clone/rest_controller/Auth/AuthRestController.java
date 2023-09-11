@@ -2,8 +2,6 @@ package com.shopee.clone.rest_controller.Auth;
 
 import com.shopee.clone.DTO.auth.login.LoginDTO;
 
-//import com.shopee.clone.entity.UserEntity;
-//import com.shopee.clone.repository.UserRepository;
 import com.shopee.clone.domain.User;
 import com.shopee.clone.service.auth.IAuthService;
 import com.shopee.clone.service.auth.UserService;
@@ -13,12 +11,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
-//import java.util.List;
 
 @AllArgsConstructor
 @RestController

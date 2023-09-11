@@ -1,10 +1,8 @@
 package com.shopee.clone.security;
 
-//import com.shopee.clone.entity.mongodb.user.User;
 import com.shopee.clone.converter.CustomUserDetails;
 import com.shopee.clone.entity.UserEntity;
 import com.shopee.clone.repository.UserRepository;
-//import com.shopee.clone.repository.mongodb.user.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

@@ -1,7 +1,5 @@
 package com.shopee.clone.util;
 
-import com.shopee.clone.domain.User;
-//import com.shopee.clone.entity.mongodb.user.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
