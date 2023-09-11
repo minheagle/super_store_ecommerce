@@ -12,7 +12,7 @@ public class UserConverter {
         User user = new User();
         user.setId(userEntity.getId());
         user.setName(userEntity.getName());
-        user.setUsername(user.getUsername());
+        user.setUsername(userEntity.getUsername());
         user.setEmail(userEntity.getEmail());
         user.setPassword(userEntity.getPassword());
         user.setPhone(userEntity.getPhone());
@@ -21,4 +21,15 @@ public class UserConverter {
         return user;
     }
 
+    public static UserEntity toEntity(User user) {
+        UserEntity userEntity = new UserEntity();
+        userEntity.setName(user.getName());
+        userEntity.setPassword(user.getPassword());
+        userEntity.setPhone(user.getPhone());
+        userEntity.setEmail(user.getEmail());
+        userEntity.setUsername(user.getUsername());
+        userEntity.setBrithDate(userEntity.getBrithDate());
+        userEntity.setRole(user.getRole());
+        return userEntity;
+    }
 }

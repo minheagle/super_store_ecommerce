@@ -1,5 +1,6 @@
 package com.shopee.clone.converter;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.shopee.clone.entity.UserEntity;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -29,7 +30,7 @@ public class CustomUserDetails implements UserDetails {
 
         return authorities;
     }
-
+@JsonIgnore
     @Override
     public String getPassword() {
         return userEntity.get().getPassword();
