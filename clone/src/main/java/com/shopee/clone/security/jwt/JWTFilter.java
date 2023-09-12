@@ -1,10 +1,11 @@
-package com.shopee.clone.security.filter;
+package com.shopee.clone.security.jwt;
 
 import com.shopee.clone.util.JWTProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,10 +22,13 @@ import java.io.IOException;
 @Slf4j
 @Component
 public class JWTFilter extends OncePerRequestFilter {
-    @Autowired
     private JWTProvider jwtProvider;
-    @Autowired
     private UserDetailsService userDetailsService;
+
+    public JWTFilter(JWTProvider jwtProvider, UserDetailsService userDetailsService) {
+        this.jwtProvider = jwtProvider;
+        this.userDetailsService = userDetailsService;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -46,7 +50,6 @@ public class JWTFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             log.error("Cannot set user authentication: {}", e);
         }
-
         filterChain.doFilter(request, response);
     }
 

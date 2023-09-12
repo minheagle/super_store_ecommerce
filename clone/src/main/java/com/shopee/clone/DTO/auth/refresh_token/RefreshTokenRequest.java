@@ -1,4 +1,4 @@
-package com.shopee.clone.util;
+package com.shopee.clone.DTO.auth.refresh_token;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ResponseObject {
-    private String status;
-    private String message;
-    private Object results;
+public class RefreshTokenRequest {
+    private String refreshToken;
 }

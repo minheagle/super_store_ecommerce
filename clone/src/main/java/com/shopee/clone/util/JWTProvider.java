@@ -1,34 +1,60 @@
 package com.shopee.clone.util;
 
-import com.shopee.clone.entity.mongodb.user.User;
+import com.shopee.clone.entity.RefreshTokenEntity;
+import com.shopee.clone.repository.RefreshTokenRepository;
+import com.shopee.clone.repository.UserRepository;
+import com.shopee.clone.security.impl.UserDetailImpl;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Key;
+import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 
 @Slf4j
 @Component
 public class JWTProvider {
-    @Value("${app.jwt-secret}")
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Value("${app.jwt.key.secret}")
     private String secret;
 
-    @Value("${app-jwt-expiration-milliseconds}")
-    private long expired;
+    @Value("${app.jwt.access_token.expiration.milliseconds}")
+    private long accessTokenExpiration;
+
+    @Value("${app.jwt.refresh_token.expiration.milliseconds}")
+    private long refreshTokenExpiration;
 
     public String generateJwtToken(Authentication authentication) {
 
-        User userPrincipal = (User) authentication.getPrincipal();
+        UserDetailImpl userPrincipal = (UserDetailImpl) authentication.getPrincipal();
 
         return Jwts.builder()
                 .setSubject((userPrincipal.getUsername()))
                 .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + expired))
+                .setExpiration(new Date((new Date()).getTime() + accessTokenExpiration))
+                .signWith(key(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String generateJwtTokenFromUserName(String userName){
+        return Jwts.builder()
+                .setSubject(userName)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date((new Date()).getTime() + accessTokenExpiration))
                 .signWith(key(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -59,5 +85,28 @@ public class JWTProvider {
         return false;
     }
 
+    @Transactional
+    public RefreshTokenEntity createRefreshToken(Long userId){
+        RefreshTokenEntity refreshToken = RefreshTokenEntity
+                                            .builder()
+                                            .user(userRepository.findById(userId).get())
+                                            .expiryDatetime(Instant.now().plusMillis(refreshTokenExpiration))
+                                            .refreshToken(UUID.randomUUID().toString())
+                                            .build();
+        return refreshTokenRepository.save(refreshToken);
+    }
 
+    @Transactional
+    public RefreshTokenEntity verifyRefreshTokenExpiration(RefreshTokenEntity refreshToken){
+        if(refreshToken.getExpiryDatetime().compareTo(Instant.now()) < 0){
+            refreshTokenRepository.delete(refreshToken);
+            throw new RuntimeException("Refresh Token expired !");
+        }
+        return refreshToken;
+    }
+
+    @Transactional
+    public void deleteRefreshToken(String refreshToken){
+        refreshTokenRepository.deleteByRefreshToken(refreshToken);
+    }
 }

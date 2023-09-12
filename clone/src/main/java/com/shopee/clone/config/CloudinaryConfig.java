@@ -3,7 +3,9 @@ package com.shopee.clone.config;
 import com.cloudinary.Cloudinary;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
+@Configuration
 public class CloudinaryConfig {
     @Value("${cloudinary.cloud-name}")
     private String cloudName;
@@ -14,8 +16,14 @@ public class CloudinaryConfig {
     @Value("${cloudinary.api-secret}")
     private String apiSecret;
 
-    @Value("${cloudinary.folder}")
-    private String folder;
+    @Value("${cloudinary.product.folder}")
+    private String productFolder;
+
+    @Value("${cloudinary.avatar.folder}")
+    private String avatarFolder;
+
+    @Value("${cloudinary.comment.folder}")
+    private String commentFolder;
 
     @Bean
     public Cloudinary cloudinary() {
@@ -24,7 +32,15 @@ public class CloudinaryConfig {
         return cloudinary;
     }
 
-    public String getFolder() {
-        return folder;
+    public String getProductFolder() {
+        return productFolder;
+    }
+
+    public String getAvatarFolder() {
+        return avatarFolder;
+    }
+
+    public String getCommentFolder() {
+        return commentFolder;
     }
 }
