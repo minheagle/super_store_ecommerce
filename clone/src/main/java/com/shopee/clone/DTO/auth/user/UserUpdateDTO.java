@@ -1,9 +1,11 @@
 package com.shopee.clone.DTO.auth.user;
 
+import com.shopee.clone.entity.AddressEntity;
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class UserUpdateDTO {
@@ -12,5 +14,6 @@ public class UserUpdateDTO {
     private String phone;
     private String email;
     private String avatar;
+    private List<AddressEntity> address;
     private Date dateOfBirth;
 }

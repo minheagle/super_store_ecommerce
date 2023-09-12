@@ -23,6 +23,7 @@ public class UserDetailImpl implements UserDetails {
     private String email;
     @JsonIgnore
     private String password;
+    private boolean isAccountNonLocked;
     private List<? extends GrantedAuthority> authorities;
 
     public static UserDetailImpl convertUserEntityToUserDetail(UserEntity user){
@@ -33,6 +34,7 @@ public class UserDetailImpl implements UserDetails {
                 user.getUserName(),
                 user.getEmail(),
                 user.getPassword(),
+                user.isStatus(),
                 authorities
         );
     }
@@ -71,7 +73,7 @@ public class UserDetailImpl implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return isAccountNonLocked;
     }
 
     @Override

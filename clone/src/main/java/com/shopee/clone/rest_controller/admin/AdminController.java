@@ -14,9 +14,13 @@ public class AdminController {
     public ResponseEntity<?> getListUser(){
         return ResponseEntity.ok(userService.getListUser());
     }
-    @GetMapping("delete/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id){
-        userService.delete(id);
-        return ResponseEntity.ok("Delete thanh cong!");
+    @GetMapping("/ban-user/{id}")
+    public ResponseEntity<?> banUser(@PathVariable Long id){
+        return userService.blockUser(id);
+    }
+
+    @GetMapping("/unban-user/{id}")
+    public ResponseEntity<?> unBanUser(@PathVariable Long id){
+        return userService.unBlockUser(id);
     }
 }

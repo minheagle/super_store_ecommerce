@@ -115,6 +115,7 @@ public class AuthService implements IAuthService {
             });
             UserEntity newUser = mapper.map(registerDTO, UserEntity.class);
             newUser.setRoles(roles);
+            newUser.setStatus(true);
             UserEntity userCreated =  userRepository.save(newUser);
             return ResponseEntity
                     .ok()

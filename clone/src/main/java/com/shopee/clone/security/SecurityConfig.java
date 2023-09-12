@@ -1,5 +1,6 @@
 package com.shopee.clone.security;
 
+import com.shopee.clone.entity.ERole;
 import com.shopee.clone.security.jwt.JWTAuthenticationEntryPoint;
 import com.shopee.clone.security.jwt.JWTFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((auth) -> {
                     auth.requestMatchers("/api/v1/auth/**").permitAll();
-                    auth.requestMatchers("/api/v1/test/**").permitAll();
+                    auth.requestMatchers("/api/v1/admin/**").hasRole("ADMIN");
                     auth.anyRequest().authenticated();
                 })
                 .authenticationProvider(authenticationProvider());

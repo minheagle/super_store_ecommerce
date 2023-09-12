@@ -16,8 +16,12 @@ public interface UserService {
     Optional<UserEntity> findUserByID(Long id);
     UserEntity update(UserEntity user);
 
-    List<UserEntity> getListUser();
+    List<User> getListUser();
     void delete(Long id);
 
     ResponseEntity<?> updateUser(long userId, UserUpdateDTO userUpdateDTO);
+
+    ResponseEntity<?> blockUser(Long id);
+
+    ResponseEntity<?> unBlockUser(Long id);
 }

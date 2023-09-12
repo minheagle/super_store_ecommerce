@@ -1,8 +1,13 @@
 package com.shopee.clone.DTO.auth.user;
 
 
+import com.shopee.clone.entity.AddressEntity;
+import lombok.Data;
+
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
+@Data
 
 public class User {
     private Long id;
@@ -15,11 +20,10 @@ public class User {
 
     private String phone;
 
-    private String password;
-
     private Date dataOfBirth;
 
     private String avatar;
 
-    private Set<String> roles;
+    private List<AddressEntity> addressEntities;
+
 }
