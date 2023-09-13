@@ -1,7 +1,6 @@
 package com.shopee.clone.service.auth;
 
 import com.shopee.clone.DTO.auth.login.LoginDTO;
-import com.shopee.clone.DTO.auth.refresh_token.RefreshTokenRequest;
 import com.shopee.clone.DTO.auth.register.RegisterDTO;
 import org.springframework.http.ResponseEntity;
 

@@ -3,7 +3,6 @@ package com.shopee.clone.DTO.auth.user;
 import com.shopee.clone.entity.AddressEntity;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
