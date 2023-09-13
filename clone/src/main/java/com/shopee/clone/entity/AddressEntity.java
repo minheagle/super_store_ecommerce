@@ -18,4 +18,9 @@ public class AddressEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity user;
+
+    public AddressEntity(String addressName, UserEntity user) {
+        this.addressName = addressName;
+        this.user = user;
+    }
 }

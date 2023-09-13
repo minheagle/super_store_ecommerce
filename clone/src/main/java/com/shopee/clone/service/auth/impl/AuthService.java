@@ -4,15 +4,14 @@ import com.shopee.clone.DTO.auth.login.LoginDTO;
 import com.shopee.clone.DTO.auth.login.LoginResponse;
 import com.shopee.clone.DTO.auth.refresh_token.RefreshTokenResponse;
 import com.shopee.clone.DTO.auth.register.RegisterDTO;
-import com.shopee.clone.entity.ERole;
-import com.shopee.clone.entity.RefreshTokenEntity;
-import com.shopee.clone.entity.RoleEntity;
-import com.shopee.clone.entity.UserEntity;
+import com.shopee.clone.entity.*;
 import com.shopee.clone.repository.RefreshTokenRepository;
 import com.shopee.clone.repository.RoleRepository;
 import com.shopee.clone.repository.UserRepository;
 import com.shopee.clone.security.impl.UserDetailImpl;
+import com.shopee.clone.service.address.AddressService;
 import com.shopee.clone.service.auth.IAuthService;
+import com.shopee.clone.service.user.UserService;
 import com.shopee.clone.util.JWTProvider;
 import com.shopee.clone.util.ResponseObject;
 import org.modelmapper.ModelMapper;
@@ -26,7 +25,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthService implements IAuthService {
@@ -37,6 +38,8 @@ public class AuthService implements IAuthService {
     private final PasswordEncoder passwordEncoder;
     private final JWTProvider jwtProvider;
     private final ModelMapper mapper;
+    private final UserService userService;
+    private final AddressService addressService;
 
     public AuthService(AuthenticationManager authenticationManager,
                        UserRepository userRepository,
@@ -44,7 +47,7 @@ public class AuthService implements IAuthService {
                        RefreshTokenRepository refreshTokenRepository,
                        PasswordEncoder passwordEncoder,
                        JWTProvider jwtProvider,
-                       ModelMapper mapper) {
+                       ModelMapper mapper, UserService userService, AddressService addressService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -52,6 +55,8 @@ public class AuthService implements IAuthService {
         this.passwordEncoder = passwordEncoder;
         this.jwtProvider = jwtProvider;
         this.mapper = mapper;
+        this.userService = userService;
+        this.addressService = addressService;
     }
 
     @Override
@@ -116,7 +121,13 @@ public class AuthService implements IAuthService {
             UserEntity newUser = mapper.map(registerDTO, UserEntity.class);
             newUser.setRoles(roles);
             newUser.setStatus(true);
-            UserEntity userCreated =  userRepository.save(newUser);
+//            newUser.setAddress();
+            UserEntity userCreated = userService.save(newUser);
+//                    userRepository.save(newUser);
+            Set<String> stringAddress = registerDTO.getAddress();
+            List<AddressEntity> address = stringAddress.stream()
+                    .map(s -> new AddressEntity(s,userCreated)).toList();
+            addressService.saveAll(address);
             return ResponseEntity
                     .ok()
                     .body(ResponseObject

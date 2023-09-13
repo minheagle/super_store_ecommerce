@@ -42,7 +42,7 @@ public class UserEntity {
     @Column(name = "avatar")
     private String avatar;
 
-    @OneToMany
+    @OneToMany(mappedBy = "user",fetch = FetchType.EAGER)
     private List<AddressEntity> address;
 
     @ManyToMany(fetch = FetchType.LAZY)
