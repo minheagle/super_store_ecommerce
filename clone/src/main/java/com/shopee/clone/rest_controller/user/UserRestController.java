@@ -13,11 +13,11 @@ public class UserRestController {
     @Autowired
     private UserService userService;
     @PutMapping("/{userId}")
-    public ResponseEntity<?> updateUser(@PathVariable long userId, @RequestBody UserUpdateDTO userUpdateDTO) {
+    public ResponseEntity<?> updateUser(@PathVariable Long userId, @RequestBody UserUpdateDTO userUpdateDTO) {
         return userService.updateUser(userId, userUpdateDTO);
     }
-    @PostMapping("change-password")
-    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO){
-        return userService.changePassword(changePasswordDTO);
+    @PutMapping("change-password/{id}")
+    public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody ChangePasswordDTO changePasswordDTO){
+        return userService.changePassword(id,changePasswordDTO);
     }
 }

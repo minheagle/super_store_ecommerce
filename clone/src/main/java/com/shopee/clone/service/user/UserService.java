@@ -23,5 +23,5 @@ public interface UserService {
 
     ResponseEntity<?> unBlockUser(Long id);
 
-    ResponseEntity<?> changePassword(ChangePasswordDTO changePasswordDTO);
+    ResponseEntity<?> changePassword(Long id,ChangePasswordDTO changePasswordDTO);
 }

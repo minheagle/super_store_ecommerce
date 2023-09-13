@@ -164,11 +164,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<?> changePassword( ChangePasswordDTO changePasswordDTO) {
+    public ResponseEntity<?> changePassword( Long id,ChangePasswordDTO changePasswordDTO) {
         try {
 
             // Tìm kiếm người dùng trong cơ sở dữ liệu bằng userId
-            Optional<UserEntity> optionalUser = userRepository.findById(changePasswordDTO.getId());
+            Optional<UserEntity> optionalUser = userRepository.findById(id);
 
             if (optionalUser.isPresent()) {
                 // Lấy đối tượng người dùng từ Optional
@@ -186,7 +186,7 @@ public class UserServiceImpl implements UserService {
                         System.out.println("confirm pass: " + changePasswordDTO.getConfirmPassword());
                         // Trả về ResponseEntity chứa thông tin cập nhật thành công
                         return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
-                                "Change password successfully",user));
+                                "Change password successfully","thanh công con đĩ mẹ rồi!"));
                     }
                     // Trả về ResponseEntity chứa thông tin cập nhật thành công
                     return ResponseEntity.ok().body(new ResponseObject("Fail",
@@ -242,7 +242,5 @@ public class UserServiceImpl implements UserService {
     public void delete(Long id) {
         userRepository.deleteById(id);
     }
-
-
 
 }
