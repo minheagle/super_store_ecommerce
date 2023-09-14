@@ -259,6 +259,49 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public Optional<UserEntity> findUserByUserName(String userName) {
+        return userRepository.findByUserName(userName);
+    }
+
+    @Override
+    public ResponseEntity<?> getUserById(Long id) {
+        try {
+            // Tìm kiếm người dùng trong cơ sở dữ liệu bằng userId
+            Optional<UserEntity> optionalUser = userRepository.findById(id);
+
+            if (optionalUser.isPresent()) {
+                // Lấy đối tượng người dùng từ Optional
+                UserEntity user = optionalUser.get();
+
+                // Lưu thông tin người dùng đã cập nhật vào cơ sở dữ liệu
+                userRepository.save(user);
+
+                // Trả về ResponseEntity chứa thông tin cập nhật thành công
+                return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
+                        "Get user successfully",user));
+            } else {
+                // Trả về ResponseEntity chứa thông tin lỗi nếu không tìm thấy người dùng
+                return ResponseEntity
+                        .badRequest()
+                        .body(ResponseObject.builder()
+                                .status("FAIL")
+                                .message("User not found")
+                                .results("")
+                                .build());
+            }
+        } catch (Exception e) {
+            // Trả về ResponseEntity chứa thông tin lỗi nếu có lỗi xảy ra
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message(e.getMessage())
+                            .results("")
+                            .build());
+        }
+    }
+
     private boolean checkPassword(String outPassword, String password) {
         return passwordEncoder.matches(outPassword,password);
     }
