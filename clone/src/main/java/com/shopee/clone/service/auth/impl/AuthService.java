@@ -121,13 +121,14 @@ public class AuthService implements IAuthService {
             UserEntity newUser = mapper.map(registerDTO, UserEntity.class);
             newUser.setRoles(roles);
             newUser.setStatus(true);
-//            newUser.setAddress();
+
             UserEntity userCreated = userService.save(newUser);
 //                    userRepository.save(newUser);
             Set<String> stringAddress = registerDTO.getAddress();
             List<AddressEntity> address = stringAddress.stream()
                     .map(s -> new AddressEntity(s,userCreated)).toList();
             addressService.saveAll(address);
+            userCreated.setAddress(address);
             return ResponseEntity
                     .ok()
                     .body(ResponseObject

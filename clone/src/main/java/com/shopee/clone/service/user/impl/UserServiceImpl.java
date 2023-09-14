@@ -1,10 +1,13 @@
 package com.shopee.clone.service.user.impl;
 
 import com.shopee.clone.DTO.auth.user.ChangePasswordDTO;
+import com.shopee.clone.DTO.auth.user.UpdateAddressDTO;
 import com.shopee.clone.DTO.auth.user.User;
 import com.shopee.clone.DTO.auth.user.UserUpdateDTO;
+import com.shopee.clone.entity.AddressEntity;
 import com.shopee.clone.entity.UserEntity;
 import com.shopee.clone.repository.UserRepository;
+import com.shopee.clone.service.address.AddressService;
 import com.shopee.clone.service.user.UserService;
 import com.shopee.clone.util.JWTProvider;
 import com.shopee.clone.util.ResponseObject;
@@ -24,6 +27,8 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private AddressService addressService;
 
     @Autowired
     private JWTProvider jwtProvider;
@@ -44,19 +49,15 @@ public class UserServiceImpl implements UserService {
                 UserEntity user = optionalUser.get();
 
                 // Cập nhật thông tin người dùng từ DTO (Data Transfer Object)
-                user.setPassword(passwordEncoder.encode(user.getPassword()));
                 user.setUserName(userUpdateDTO.getUserName());
                 user.setFullName(userUpdateDTO.getFullName());
                 user.setPhone(userUpdateDTO.getPhone());
-                user.setAddress(userUpdateDTO.getAddress());
                 user.setAvatar(userUpdateDTO.getAvatar());
                 user.setEmail(userUpdateDTO.getEmail());
                 user.setDataOfBirth(userUpdateDTO.getDateOfBirth());
 
-
-
                 // Lưu thông tin người dùng đã cập nhật vào cơ sở dữ liệu
-                userRepository.save(user);
+                UserEntity userCreated= userRepository.save(user);
 
                 // Trả về ResponseEntity chứa thông tin cập nhật thành công
                 return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
@@ -80,6 +81,7 @@ public class UserServiceImpl implements UserService {
                             .message(e.getMessage())
                             .results("")
                             .build());
+
         }
     }
 
@@ -179,23 +181,20 @@ public class UserServiceImpl implements UserService {
                         user.setPassword(passwordEncoder.encode(changePasswordDTO.getNewPassword()));
                         // Lưu thông tin người dùng đã cập nhật vào cơ sở dữ liệu
                         userRepository.save(user);
-                        System.out.println("new pass: " + changePasswordDTO.getNewPassword());
 
-                        System.out.println("out pass: " + changePasswordDTO.getOutPassword());
-
-                        System.out.println("confirm pass: " + changePasswordDTO.getConfirmPassword());
                         // Trả về ResponseEntity chứa thông tin cập nhật thành công
                         return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
-                                "Change password successfully","thanh công con đĩ mẹ rồi!"));
+                                "Change password successfully",changePasswordDTO.getNewPassword()));
                     }
-                    // Trả về ResponseEntity chứa thông tin cập nhật thành công
+                    // Trả về ResponseEntity chứa thông tin lỗi
                     return ResponseEntity.ok().body(new ResponseObject("Fail",
-                            "Confirm password Error",user));
+                            "Confirm password Error","newPass: "+changePasswordDTO.getNewPassword())+ "" +
+                            " ConfirmPassword: "+changePasswordDTO.getConfirmPassword());
                 };
 
-                // Trả về ResponseEntity chứa thông tin cập nhật thành công
+                // Trả về ResponseEntity chứa thông tin lỗi nêú sai mật khẩu
                 return ResponseEntity.ok().body(new ResponseObject("Fail",
-                        "OutPassword error",user));
+                        "OutPassword error",changePasswordDTO.getOutPassword()));
             } else {
                 // Trả về ResponseEntity chứa thông tin lỗi nếu không tìm thấy người dùng
                 return ResponseEntity
@@ -215,6 +214,48 @@ public class UserServiceImpl implements UserService {
                             .message(e.getMessage())
                             .results("")
                             .build());
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> updateAddress(Long id, UpdateAddressDTO updateAddressDTO) {
+        try {
+            // Tìm kiếm người dùng trong cơ sở dữ liệu bằng userId
+            Optional<AddressEntity> optionalAddress = addressService.findById(id);
+
+            if (optionalAddress.isPresent()) {
+                // Lấy đối tượng người dùng từ Optional
+                AddressEntity address = optionalAddress.get();
+
+                // Cập nhật thông tin người dùng từ DTO (Data Transfer Object)
+                address.setAddressName(updateAddressDTO.getAddress());
+
+                // Lưu thông tin địa chỉ người dùng đã cập nhật vào cơ sở dữ liệu
+                addressService.save(address);
+
+                // Trả về ResponseEntity chứa thông tin cập nhật thành công
+                return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
+                        "Address updated successfully",address.getAddressName()));
+            } else {
+                // Trả về ResponseEntity chứa thông tin lỗi nếu không tìm thấy địa chỉ id
+                return ResponseEntity
+                        .badRequest()
+                        .body(ResponseObject.builder()
+                                .status("FAIL")
+                                .message("Address not found")
+                                .results("")
+                                .build());
+            }
+        } catch (Exception e) {
+            // Trả về ResponseEntity chứa thông tin lỗi nếu có lỗi xảy ra
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message(e.getMessage())
+                            .results("")
+                            .build());
+
         }
     }
 

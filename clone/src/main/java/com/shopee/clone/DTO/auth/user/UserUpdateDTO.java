@@ -13,6 +13,6 @@ public class UserUpdateDTO {
     private String phone;
     private String email;
     private String avatar;
-    private List<AddressEntity> address;
+    private String address;
     private Date dateOfBirth;
 }

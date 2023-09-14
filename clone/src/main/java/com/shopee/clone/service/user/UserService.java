@@ -1,6 +1,7 @@
 package com.shopee.clone.service.user;
 
 import com.shopee.clone.DTO.auth.user.ChangePasswordDTO;
+import com.shopee.clone.DTO.auth.user.UpdateAddressDTO;
 import com.shopee.clone.DTO.auth.user.User;
 import com.shopee.clone.DTO.auth.user.UserUpdateDTO;
 import com.shopee.clone.entity.UserEntity;
@@ -24,4 +25,6 @@ public interface UserService {
     ResponseEntity<?> unBlockUser(Long id);
 
     ResponseEntity<?> changePassword(Long id,ChangePasswordDTO changePasswordDTO);
+
+    ResponseEntity<?> updateAddress(Long id, UpdateAddressDTO updateAddressDTO);
 }
