@@ -2,6 +2,7 @@ package com.shopee.clone.DTO.auth.user;
 
 
 import com.shopee.clone.entity.AddressEntity;
+import com.shopee.clone.entity.RoleEntity;
 import lombok.Data;
 
 import java.util.Date;
@@ -24,5 +25,7 @@ public class User {
     private String avatar;
 
     private List<AddressEntity> addressEntities;
+
+    private List<RoleEntity> roles;
 
 }

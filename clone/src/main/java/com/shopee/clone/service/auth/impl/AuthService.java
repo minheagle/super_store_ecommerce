@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.StampedLock;
 import java.util.stream.Collectors;
 
 @Service
@@ -117,6 +118,9 @@ public class AuthService implements IAuthService {
                         roles.add(userRole);
                 }
             });
+
+
+
             UserEntity newUser = mapper.map(registerDTO, UserEntity.class);
             newUser.setRoles(roles);
             newUser.setStatus(true);

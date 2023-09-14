@@ -27,4 +27,8 @@ public interface UserService {
     ResponseEntity<?> changePassword(Long id,ChangePasswordDTO changePasswordDTO);
 
     ResponseEntity<?> updateAddress(Long id, UpdateAddressDTO updateAddressDTO);
+
+    Optional<UserEntity> findUserByUserName(String userName);
+
+    ResponseEntity<?> getUserById(Long id);
 }
