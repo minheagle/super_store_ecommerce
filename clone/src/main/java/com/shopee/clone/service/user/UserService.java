@@ -28,7 +28,7 @@ public interface UserService {
 
     ResponseEntity<?> updateAddress(Long id, UpdateAddressDTO updateAddressDTO);
 
-    Optional<UserEntity> findUserByUserName(String userName);
+    ResponseEntity<?> findUserByUserName(String userName);
 
     ResponseEntity<?> getUserById(Long id);
 }
