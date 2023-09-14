@@ -20,8 +20,8 @@ import java.io.IOException;
 @Slf4j
 @Component
 public class JWTFilter extends OncePerRequestFilter {
-    private JWTProvider jwtProvider;
-    private UserDetailsService userDetailsService;
+    private final JWTProvider jwtProvider;
+    private final UserDetailsService userDetailsService;
 
     public JWTFilter(JWTProvider jwtProvider, UserDetailsService userDetailsService) {
         this.jwtProvider = jwtProvider;
