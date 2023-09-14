@@ -61,7 +61,6 @@ public class AuthService implements IAuthService {
                     loginDTO.getEmail(), loginDTO.getPassword()));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-
             String accessToken = jwtProvider.generateJwtToken(authentication);
             UserDetailImpl userDetail = (UserDetailImpl) authentication.getPrincipal();
             LoginResponse loginResponse = UserDetailImpl.convertAuthPrincipalToLoginResponse(userDetail);
@@ -172,16 +171,5 @@ public class AuthService implements IAuthService {
                     );
         }
 
-    }
-
-    @Override
-    public ResponseEntity<?> logout(long user_id) {
-        try{
-            UserEntity userEntity = userRepository.findById(user_id).orElseThrow(() -> new RuntimeException("User not found !"));
-            refreshTokenRepository.deleteByUser(userEntity);
-            return ResponseEntity.ok().body(ResponseObject.builder().status("SUCCESS").message("Logout success").results(""));
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body(ResponseObject.builder().status("FAIL").message(e.getMessage()).results(""));
-        }
     }
 }
