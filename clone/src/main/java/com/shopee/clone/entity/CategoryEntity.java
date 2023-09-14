@@ -1,12 +1,18 @@
 package com.shopee.clone.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Entity
 @Table(name = "categories")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class CategoryEntity {
     @Id
@@ -22,4 +28,7 @@ public class CategoryEntity {
     private Integer left;
     @Column(name = "right_position")
     private Integer right;
+
+    @OneToMany(mappedBy = "category", fetch = FetchType.EAGER)
+    private List<ProductEntity> productList;
 }

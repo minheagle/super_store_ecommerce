@@ -1,9 +1,8 @@
-package com.shopee.clone.security.impl;
+package com.shopee.clone.rest_controller.security.impl;
 
 import com.shopee.clone.entity.UserEntity;
 import com.shopee.clone.repository.RefreshTokenRepository;
 import com.shopee.clone.repository.UserRepository;
-import com.shopee.clone.security.UserDetailServiceImpl;
 import com.shopee.clone.util.JWTProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
