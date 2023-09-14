@@ -1,14 +1,17 @@
 package com.shopee.clone.service.upload_cloud;
 
+import com.shopee.clone.DTO.upload_file.ImageUploadResult;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
 
+@Component
 public interface IUploadImageService {
-    String uploadSingleAvatar(MultipartFile avatarImage) throws IOException;
-    String uploadMultipleProductImage(MultipartFile productImages) throws IOException;
-    String uploadMultipleCommentImage(MultipartFile commentImages) throws IOException;
-    void deleteSingleImage(String publicId);
-    void deleteMultipleImage(List<String> listPublicId);
+    ImageUploadResult uploadSingle(MultipartFile file, String folder) throws IOException;
+    List<ImageUploadResult> uploadMultiple(MultipartFile[] files, String folder) throws IOException;
+    void deleteSingleImage(String publicId) throws IOException;
+    void deleteMultipleImage(List<String> listPublicId) throws IOException;
 }
