@@ -41,8 +41,8 @@ public class UserRestController {
     public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody ChangePasswordDTO changePasswordDTO){
         return userService.changePassword(id,changePasswordDTO);
     }
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable Long id){
-       return userService.getUserById(id);
+    @GetMapping("/{userName}")
+    public ResponseEntity<?> getUserById(@PathVariable String userName){
+       return userService.findUserByUserName(userName);
     }
 }
