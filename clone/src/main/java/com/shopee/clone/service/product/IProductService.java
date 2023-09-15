@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 public interface IProductService {
     ResponseEntity<?> getAll();
     ResponseEntity<?> getProductById(Long productId);
+    ResponseEntity<?> getProductMakeOrderByParentId(Long productId, Long productItemId);
     ResponseEntity<?> addNew(ProductRequestCreate productRequest);
     ResponseEntity<?> editProductById(Long productId);
 
