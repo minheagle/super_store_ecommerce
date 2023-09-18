@@ -1,8 +1,7 @@
-package com.shopee.clone.security;
+package com.shopee.clone.rest_controller.security;
 
-import com.shopee.clone.security.jwt.JWTAuthenticationEntryPoint;
-import com.shopee.clone.security.jwt.JWTFilter;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.shopee.clone.rest_controller.security.jwt.JWTAuthenticationEntryPoint;
+import com.shopee.clone.rest_controller.security.jwt.JWTFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,9 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.security.web.server.authentication.logout.DelegatingServerLogoutHandler;
-import org.springframework.security.web.server.authentication.logout.SecurityContextServerLogoutHandler;
-import org.springframework.security.web.server.authentication.logout.WebSessionServerLogoutHandler;
 
 @Configuration
 @EnableWebSecurity
