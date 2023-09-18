@@ -6,7 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "option_types")
@@ -21,9 +23,8 @@ public class OptionTypeEntity {
     private Long opTypeId;
     private String optionName;
 
-    @ManyToOne
-    @JoinColumn(name = "product_item_id")
-    private ProductItemEntity productItem;
+    @ManyToMany(mappedBy = "optionTypes")
+    private Set<ProductItemEntity> productItems = new HashSet<>();
 
     @OneToMany(mappedBy = "optionType", fetch = FetchType.EAGER)
     private List<OptionValueEntity> optionValueList;

@@ -1,27 +1,22 @@
 package com.shopee.clone.DTO.product.request;
 
-import jakarta.validation.constraints.Digits;
+import com.shopee.clone.entity.CategoryEntity;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class ProductRequestCreate {
-    @NotBlank()
+    @NotBlank
     @Length(min = 3, max = 150)
     private String productName;
     @NotBlank
     private String description;
-    @Digits(integer = 9,fraction = 3)
-    private Double price;
-    @NotNull
-    private Integer qtyInStock;
-    private MultipartFile[] imgProductFile;
-    private String optionName;
-    private String valueName;
-    private Double percent_price;
+//    private CategoryEntity category;
 }

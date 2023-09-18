@@ -1,12 +1,16 @@
 package com.shopee.clone.service.optionValue.impl;
 
+import com.shopee.clone.DTO.product.OptionType;
 import com.shopee.clone.DTO.product.OptionValue;
+import com.shopee.clone.DTO.product.request.OptionValueRequest;
 import com.shopee.clone.entity.OptionValueEntity;
 import com.shopee.clone.repository.OptionValueRepository;
 import com.shopee.clone.service.optionValue.IOptionValueService;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OptionValueService implements IOptionValueService {
@@ -19,7 +23,27 @@ public class OptionValueService implements IOptionValueService {
     }
 
     @Override
-    public void createOptionValue(OptionValue optionValue) {
-        optionValueRepository.save(modelMapper.map(optionValue, OptionValueEntity.class));
+    public void createOptionValueByOptionType(OptionValueRequest optionValueRequest, OptionType optionType) {
+        OptionValue optionValue = OptionValue
+                .builder()
+                .valueName(optionValueRequest.getValueName())
+                .percent_price(optionValueRequest.getPercent_price())
+                .optionType(optionType)
+                .build();
+        optionValueRepository.save(modelMapper.map(optionValue,OptionValueEntity.class));
+    }
+
+    @Override
+    public void saveAllOptionValueByOptionType(List<OptionValueRequest> optionValueRequests, OptionType optionType) {
+        List<OptionValue> optionValues = optionValueRequests.stream()
+                .map(optionValueRequest -> OptionValue.builder()
+                        .valueName(optionValueRequest.getValueName())
+                        .percent_price(optionValueRequest.getPercent_price())
+                        .optionType(optionType)
+                        .build()).collect(Collectors.toList());
+
+        List<OptionValueEntity> optionValueEntities = optionValues.stream()
+                .map(optionValue -> modelMapper.map(optionValue,OptionValueEntity.class)).collect(Collectors.toList());
+        optionValueRepository.saveAll(optionValueEntities);
     }
 }

@@ -8,7 +8,7 @@ public interface IProductService {
     ResponseEntity<?> getAll();
     ResponseEntity<?> getProductById(Long productId);
     ResponseEntity<?> getProductMakeOrderByParentId(Long productId, Long productItemId);
-    ResponseEntity<?> addNew(ProductRequestCreate productRequest);
+    ResponseEntity<?> addNewProduct(ProductRequestCreate productRequest);
     ResponseEntity<?> editProductById(Long productId);
 
 //This Function might be excuse big change information of product

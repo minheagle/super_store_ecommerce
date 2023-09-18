@@ -1,11 +1,14 @@
 package com.shopee.clone.DTO.product;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -17,6 +20,7 @@ public class ProductItem {
     private Integer qtyInStock;
     private Boolean status;
     private List<ImageProduct> imageProductList;
+    @JsonIgnore
     private Product product;
-    private List<OptionType> optionTypeList;
+    private Set<OptionType> optionTypes = new HashSet<>();
 }

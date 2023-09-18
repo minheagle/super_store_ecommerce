@@ -6,7 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "product_items")
@@ -17,6 +19,7 @@ import java.util.List;
 public class ProductItemEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long pItemId;
     private Double price;
     private Integer qtyInStock;
@@ -29,6 +32,10 @@ public class ProductItemEntity {
     @JoinColumn(name = "productId")
     private ProductEntity product;
 
-    @OneToMany(mappedBy = "productItem", fetch = FetchType.EAGER)
-    private List<OptionTypeEntity> optionTypeList;
+    @ManyToMany
+    @JoinTable(
+            name = "productitem_has_optiontype",
+            joinColumns = @JoinColumn(name = "product_item_id"),
+            inverseJoinColumns = @JoinColumn(name = "optiontype_id"))
+    private Set<OptionTypeEntity> optionTypes = new HashSet<>();
 }

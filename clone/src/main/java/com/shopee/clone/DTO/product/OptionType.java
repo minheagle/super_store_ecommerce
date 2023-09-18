@@ -5,7 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -14,6 +16,6 @@ import java.util.List;
 public class OptionType {
     private Long opTypeId;
     private String optionName;
-    private ProductItem productItem;
+    private Set<ProductItem> productItems = new HashSet<>();
     private List<OptionValue> optionValueList;
 }
