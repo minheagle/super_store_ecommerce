@@ -1,4 +1,4 @@
-package com.shopee.clone.security.jwt;
+package com.shopee.clone.rest_controller.security.jwt;
 
 import com.shopee.clone.util.JWTProvider;
 import jakarta.servlet.FilterChain;
