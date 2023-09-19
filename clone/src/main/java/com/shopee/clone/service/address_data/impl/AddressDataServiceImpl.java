@@ -11,6 +11,7 @@ import com.shopee.clone.service.address_data.AddressDataService;
 import com.shopee.clone.util.ResponseObject;
 import jakarta.transaction.Transactional;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,8 @@ public class AddressDataServiceImpl implements AddressDataService {
     @Autowired
     private DistrictRepository districtRepository;
 
+    @Autowired
+    private ModelMapper mapper;
     @Autowired
     private WardRepository wardRepository;
     @Autowired
@@ -48,10 +51,12 @@ public class AddressDataServiceImpl implements AddressDataService {
         for (AddressDataEntity address : addresses) {
             // Lưu thông tin Districts
             for (DistrictEntity district : address.getDistrictEntities()) {
+                district.setAddressData(address);
                 districtRepository.save(district);
 
                 // Lưu thông tin Wards trong mỗi District
                 for (WardEntity ward : district.getWards()) {
+                    ward.setDistrict(district);
                     wardRepository.save(ward);
                 }
             }
