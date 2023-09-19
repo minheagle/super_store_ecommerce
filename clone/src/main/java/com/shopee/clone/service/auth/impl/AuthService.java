@@ -8,7 +8,7 @@ import com.shopee.clone.entity.*;
 import com.shopee.clone.repository.RefreshTokenRepository;
 import com.shopee.clone.repository.RoleRepository;
 import com.shopee.clone.repository.UserRepository;
-import com.shopee.clone.security.impl.UserDetailImpl;
+import com.shopee.clone.rest_controller.security.impl.UserDetailImpl;
 import com.shopee.clone.service.address.AddressService;
 import com.shopee.clone.service.auth.IAuthService;
 import com.shopee.clone.service.user.UserService;
@@ -27,7 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import java.util.concurrent.locks.StampedLock;
 import java.util.stream.Collectors;
+
 
 @Service
 public class AuthService implements IAuthService {
@@ -117,6 +120,9 @@ public class AuthService implements IAuthService {
                         roles.add(userRole);
                 }
             });
+
+
+
             UserEntity newUser = mapper.map(registerDTO, UserEntity.class);
             newUser.setRoles(roles);
             newUser.setStatus(true);

@@ -173,7 +173,10 @@ public class CategoryService implements ICategoryService {
     @Transactional
     public ResponseEntity<?> create(CreateCategoryRequest createCategoryRequest) {
         try{
-            ImageUploadResult imageUploadResult = uploadImageService.uploadSingle(createCategoryRequest.getNewCategory().getFile(), categoryImageFolder);
+            ImageUploadResult imageUploadResult = uploadImageService
+                    .uploadSingle(createCategoryRequest
+                    .getNewCategory()
+                    .getFile(), categoryImageFolder);
             if(categoryRepository.findAll().size() == 0){
                 CategoryEntity rootCategory = CategoryEntity
                         .builder()
