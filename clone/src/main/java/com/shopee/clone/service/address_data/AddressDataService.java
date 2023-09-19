@@ -9,4 +9,5 @@ public interface AddressDataService {
     List<AddressDataEntity> parseResponse(String response);
     ResponseEntity<?> fetchAndSaveAddressData();
 
+    ResponseEntity<?> findCityById(Long id);
 }

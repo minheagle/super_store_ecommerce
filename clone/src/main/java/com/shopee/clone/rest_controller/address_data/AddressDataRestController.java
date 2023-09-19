@@ -16,7 +16,11 @@ public class AddressDataRestController {
     @Autowired
     private AddressDataService addressDataService;
     @GetMapping("save")
-    private ResponseEntity<?> getCity(){
+    private ResponseEntity<?> saveData(){
         return addressDataService.fetchAndSaveAddressData();
+    }
+    @GetMapping("/get_city/{id}")
+    private ResponseEntity<?> getCity(@PathVariable Long id){
+        return addressDataService.findCityById(id);
     }
 }

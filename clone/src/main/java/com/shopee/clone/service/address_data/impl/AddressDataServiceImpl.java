@@ -1,6 +1,7 @@
 package com.shopee.clone.service.address_data.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.shopee.clone.entity.address_data.AddressDataEntity;
 import com.shopee.clone.entity.address_data.DistrictEntity;
 import com.shopee.clone.entity.address_data.WardEntity;
@@ -19,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AddressDataServiceImpl implements AddressDataService {
@@ -81,6 +83,47 @@ public class AddressDataServiceImpl implements AddressDataService {
                     );
         }
     }
+
+    @Override
+    public ResponseEntity<?> findCityById(Long id) {
+        try{
+
+            // Save the addresses to the database
+            Optional<AddressDataEntity> address =  addressDataRepository.findById(id);
+
+            if (address.isPresent()){
+                AddressDataEntity addressData = mapper.map(address,AddressDataEntity.class);
+                return ResponseEntity.ok().body(ResponseObject
+                        .builder()
+                        .status("SUCCESS")
+                        .message("Create Address Data in database!")
+                        .results(addressData)
+                        .build()
+                );
+            }
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject
+                            .builder()
+                            .status("FAIL")
+                            .message("Address not find!")
+                            .results("")
+                            .build()
+                    );
+        }catch (Exception e){
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject
+                            .builder()
+                            .status("FAIL")
+                            .message(e.getMessage())
+                            .results("")
+                            .build()
+                    );
+        }
+
+    }
+
     @Override
     public List<AddressDataEntity> parseResponse(String response) {
         ObjectMapper objectMapper = new ObjectMapper();
