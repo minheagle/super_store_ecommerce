@@ -33,7 +33,6 @@ public class AuthRestController {
         registerDTOValidate.validate(registerDTO, bindingResult);
 
         if (bindingResult.hasErrors()) {
-            // Xử lý lỗi validation
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
         }
         return authService.register(registerDTO);
