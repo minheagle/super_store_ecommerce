@@ -38,4 +38,7 @@ public class ProductItemEntity {
             joinColumns = @JoinColumn(name = "product_item_id"),
             inverseJoinColumns = @JoinColumn(name = "optiontype_id"))
     private Set<OptionTypeEntity> optionTypes = new HashSet<>();
+
+    @OneToMany(mappedBy = "productItem", fetch = FetchType.EAGER)
+    private List<OptionValueEntity> optionValues;
 }

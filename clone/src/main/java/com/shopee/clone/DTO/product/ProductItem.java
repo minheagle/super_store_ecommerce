@@ -1,6 +1,7 @@
 package com.shopee.clone.DTO.product;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.shopee.clone.entity.OptionValueEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,4 +24,5 @@ public class ProductItem {
     @JsonIgnore
     private Product product;
     private Set<OptionType> optionTypes = new HashSet<>();
+    private List<OptionValue> optionValues;
 }
