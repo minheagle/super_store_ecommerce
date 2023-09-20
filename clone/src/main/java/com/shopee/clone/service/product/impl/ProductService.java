@@ -2,20 +2,21 @@ package com.shopee.clone.service.product.impl;
 
 import com.shopee.clone.DTO.product.*;
 import com.shopee.clone.DTO.product.request.ProductRequestCreate;
-import com.shopee.clone.DTO.product.response.ProductResponseObject;
+import com.shopee.clone.DTO.product.response.*;
 import com.shopee.clone.entity.*;
 import com.shopee.clone.repository.*;
 import com.shopee.clone.service.product.IProductService;
 import com.shopee.clone.service.productItem.impl.ProductItemService;
 import com.shopee.clone.util.ResponseObject;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService implements IProductService {
@@ -23,6 +24,8 @@ public class ProductService implements IProductService {
     private final ProductItemService itemService;
     private final ProductItemRepository itemRepository;
     private final ModelMapper modelMapper;
+    @Autowired
+    private OptionValueRepository optionValueRepository;
     public ProductService(ProductRepository productRepository,
                           ProductItemService itemService,
                           ProductItemRepository itemRepository,
@@ -43,11 +46,86 @@ public class ProductService implements IProductService {
         try {
             ProductEntity productEntity = productRepository.findById(productId)
                                 .orElseThrow(NoSuchElementException::new);
-            Product product = modelMapper.map(productEntity,Product.class);
 
-            ProductResponseObject<Product> productResponse = new ProductResponseObject<>();
-            productResponse.setData(product);
-            if(product.getStatus()){
+            List<ProductItemEntity> productItemEntities = productEntity.getProductItemList();
+            ProductResponseDTO productResponseDTO = new ProductResponseDTO();
+            List<ProductItemResponseDTO> productItemResponseDTOList = new ArrayList<>();
+
+            List<OptionValue> optionValues;
+            for(ProductItemEntity productItemEntity : productItemEntities){
+                List<ImageProduct> imageProducts = productItemEntity.getImageProductList()
+                        .stream()
+                        .map(imageProductEntity -> ImageProduct.builder()
+                                .imgProductId(imageProductEntity.getImgProductId())
+                                .imgPublicId(imageProductEntity.getImgPublicId())
+                                .imgProductUrl(imageProductEntity.getImgProductUrl())
+                                .build())
+                        .collect(Collectors.toList());
+
+                optionValues = productItemEntity.getOptionValues()
+                        .stream()
+                        .map(optionValueEntity -> OptionValue.builder()
+                                .opValueId(optionValueEntity.getOpValueId())
+                                .valueName(optionValueEntity.getValueName())
+                                .percent_price(optionValueEntity.getPercent_price())
+                                .optionType(OptionType
+
+                                        .builder()
+                                        .opTypeId(optionValueEntity.getOptionType().getOpTypeId())
+                                        .optionName(optionValueEntity.getOptionType().getOptionName())
+                                        .build())
+                                .build())
+                        .collect(Collectors.toList());
+
+                List<OptionTypeDTO> optionTypeDTOS = new ArrayList<>();
+                for(OptionValue optionValue : optionValues){
+                    OptionType optionType = optionValue.getOptionType();
+
+                    OptionTypeDTO optionTypeDTO = OptionTypeDTO
+                            .builder()
+                            .opTypeId(optionType.getOpTypeId())
+                            .optionName(optionType.getOptionName())
+                            .optionValue(OptionValueDTO
+                                    .builder()
+                                    .opValueId(optionValue.getOpValueId())
+                                    .valueName(optionValue.getValueName())
+                                    .percent_price(optionValue.getPercent_price())
+                                    .build())
+                            .build();
+                    optionTypeDTOS.add(optionTypeDTO);
+                }
+                ProductItemResponseDTO productItemResponseDTO = ProductItemResponseDTO
+                        .builder()
+                        .pItemId(productItemEntity.getPItemId())
+                        .price(productItemEntity.getPrice())
+                        .qtyInStock(productItemEntity.getQtyInStock())
+                        .status(productItemEntity.getStatus())
+                        .imageProductList(imageProducts)
+                        .optionTypes(optionTypeDTOS)
+                        .build();
+                productItemResponseDTOList.add(productItemResponseDTO);
+
+                 productResponseDTO = ProductResponseDTO
+                        .builder()
+                        .productName(productEntity.getProductName())
+                        .description(productEntity.getDescription())
+                         .status(productEntity.getStatus())
+                        .productItemResponseList(List.copyOf(productItemResponseDTOList))
+                        .build();
+            }
+
+//            Product product = Product
+//                    .builder()
+//                    .productId(productEntity.getProductId())
+//                    .productName(productEntity.getProductName())
+//                    .description(productEntity.getDescription())
+//                    .status(productEntity.getStatus())
+//                    .productItemList(List.copyOf(productItems))
+//                    //category()
+//                    .build();
+            ProductResponseObject<ProductResponseDTO> productResponse = new ProductResponseObject<>();
+            productResponse.setData(productResponseDTO);
+            if(productResponseDTO.getStatus()){
                 return ResponseEntity
                         .status(HttpStatusCode.valueOf(200))
                         .body(

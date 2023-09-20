@@ -45,7 +45,7 @@ public class OptionTypeService implements IOptionTypeService {
 
             if (itemRepository.existsById(itemId)) {
                 ProductItemEntity productItemEntity = itemRepository.findById(itemId)
-                        .orElseThrow(() -> new NoSuchElementException("Not Found"));
+                        .orElseThrow(() -> new NoSuchElementException("ProductItem Not Found"));
                 ProductItem productItem = ProductItem
                         .builder()
                         .pItemId(productItemEntity.getPItemId())
@@ -76,7 +76,7 @@ public class OptionTypeService implements IOptionTypeService {
                             .opTypeId(existingOptionType.getOpTypeId())
                             .optionName(existingOptionType.getOptionName())
                             .build();
-                    optionValueService.createOptionValueByOptionType(optionTypeRequest.getOptionValueRequest(), typeSaved);
+                    optionValueService.createOptionValueByOptionType(optionTypeRequest.getOptionValueRequest(), typeSaved, productItem);
 
                     setTypes.add(existingOptionType);
                 }
