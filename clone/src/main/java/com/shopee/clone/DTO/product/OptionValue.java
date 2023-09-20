@@ -1,5 +1,6 @@
 package com.shopee.clone.DTO.product;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,4 +17,6 @@ public class OptionValue {
     private String valueName;
     private Double percent_price;
     private OptionType optionType;
+    @JsonIgnore
+    private ProductItem productItem;
 }

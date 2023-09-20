@@ -32,6 +32,9 @@ public class ProductItemEntity {
     @JoinColumn(name = "productId")
     private ProductEntity product;
 
+    @OneToMany(mappedBy = "productItems", fetch = FetchType.EAGER)
+    private List<OptionValueEntity> optionValueEntities;
+
     @ManyToMany
     @JoinTable(
             name = "productitem_has_optiontype",
