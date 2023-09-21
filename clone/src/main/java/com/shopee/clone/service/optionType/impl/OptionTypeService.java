@@ -86,7 +86,7 @@ public class OptionTypeService implements IOptionTypeService {
             }
 
             return ResponseEntity
-                        .status(HttpStatusCode.valueOf(200))
+                        .status(HttpStatusCode.valueOf(201))
                         .body(
                                 ResponseObject
                                         .builder()
