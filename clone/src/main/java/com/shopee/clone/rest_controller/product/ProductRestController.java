@@ -5,19 +5,13 @@ import com.shopee.clone.DTO.product.request.OptionTypeCreate;
 import com.shopee.clone.DTO.product.request.ProductItemRequest;
 import com.shopee.clone.DTO.product.request.ProductRequestCreate;
 import com.shopee.clone.service.optionType.IOptionTypeService;
-import com.shopee.clone.service.optionValue.IOptionValueService;
 import com.shopee.clone.service.product.IProductService;
 import com.shopee.clone.service.productItem.IProductItemService;
-import com.shopee.clone.util.ResponseObject;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -28,8 +22,6 @@ public class ProductRestController {
     private IProductItemService productItemService;
     @Autowired
     private IOptionTypeService optionTypeService;
-    @Autowired
-    private IOptionValueService optionValueService;
 
     @PostMapping("add-new/product")
     public ResponseEntity<?> createProduct(@RequestBody @Valid ProductRequestCreate productRequestCreate,
@@ -76,6 +68,10 @@ public class ProductRestController {
         return optionTypeService.createOptionTypeWithOptionValue(optionTypeCreate);
     }
 
+    @GetMapping("/{shopId}")
+    public ResponseEntity<?> gettAll(@PathVariable Long shopId){
+        return productService.getAll(shopId);
+    }
     @GetMapping("product/{id}")
     public ResponseEntity<?> getById(@PathVariable Long id){
         return productService.getProductById(id);
@@ -84,5 +80,13 @@ public class ProductRestController {
     @GetMapping("product/{id}/item/{itemId}")
     public ResponseEntity<?> makeOrder(@PathVariable Long id, @PathVariable Long itemId){
         return productItemService.getProductItemByShopIdAndParentProductId(id, itemId);
+    }
+    @DeleteMapping("product/{productId}")
+    public ResponseEntity<?> removeProduct(@PathVariable Long productId){
+        return productService.removeProductById(productId);
+    }
+    @DeleteMapping("product/{productId}/item/{itemId}")
+    public ResponseEntity<?> removeProductItemInProduct(@PathVariable Long productId, @PathVariable Long itemId){
+        return productItemService.removeProductItem(productId,itemId);
     }
 }
