@@ -9,7 +9,6 @@ import com.shopee.clone.service.product.IProductService;
 import com.shopee.clone.service.productItem.impl.ProductItemService;
 import com.shopee.clone.util.ResponseObject;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -24,8 +23,6 @@ public class ProductService implements IProductService {
     private final ProductItemService itemService;
     private final ProductItemRepository itemRepository;
     private final ModelMapper modelMapper;
-    @Autowired
-    private OptionValueRepository optionValueRepository;
     public ProductService(ProductRepository productRepository,
                           ProductItemService itemService,
                           ProductItemRepository itemRepository,
@@ -77,23 +74,20 @@ public class ProductService implements IProductService {
                                 .build())
                         .collect(Collectors.toList());
 
-                List<OptionTypeDTO> optionTypeDTOS = new ArrayList<>();
-                for(OptionValue optionValue : optionValues){
-                    OptionType optionType = optionValue.getOptionType();
+                List<OptionTypeDTO> optionTypeDTOS = optionValues
+                        .stream()
+                        .map(optionValue -> OptionTypeDTO
+                                            .builder()
+                                            .opTypeId(optionValue.getOptionType().getOpTypeId())
+                                            .optionName(optionValue.getOptionType().getOptionName())
+                                            .optionValue(OptionValueDTO
+                                                    .builder()
+                                                    .opValueId(optionValue.getOpValueId())
+                                                    .valueName(optionValue.getValueName())
+                                                    .percent_price(optionValue.getPercent_price())
+                                                    .build())
+                                            .build()).collect(Collectors.toList());
 
-                    OptionTypeDTO optionTypeDTO = OptionTypeDTO
-                            .builder()
-                            .opTypeId(optionType.getOpTypeId())
-                            .optionName(optionType.getOptionName())
-                            .optionValue(OptionValueDTO
-                                    .builder()
-                                    .opValueId(optionValue.getOpValueId())
-                                    .valueName(optionValue.getValueName())
-                                    .percent_price(optionValue.getPercent_price())
-                                    .build())
-                            .build();
-                    optionTypeDTOS.add(optionTypeDTO);
-                }
                 ProductItemResponseDTO productItemResponseDTO = ProductItemResponseDTO
                         .builder()
                         .pItemId(productItemEntity.getPItemId())
@@ -110,19 +104,10 @@ public class ProductService implements IProductService {
                         .productName(productEntity.getProductName())
                         .description(productEntity.getDescription())
                          .status(productEntity.getStatus())
-                        .productItemResponseList(List.copyOf(productItemResponseDTOList))
+                        .productItemResponseList(productItemResponseDTOList)
                         .build();
             }
 
-//            Product product = Product
-//                    .builder()
-//                    .productId(productEntity.getProductId())
-//                    .productName(productEntity.getProductName())
-//                    .description(productEntity.getDescription())
-//                    .status(productEntity.getStatus())
-//                    .productItemList(List.copyOf(productItems))
-//                    //category()
-//                    .build();
             ProductResponseObject<ProductResponseDTO> productResponse = new ProductResponseObject<>();
             productResponse.setData(productResponseDTO);
             if(productResponseDTO.getStatus()){
