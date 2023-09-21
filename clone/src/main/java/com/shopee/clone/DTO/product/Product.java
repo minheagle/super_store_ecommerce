@@ -18,7 +18,7 @@ public class Product {
     private String productName;
     private String description;
     private Boolean status;
-    @JsonIgnore
+//    @JsonIgnore
     private List<ProductItem> productItemList;
     private CategoryEntity category;
 }

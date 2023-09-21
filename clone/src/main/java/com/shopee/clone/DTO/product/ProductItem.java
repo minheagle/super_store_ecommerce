@@ -23,5 +23,6 @@ public class ProductItem {
     private List<ImageProduct> imageProductList;
     @JsonIgnore
     private Product product;
-    private List<OptionValue> optionValueEntities;
+    private Set<OptionType> optionTypes = new HashSet<>();
+    private List<OptionValue> optionValues;
 }

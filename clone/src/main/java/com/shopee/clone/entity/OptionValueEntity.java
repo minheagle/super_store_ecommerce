@@ -27,6 +27,6 @@ public class OptionValueEntity {
     private OptionTypeEntity optionType;
 
     @ManyToOne
-    @JoinColumn(name = "product_items_id")
-    private ProductItemEntity productItems;
+    @JoinColumn(name = "product_item_id")
+    private  ProductItemEntity productItem;
 }

@@ -83,6 +83,6 @@ public class ProductRestController {
 
     @GetMapping("product/{id}/item/{itemId}")
     public ResponseEntity<?> makeOrder(@PathVariable Long id, @PathVariable Long itemId){
-        return productService.getProductMakeOrderByParentId(id, itemId);
+        return productItemService.getProductItemByShopIdAndParentProductId(id, itemId);
     }
 }

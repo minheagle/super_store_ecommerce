@@ -2,6 +2,7 @@ package com.shopee.clone.service.optionValue.impl;
 
 import com.shopee.clone.DTO.product.OptionType;
 import com.shopee.clone.DTO.product.OptionValue;
+import com.shopee.clone.DTO.product.ProductItem;
 import com.shopee.clone.DTO.product.request.OptionValueRequest;
 import com.shopee.clone.entity.OptionValueEntity;
 import com.shopee.clone.repository.product.OptionValueRepository;
@@ -23,12 +24,13 @@ public class OptionValueService implements IOptionValueService {
     }
 
     @Override
-    public void createOptionValueByOptionType(OptionValueRequest optionValueRequest, OptionType optionType) {
+    public void createOptionValueByOptionType(OptionValueRequest optionValueRequest, OptionType optionType, ProductItem productItem) {
         OptionValue optionValue = OptionValue
                 .builder()
                 .valueName(optionValueRequest.getValueName())
                 .percent_price(optionValueRequest.getPercent_price())
                 .optionType(optionType)
+                .productItem(productItem)
                 .build();
         optionValueRepository.save(modelMapper.map(optionValue,OptionValueEntity.class));
     }

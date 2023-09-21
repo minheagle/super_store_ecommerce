@@ -2,7 +2,7 @@ package com.shopee.clone.service.product.impl;
 
 import com.shopee.clone.DTO.product.*;
 import com.shopee.clone.DTO.product.request.ProductRequestCreate;
-import com.shopee.clone.DTO.product.response.ProductResponseObject;
+import com.shopee.clone.DTO.product.response.*;
 import com.shopee.clone.entity.*;
 import com.shopee.clone.repository.product.ProductItemRepository;
 import com.shopee.clone.repository.product.ProductRepository;
@@ -15,8 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService implements IProductService {
@@ -44,11 +44,74 @@ public class ProductService implements IProductService {
         try {
             ProductEntity productEntity = productRepository.findById(productId)
                                 .orElseThrow(NoSuchElementException::new);
-            Product product = modelMapper.map(productEntity,Product.class);
 
-            ProductResponseObject<Product> productResponse = new ProductResponseObject<>();
-            productResponse.setData(product);
-            if(product.getStatus()){
+            List<ProductItemEntity> productItemEntities = productEntity.getProductItemList();
+            ProductResponseDTO productResponseDTO = new ProductResponseDTO();
+            List<ProductItemResponseDTO> productItemResponseDTOList = new ArrayList<>();
+
+            List<OptionValue> optionValues;
+            for(ProductItemEntity productItemEntity : productItemEntities){
+                List<ImageProduct> imageProducts = productItemEntity.getImageProductList()
+                        .stream()
+                        .map(imageProductEntity -> ImageProduct.builder()
+                                .imgProductId(imageProductEntity.getImgProductId())
+                                .imgPublicId(imageProductEntity.getImgPublicId())
+                                .imgProductUrl(imageProductEntity.getImgProductUrl())
+                                .build())
+                        .collect(Collectors.toList());
+
+                optionValues = productItemEntity.getOptionValues()
+                        .stream()
+                        .map(optionValueEntity -> OptionValue.builder()
+                                .opValueId(optionValueEntity.getOpValueId())
+                                .valueName(optionValueEntity.getValueName())
+                                .percent_price(optionValueEntity.getPercent_price())
+                                .optionType(OptionType
+
+                                        .builder()
+                                        .opTypeId(optionValueEntity.getOptionType().getOpTypeId())
+                                        .optionName(optionValueEntity.getOptionType().getOptionName())
+                                        .build())
+                                .build())
+                        .collect(Collectors.toList());
+
+                List<OptionTypeDTO> optionTypeDTOS = optionValues
+                        .stream()
+                        .map(optionValue -> OptionTypeDTO
+                                            .builder()
+                                            .opTypeId(optionValue.getOptionType().getOpTypeId())
+                                            .optionName(optionValue.getOptionType().getOptionName())
+                                            .optionValue(OptionValueDTO
+                                                    .builder()
+                                                    .opValueId(optionValue.getOpValueId())
+                                                    .valueName(optionValue.getValueName())
+                                                    .percent_price(optionValue.getPercent_price())
+                                                    .build())
+                                            .build()).collect(Collectors.toList());
+
+                ProductItemResponseDTO productItemResponseDTO = ProductItemResponseDTO
+                        .builder()
+                        .pItemId(productItemEntity.getPItemId())
+                        .price(productItemEntity.getPrice())
+                        .qtyInStock(productItemEntity.getQtyInStock())
+                        .status(productItemEntity.getStatus())
+                        .imageProductList(imageProducts)
+                        .optionTypes(optionTypeDTOS)
+                        .build();
+                productItemResponseDTOList.add(productItemResponseDTO);
+
+                 productResponseDTO = ProductResponseDTO
+                        .builder()
+                        .productName(productEntity.getProductName())
+                        .description(productEntity.getDescription())
+                         .status(productEntity.getStatus())
+                        .productItemResponseList(productItemResponseDTOList)
+                        .build();
+            }
+
+            ProductResponseObject<ProductResponseDTO> productResponse = new ProductResponseObject<>();
+            productResponse.setData(productResponseDTO);
+            if(productResponseDTO.getStatus()){
                 return ResponseEntity
                         .status(HttpStatusCode.valueOf(200))
                         .body(
