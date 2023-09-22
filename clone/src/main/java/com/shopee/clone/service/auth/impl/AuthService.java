@@ -1,7 +1,6 @@
 package com.shopee.clone.service.auth.impl;
 
 import com.shopee.clone.DTO.auth.login.LoginDTO;
-import com.shopee.clone.DTO.auth.login.LoginResponse;
 import com.shopee.clone.DTO.auth.refresh_token.RefreshTokenResponse;
 import com.shopee.clone.DTO.auth.register.RegisterDTO;
 import com.shopee.clone.DTO.auth.user.User;
@@ -10,7 +9,7 @@ import com.shopee.clone.repository.RefreshTokenRepository;
 import com.shopee.clone.repository.RoleRepository;
 import com.shopee.clone.repository.UserRepository;
 import com.shopee.clone.response.auth.ResponseLogin;
-import com.shopee.clone.rest_controller.security.impl.UserDetailImpl;
+import com.shopee.clone.security.impl.UserDetailImpl;
 import com.shopee.clone.service.address.AddressService;
 import com.shopee.clone.service.auth.IAuthService;
 import com.shopee.clone.service.user.UserService;
@@ -27,9 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class AuthService implements IAuthService {

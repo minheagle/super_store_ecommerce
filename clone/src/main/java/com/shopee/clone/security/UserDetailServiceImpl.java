@@ -1,8 +1,8 @@
-package com.shopee.clone.rest_controller.security;
+package com.shopee.clone.security;
 
 import com.shopee.clone.entity.UserEntity;
 import com.shopee.clone.repository.UserRepository;
-import com.shopee.clone.rest_controller.security.impl.UserDetailImpl;
+import com.shopee.clone.security.impl.UserDetailImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
