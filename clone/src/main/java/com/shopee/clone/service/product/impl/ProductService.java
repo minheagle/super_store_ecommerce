@@ -2,14 +2,13 @@ package com.shopee.clone.service.product.impl;
 
 import com.shopee.clone.DTO.product.*;
 import com.shopee.clone.DTO.product.request.ProductRequestCreate;
-import com.shopee.clone.DTO.product.request.ProductRequestEdit;
+import com.shopee.clone.DTO.product.update.ProductRequestEdit;
 import com.shopee.clone.DTO.product.response.*;
 import com.shopee.clone.entity.*;
 import com.shopee.clone.repository.CategoryRepository;
 import com.shopee.clone.repository.ProductItemRepository;
 import com.shopee.clone.repository.ProductRepository;
 import com.shopee.clone.service.product.IProductService;
-import com.shopee.clone.service.productItem.impl.ProductItemService;
 import com.shopee.clone.util.ResponseObject;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -307,6 +306,63 @@ public class ProductService implements IProductService {
                     );
         }
         return null;
+    }
+
+    @Override
+    public ResponseEntity<?> searchProductByName(String productName) {
+        try {
+            if(productName.isBlank()){
+                return ResponseEntity
+                        .badRequest()
+                        .body(
+                                ResponseObject
+                                        .builder()
+                                        .status("FAIL")
+                                        .message("Name Search Not Null")
+                                        .build()
+                        );
+            }
+            List<ProductEntity> productEntities = productRepository.searchByProductName(productName);
+            if(productEntities.isEmpty()){
+                return ResponseEntity
+                        .status(HttpStatusCode.valueOf(204))
+                        .body(
+                                ResponseObject
+                                        .builder()
+                                        .status("FAIL")
+                                        .message("NOT FOUND")
+                                        .build()
+                        );
+            }
+            List<ProductResponseDTO> productResponseDTOs = mappingProductEntityListToProductDTOs(productEntities);
+
+            ProductResponseObject<List<ProductResponseDTO>> productsResponse = new ProductResponseObject<>();
+            productsResponse.setData(productResponseDTOs);
+
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(200))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("SUCCESS")
+                                    .message("Search Products Success")
+                                    .results(productsResponse)
+                                    .build()
+                    );
+
+
+        }catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(404))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("FAIL")
+                                    .message(e.getMessage())
+                                    .results("")
+                                    .build()
+                    );
+        }
     }
 
     @Override

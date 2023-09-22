@@ -1,4 +1,4 @@
-package com.shopee.clone.DTO.product.request;
+package com.shopee.clone.DTO.product.update;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

@@ -11,5 +11,4 @@ import lombok.NoArgsConstructor;
 @Builder
 public class OptionValueRequest {
     private String valueName;
-//    private Double percent_price;
 }
