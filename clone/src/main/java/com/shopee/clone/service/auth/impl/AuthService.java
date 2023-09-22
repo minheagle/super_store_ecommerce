@@ -10,7 +10,7 @@ import com.shopee.clone.repository.RefreshTokenRepository;
 import com.shopee.clone.repository.RoleRepository;
 import com.shopee.clone.repository.UserRepository;
 import com.shopee.clone.response.auth.ResponseLogin;
-import com.shopee.clone.security.impl.UserDetailImpl;
+import com.shopee.clone.rest_controller.security.impl.UserDetailImpl;
 import com.shopee.clone.service.address.AddressService;
 import com.shopee.clone.service.auth.IAuthService;
 import com.shopee.clone.service.user.UserService;
