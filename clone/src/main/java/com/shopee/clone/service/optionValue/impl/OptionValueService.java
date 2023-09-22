@@ -5,7 +5,7 @@ import com.shopee.clone.DTO.product.OptionValue;
 import com.shopee.clone.DTO.product.ProductItem;
 import com.shopee.clone.DTO.product.request.OptionValueRequest;
 import com.shopee.clone.entity.OptionValueEntity;
-import com.shopee.clone.repository.OptionValueRepository;
+import com.shopee.clone.repository.product.OptionValueRepository;
 import com.shopee.clone.service.optionValue.IOptionValueService;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;

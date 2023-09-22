@@ -4,7 +4,7 @@ import com.shopee.clone.DTO.product.ImageProduct;
 import com.shopee.clone.DTO.product.ProductItem;
 import com.shopee.clone.DTO.upload_file.ImageUploadResult;
 import com.shopee.clone.entity.ImageProductEntity;
-import com.shopee.clone.repository.ImageProductRepository;
+import com.shopee.clone.repository.product.ImageProductRepository;
 import com.shopee.clone.service.imageProduct.IImageProductService;
 import com.shopee.clone.service.upload_cloud.IUploadImageService;
 import org.modelmapper.ModelMapper;

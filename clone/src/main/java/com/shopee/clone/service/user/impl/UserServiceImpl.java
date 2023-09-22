@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService {
                 user.setUserName(userUpdateDTO.getUserName());
                 user.setFullName(userUpdateDTO.getFullName());
                 user.setPhone(userUpdateDTO.getPhone());
-                user.setAvatar(userUpdateDTO.getAvatar());
+//                user.setAvatar(userUpdateDTO.getAvatar());
                 user.setEmail(userUpdateDTO.getEmail());
                 user.setDataOfBirth(userUpdateDTO.getDateOfBirth());
 

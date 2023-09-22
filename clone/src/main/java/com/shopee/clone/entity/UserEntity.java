@@ -39,8 +39,11 @@ public class UserEntity {
     @Column(name = "date_of_birth")
     private Date dataOfBirth;
 
-    @Column(name = "avatar")
-    private String avatar;
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Column(name = "img_public_id")
+    private String imgPublicId;
 
     @OneToMany(mappedBy = "user",fetch = FetchType.EAGER)
     private List<AddressEntity> address;

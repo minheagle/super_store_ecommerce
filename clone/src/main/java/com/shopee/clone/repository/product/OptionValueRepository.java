@@ -1,4 +1,4 @@
-package com.shopee.clone.repository;
+package com.shopee.clone.repository.product;
 
 import com.shopee.clone.entity.OptionValueEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
