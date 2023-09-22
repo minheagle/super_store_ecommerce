@@ -46,6 +46,24 @@ public class UploadImageService implements IUploadImageService {
     }
 
     @Override
+    public ImageUploadResult replaceSingle(MultipartFile file, String existsPublicId, String folder) throws IOException {
+        cloudinary.uploader().destroy(existsPublicId, null);
+        Map uploadResult = cloudinary
+                .uploader()
+                .upload(file.getBytes(), ObjectUtils.asMap("folder", folder));
+        return ImageUploadResult
+                .builder()
+                .public_id((String) uploadResult.get("public_id"))
+                .secure_url((String) uploadResult.get("secure_url"))
+                .build();
+    }
+
+    @Override
+    public List<ImageUploadResult> replaceMultiple(MultipartFile[] files, List<String> existsPublicIdList) throws IOException {
+        return null;
+    }
+
+    @Override
     public void deleteSingleImage(String publicId) throws IOException {
         cloudinary.uploader().destroy(publicId, null);
     }

@@ -1,12 +1,10 @@
 package com.shopee.clone.service.user.impl;
 
-import com.shopee.clone.DTO.auth.user.ChangePasswordDTO;
-import com.shopee.clone.DTO.auth.user.UpdateAddressDTO;
-import com.shopee.clone.DTO.auth.user.User;
-import com.shopee.clone.DTO.auth.user.UserUpdateDTO;
+import com.shopee.clone.DTO.auth.user.*;
 import com.shopee.clone.entity.AddressEntity;
 import com.shopee.clone.entity.UserEntity;
 import com.shopee.clone.repository.UserRepository;
+import com.shopee.clone.response.user.ResponseDetailUser;
 import com.shopee.clone.service.address.AddressService;
 import com.shopee.clone.service.user.UserService;
 import com.shopee.clone.util.JWTProvider;
@@ -36,7 +34,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
-    ModelMapper mapper;
+    private ModelMapper mapper;
 
     // Hàm cập nhật thông tin người dùng
     public ResponseEntity<?> updateUser(long userId, UserUpdateDTO userUpdateDTO) {
@@ -257,6 +255,95 @@ public class UserServiceImpl implements UserService {
                             .build());
 
         }
+    }
+
+    @Override
+    public ResponseEntity<?> findUserByUserName(String userName) {
+        try {
+            // Tìm kiếm người dùng trong cơ sở dữ liệu bằng userId
+            Optional<UserEntity> optionalUser = userRepository.findByUserName(userName);
+
+            if (optionalUser.isPresent()) {
+                // Lấy đối tượng người dùng từ Optional
+                UserEntity user = optionalUser.get();
+                User userDTO = mapper.map(user, User.class);
+                ResponseDetailUser<User> responseDetailUser = new ResponseDetailUser<>();
+                responseDetailUser.setData(userDTO);
+
+                // Trả về ResponseEntity chứa thông tin cập nhật thành công
+                return ResponseEntity
+                        .ok()
+                        .body(
+                                ResponseObject
+                                        .builder()
+                                        .status("SUCCESS")
+                                        .message("Get user success")
+                                        .results(responseDetailUser)
+                                        .build()
+                        );
+            } else {
+                // Trả về ResponseEntity chứa thông tin lỗi nếu không tìm thấy người dùng
+                return ResponseEntity
+                        .badRequest()
+                        .body(ResponseObject.builder()
+                                .status("FAIL")
+                                .message("User not found")
+                                .results("")
+                                .build());
+            }
+        } catch (Exception e) {
+            // Trả về ResponseEntity chứa thông tin lỗi nếu có lỗi xảy ra
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message(e.getMessage())
+                            .results("")
+                            .build());
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getUserById(Long id) {
+        try {
+            // Tìm kiếm người dùng trong cơ sở dữ liệu bằng userId
+            Optional<UserEntity> optionalUser = userRepository.findById(id);
+
+            if (optionalUser.isPresent()) {
+                // Lấy đối tượng người dùng từ Optional
+                UserEntity user = optionalUser.get();
+
+                // Lưu thông tin người dùng đã cập nhật vào cơ sở dữ liệu
+                userRepository.save(user);
+
+                // Trả về ResponseEntity chứa thông tin cập nhật thành công
+                return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
+                        "Get user successfully",user));
+            } else {
+                // Trả về ResponseEntity chứa thông tin lỗi nếu không tìm thấy người dùng
+                return ResponseEntity
+                        .badRequest()
+                        .body(ResponseObject.builder()
+                                .status("FAIL")
+                                .message("User not found")
+                                .results("")
+                                .build());
+            }
+        } catch (Exception e) {
+            // Trả về ResponseEntity chứa thông tin lỗi nếu có lỗi xảy ra
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message(e.getMessage())
+                            .results("")
+                            .build());
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> becomeSellerService(BecomeSellerRequest becomeSellerRequest) {
+        return null;
     }
 
     @Override

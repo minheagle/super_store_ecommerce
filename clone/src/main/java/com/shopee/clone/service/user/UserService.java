@@ -1,9 +1,6 @@
 package com.shopee.clone.service.user;
 
-import com.shopee.clone.DTO.auth.user.ChangePasswordDTO;
-import com.shopee.clone.DTO.auth.user.UpdateAddressDTO;
-import com.shopee.clone.DTO.auth.user.User;
-import com.shopee.clone.DTO.auth.user.UserUpdateDTO;
+import com.shopee.clone.DTO.auth.user.*;
 import com.shopee.clone.entity.UserEntity;
 import org.springframework.http.ResponseEntity;
 
@@ -31,4 +28,5 @@ public interface UserService {
     ResponseEntity<?> findUserByUserName(String userName);
 
     ResponseEntity<?> getUserById(Long id);
+    ResponseEntity<?> becomeSellerService(BecomeSellerRequest becomeSellerRequest);
 }

@@ -8,7 +8,6 @@ import lombok.Data;
 @Data
 @Builder
 public class MoveCategory {
-    private ParentCategory oldParentCategory;
-    private ParentCategory newParentCategory;
-    private CategoryDTO movedCategory;
+    private Long newParentCategoryId;
+    private Long currentCategoryId;
 }
