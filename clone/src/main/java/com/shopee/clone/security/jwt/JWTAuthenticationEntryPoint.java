@@ -1,4 +1,4 @@
-package com.shopee.clone.rest_controller.security.jwt;
+package com.shopee.clone.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;

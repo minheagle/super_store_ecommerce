@@ -3,7 +3,7 @@ package com.shopee.clone.util;
 import com.shopee.clone.entity.RefreshTokenEntity;
 import com.shopee.clone.repository.RefreshTokenRepository;
 import com.shopee.clone.repository.UserRepository;
-import com.shopee.clone.rest_controller.security.impl.UserDetailImpl;
+import com.shopee.clone.security.impl.UserDetailImpl;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
