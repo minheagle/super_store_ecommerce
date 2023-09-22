@@ -2,7 +2,10 @@ package com.shopee.clone.service.cart.impl;
 
 import com.shopee.clone.DTO.auth.refresh_token.RefreshTokenResponse;
 import com.shopee.clone.DTO.cart.CartResponse;
+import com.shopee.clone.DTO.product.OptionType;
+import com.shopee.clone.DTO.product.OptionValue;
 import com.shopee.clone.DTO.product.ProductItem;
+import com.shopee.clone.DTO.product.response.*;
 import com.shopee.clone.entity.*;
 import com.shopee.clone.entity.cart.CartEntity;
 import com.shopee.clone.repository.cart.CartRepository;
@@ -17,8 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,18 +48,38 @@ public class CartServiceImpl implements CartService {
                 if (productItem.isPresent()) {
                     cartEntity.setUser(user.get());
                     cartEntity.setProductItems(productItem.get());
-//                    cartEntity.getProductItems().se
                     cartEntity.setQuantity(1);
                     cartRepository.save(cartEntity);
 
                     List<CartEntity> cartEntities = cartRepository.findByUser(user.get());
 
+
+
                     List<CartResponse> cartRepositories =
                             cartEntities
                                     .stream()
-                                    .map(c -> new CartResponse(c.getProductItems().getProduct().getProductName(),
-                                           modelMapper.map(c.getProductItems(), ProductItem.class)
-                                            ,c.getProductItems().getPrice(), c.getQuantity())).toList();
+                                    .map(c -> {
+                                        CartResponse cartResponse=  new CartResponse(
+                                            modelMapper
+                                                    .map(c.getProductItems().getProduct(), ProductMatchToCartResponse.class)
+                                                     ,c.getQuantity());
+                                        ProductItemResponseDTO productItemDTO = modelMapper.map(c.getProductItems(), ProductItemResponseDTO.class);
+
+                                        List<OptionTypeDTO> typeList = new ArrayList<>();
+                                        c.getProductItems()
+                                                .getOptionValues()
+                                                .forEach(v->
+                                                {
+                                                    OptionTypeDTO type = modelMapper.map(v.getOptionType(),OptionTypeDTO.class);
+                                                    type.setOptionValue(modelMapper.map(v,OptionValueDTO.class));
+                                                    typeList.add(type);
+                                                });
+
+                                        cartResponse.getProduct().setProductItemResponse(productItemDTO);
+                                        cartResponse.getProduct().getProductItemResponse().setOptionTypes(typeList);
+
+                                        return cartResponse;
+                                    }).toList();
                     return ResponseEntity.ok().body(ResponseObject
                             .builder()
                             .status("SUCCESS")

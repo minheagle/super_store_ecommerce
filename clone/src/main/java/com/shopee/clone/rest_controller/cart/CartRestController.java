@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class CartRestController {
     @Autowired
     private CartService cartService;
-    @GetMapping("/{pItemId}/{uId}")
+    @GetMapping("add-to-cart/{pItemId}/{uId}")
     public ResponseEntity<?> addToCart(@PathVariable Long pItemId,@PathVariable Long uId){
         return cartService.addToCart(pItemId,uId);
     }

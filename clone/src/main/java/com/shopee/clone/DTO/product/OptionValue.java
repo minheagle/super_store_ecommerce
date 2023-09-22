@@ -1,6 +1,5 @@
 package com.shopee.clone.DTO.product;
 
-import com.shopee.clone.entity.ProductItemEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,3 +18,4 @@ public class OptionValue {
     private OptionType optionType;
     private ProductItem productItem;
 }
+

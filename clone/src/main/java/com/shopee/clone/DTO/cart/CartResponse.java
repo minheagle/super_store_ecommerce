@@ -3,6 +3,8 @@ package com.shopee.clone.DTO.cart;
 import com.shopee.clone.DTO.product.ImageProduct;
 import com.shopee.clone.DTO.product.OptionType;
 import com.shopee.clone.DTO.product.ProductItem;
+import com.shopee.clone.DTO.product.response.ProductMatchToCartResponse;
+import com.shopee.clone.DTO.product.response.ProductResponseDTO;
 import com.shopee.clone.entity.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,8 +16,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CartResponse {
-    private String productName;
-    private ProductItem productItem;
-    private Double price;
+    private ProductMatchToCartResponse product;
     private Integer quantity;
 }
