@@ -18,4 +18,17 @@ public class CartRestController {
         return cartService.addToCart(pItemId,uId);
     }
 
+    @GetMapping("update-qty-cart/up/{cartId}")
+    public ResponseEntity<?> increaseQty(@PathVariable Long cartId){
+        return cartService.increaseQty(cartId);
+    }
+
+    @GetMapping("update-qty-cart/down/{cartId}")
+    public ResponseEntity<?> reduceQty(@PathVariable Long cartId){
+        return cartService.reduceQty(cartId);
+    }
+    @GetMapping("delete-cart/{cartId}")
+    public ResponseEntity<?> delete(@PathVariable Long cartId){
+        return cartService.delete(cartId);
+    }
 }

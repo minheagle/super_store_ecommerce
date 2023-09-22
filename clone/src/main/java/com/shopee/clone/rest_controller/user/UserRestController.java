@@ -44,6 +44,12 @@ public class UserRestController {
     public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody ChangePasswordDTO changePasswordDTO){
         return userService.changePassword(id,changePasswordDTO);
     }
+
+    @PostMapping("/upload-avatar/{id}")
+    public ResponseEntity<?> uploadAvatar(@PathVariable Long id, @RequestBody ChangePasswordDTO changePasswordDTO){
+        return userService.changePassword(id,changePasswordDTO);
+    }
+
     @GetMapping("/{userName}")
     public ResponseEntity<?> getUserByUserName(@PathVariable String userName){
        return userService.findUserByUserName(userName);
