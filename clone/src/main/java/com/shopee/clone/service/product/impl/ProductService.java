@@ -9,6 +9,9 @@ import com.shopee.clone.service.product.IProductService;
 import com.shopee.clone.service.productItem.impl.ProductItemService;
 import com.shopee.clone.util.ResponseObject;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -34,30 +37,46 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public ResponseEntity<?> getAll(Long shopId) {
+    public ResponseEntity<?> getAllProductBelongWithShop(Long shopId) {
         try{
             List<ProductEntity> productEntities = productRepository.findAll();
-            List<ProductResponseDTO> productResponseDTOList = new ArrayList<>();
+            List<ProductResponseDTO> productResponseDTOs = mappingProductEntityListToProductDTOs(productEntities);
 
-            for(ProductEntity productEntity: productEntities){
-                List<ProductItemEntity> productItemEntities = productEntity.getProductItemList();
-
-                List<ProductItemResponseDTO> productItemResponseDTOList = new ArrayList<>();
-                for(ProductItemEntity productItemEntity : productItemEntities){
-
-                    mappingSpecialImg_OptionWithProductItem(productItemResponseDTOList, productItemEntity);
-                }
-                ProductResponseDTO productResponseDTO = ProductResponseDTO
-                        .builder()
-                        .productName(productEntity.getProductName())
-                        .description(productEntity.getDescription())
-                        .status(productEntity.getStatus())
-                        .productItemResponseList(productItemResponseDTOList)
-                        .build();
-                productResponseDTOList.add(productResponseDTO);
-            }
             ProductResponseObject<List<ProductResponseDTO>> productsResponse = new ProductResponseObject<>();
-            productsResponse.setData(productResponseDTOList);
+            productsResponse.setData(productResponseDTOs);
+
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(200))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("SUCCESS")
+                                    .message("Get Products Success")
+                                    .results(productsResponse)
+                                    .build()
+                    );
+        }catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(404))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("FAIL")
+                                    .message(e.getMessage())
+                                    .results("")
+                                    .build()
+                    );
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getAllProductPaging(Pageable pageable) {
+        try{
+            Page<ProductEntity> productEntities = productRepository.findProducts(pageable);
+            List<ProductResponseDTO> productResponseDTOs = mappingProductEntityListToProductDTOs(productEntities);
+
+            ProductResponseObject<List<ProductResponseDTO>> productsResponse = new ProductResponseObject<>();
+            productsResponse.setData(productResponseDTOs);
 
             return ResponseEntity
                     .status(HttpStatusCode.valueOf(200))
@@ -279,5 +298,50 @@ public class ProductService implements IProductService {
                                 .message("Product Not Exist!")
                                 .build()
                 );
+    }
+
+    private List<ProductResponseDTO> mappingProductEntityListToProductDTOs(Page<ProductEntity> productEntities){
+        List<ProductResponseDTO> productResponseDTOList = new ArrayList<>();
+
+        for(ProductEntity productEntity: productEntities){
+            List<ProductItemEntity> productItemEntities = productEntity.getProductItemList();
+
+            List<ProductItemResponseDTO> productItemResponseDTOList = new ArrayList<>();
+            for(ProductItemEntity productItemEntity : productItemEntities){
+
+                mappingSpecialImg_OptionWithProductItem(productItemResponseDTOList, productItemEntity);
+            }
+            ProductResponseDTO productResponseDTO = ProductResponseDTO
+                    .builder()
+                    .productName(productEntity.getProductName())
+                    .description(productEntity.getDescription())
+                    .status(productEntity.getStatus())
+                    .productItemResponseList(productItemResponseDTOList)
+                    .build();
+            productResponseDTOList.add(productResponseDTO);
+        }
+        return productResponseDTOList;
+    }
+    private List<ProductResponseDTO> mappingProductEntityListToProductDTOs(List<ProductEntity> productEntities){
+        List<ProductResponseDTO> productResponseDTOList = new ArrayList<>();
+
+        for(ProductEntity productEntity: productEntities){
+            List<ProductItemEntity> productItemEntities = productEntity.getProductItemList();
+
+            List<ProductItemResponseDTO> productItemResponseDTOList = new ArrayList<>();
+            for(ProductItemEntity productItemEntity : productItemEntities){
+
+                mappingSpecialImg_OptionWithProductItem(productItemResponseDTOList, productItemEntity);
+            }
+            ProductResponseDTO productResponseDTO = ProductResponseDTO
+                    .builder()
+                    .productName(productEntity.getProductName())
+                    .description(productEntity.getDescription())
+                    .status(productEntity.getStatus())
+                    .productItemResponseList(productItemResponseDTOList)
+                    .build();
+            productResponseDTOList.add(productResponseDTO);
+        }
+        return productResponseDTOList;
     }
 }

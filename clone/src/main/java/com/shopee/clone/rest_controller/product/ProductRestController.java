@@ -9,6 +9,9 @@ import com.shopee.clone.service.product.IProductService;
 import com.shopee.clone.service.productItem.IProductItemService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -69,8 +72,22 @@ public class ProductRestController {
     }
 
     @GetMapping("/{shopId}")
-    public ResponseEntity<?> gettAll(@PathVariable Long shopId){
-        return productService.getAll(shopId);
+    public ResponseEntity<?> getAll(@PathVariable Long shopId){
+        return productService.getAllProductBelongWithShop(shopId);
+    }
+    @GetMapping("/")
+    public ResponseEntity<?> getProductsPaging(@RequestParam(name = "page", required = false, defaultValue = "1") Integer page,
+                                                @RequestParam(name = "size", required = false, defaultValue = "25") Integer size,
+                                                @RequestParam(name = "sort", required = false, defaultValue = "ASC") String sort){
+        Sort sortable = null;
+        if (sort.equals("ASC")) {
+            sortable = Sort.by("productId").ascending();
+        }
+        if (sort.equals("DESC")) {
+            sortable = Sort.by("productId").descending();
+        }
+        Pageable pageable = PageRequest.of((page-1), size, sortable);
+        return productService.getAllProductPaging(pageable);
     }
     @GetMapping("product/{id}")
     public ResponseEntity<?> getById(@PathVariable Long id){
