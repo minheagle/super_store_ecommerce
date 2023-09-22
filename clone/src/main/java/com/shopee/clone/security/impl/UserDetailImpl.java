@@ -1,4 +1,4 @@
-package com.shopee.clone.rest_controller.security.impl;
+package com.shopee.clone.security.impl;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.shopee.clone.DTO.auth.login.LoginResponse;

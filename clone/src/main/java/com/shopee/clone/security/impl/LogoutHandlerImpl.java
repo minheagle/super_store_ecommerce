@@ -1,4 +1,4 @@
-package com.shopee.clone.rest_controller.security.impl;
+package com.shopee.clone.security.impl;
 
 import com.shopee.clone.entity.UserEntity;
 import com.shopee.clone.repository.RefreshTokenRepository;
