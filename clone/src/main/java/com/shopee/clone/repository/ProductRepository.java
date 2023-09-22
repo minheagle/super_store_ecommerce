@@ -13,4 +13,6 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<ProductEntity,Long> {
     @Query("SELECT p from ProductEntity  p")
     Page<ProductEntity> findProducts(Pageable pageable);
+    @Query("SELECT p From ProductEntity p INNER JOIN CategoryEntity c ON p.category.id = c.id")
+    List<ProductEntity> findProductsByCategoryId(Long categoryId);
 }

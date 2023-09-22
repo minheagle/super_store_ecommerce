@@ -75,6 +75,10 @@ public class ProductRestController {
     public ResponseEntity<?> getAll(@PathVariable Long shopId){
         return productService.getAllProductBelongWithShop(shopId);
     }
+    @GetMapping("/products-by-category/{categoryId}")
+    public ResponseEntity<?> getAllProductByCategoryId(@PathVariable Long categoryId){
+        return productService.getAllProductByCategoryId(categoryId);
+    }
     @GetMapping("/")
     public ResponseEntity<?> getProductsPaging(@RequestParam(name = "page", required = false, defaultValue = "1") Integer page,
                                                 @RequestParam(name = "size", required = false, defaultValue = "25") Integer size,

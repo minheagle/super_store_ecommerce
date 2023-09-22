@@ -11,8 +11,7 @@ import org.hibernate.validator.constraints.Length;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ProductRequestCreate {
-    private Long categoryId;
+public class ProductRequestEdit {
     @NotBlank
     @Length(min = 3, max = 150)
     private String productName;
