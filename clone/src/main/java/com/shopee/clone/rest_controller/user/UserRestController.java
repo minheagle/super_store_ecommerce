@@ -1,5 +1,6 @@
 package com.shopee.clone.rest_controller.user;
 
+import com.shopee.clone.DTO.auth.user.BecomeSellerRequest;
 import com.shopee.clone.DTO.auth.user.ChangePasswordDTO;
 import com.shopee.clone.DTO.auth.user.UpdateAddressDTO;
 import com.shopee.clone.DTO.auth.user.UserUpdateDTO;
@@ -9,6 +10,7 @@ import com.shopee.clone.validate.UpdateDTOValidate;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Validated
 @RequestMapping("/api/v1/users")
+@PreAuthorize("hasRole('ROLE_USER')")
 public class UserRestController {
     @Autowired
     private UserService userService;
@@ -42,7 +45,12 @@ public class UserRestController {
         return userService.changePassword(id,changePasswordDTO);
     }
     @GetMapping("/{userName}")
-    public ResponseEntity<?> getUserById(@PathVariable String userName){
+    public ResponseEntity<?> getUserByUserName(@PathVariable String userName){
        return userService.findUserByUserName(userName);
+    }
+
+    @PostMapping("/become-seller/{userId}")
+    public ResponseEntity<?> becomeSeller(@PathVariable("userId") Long userId, @RequestBody BecomeSellerRequest becomeSellerRequest){
+        return null;
     }
 }

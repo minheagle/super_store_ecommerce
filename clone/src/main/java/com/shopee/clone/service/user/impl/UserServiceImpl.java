@@ -1,12 +1,10 @@
 package com.shopee.clone.service.user.impl;
 
-import com.shopee.clone.DTO.auth.user.ChangePasswordDTO;
-import com.shopee.clone.DTO.auth.user.UpdateAddressDTO;
-import com.shopee.clone.DTO.auth.user.User;
-import com.shopee.clone.DTO.auth.user.UserUpdateDTO;
+import com.shopee.clone.DTO.auth.user.*;
 import com.shopee.clone.entity.AddressEntity;
 import com.shopee.clone.entity.UserEntity;
 import com.shopee.clone.repository.UserRepository;
+import com.shopee.clone.response.user.ResponseDetailUser;
 import com.shopee.clone.service.address.AddressService;
 import com.shopee.clone.service.user.UserService;
 import com.shopee.clone.util.JWTProvider;
@@ -36,7 +34,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
-    ModelMapper mapper;
+    private ModelMapper mapper;
 
     // Hàm cập nhật thông tin người dùng
     public ResponseEntity<?> updateUser(long userId, UserUpdateDTO userUpdateDTO) {
@@ -257,6 +255,11 @@ public class UserServiceImpl implements UserService {
                             .build());
 
         }
+    }
+
+    @Override
+    public ResponseEntity<?> becomeSellerService(BecomeSellerRequest becomeSellerRequest) {
+        return null;
     }
 
     @Override

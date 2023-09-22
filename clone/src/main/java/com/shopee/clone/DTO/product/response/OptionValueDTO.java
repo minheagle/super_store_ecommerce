@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 public class OptionValueDTO {
     private Long opValueId;
     private String valueName;
-    private Double percent_price;
+//    private Double percent_price;
 }

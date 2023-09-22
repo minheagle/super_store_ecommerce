@@ -1,11 +1,14 @@
 package com.shopee.clone.service.productItem;
 
 import com.shopee.clone.DTO.product.request.ProductItemRequest;
+import com.shopee.clone.DTO.product.response.ProductItemResponseDTO;
 import org.springframework.http.ResponseEntity;
 
 
 public interface IProductItemService {
     ResponseEntity<?> createProductItemWithImage(ProductItemRequest productItemRequest);
     ResponseEntity<?> getProductItemByShopIdAndParentProductId(Long productId, Long productItemId);
+    ResponseEntity<?> removeProductItem(Long productId, Long productItemId);
     Boolean checkAvailableQuantityInStock(Long productItemId, Integer qtyMakeOrder);
+    ProductItemResponseDTO getProductItemByProductId_ItemId(Long productId, Long productItemId);
 }

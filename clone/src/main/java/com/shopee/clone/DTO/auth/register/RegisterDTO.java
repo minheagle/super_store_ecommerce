@@ -26,6 +26,5 @@ public class RegisterDTO {
     private String phone;
     @NotBlank(message = "Password is required")
     private String password;
-    private Set<String> address;
-    private Set<String> role;
+    private String rePassword;
 }

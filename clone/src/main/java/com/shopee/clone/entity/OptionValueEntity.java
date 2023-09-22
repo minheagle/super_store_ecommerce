@@ -20,7 +20,7 @@ public class OptionValueEntity {
     @Column(name = "id")
     private Long opValueId;
     private String valueName;
-    private Double percent_price;
+//    private Double percent_price;
 
     @ManyToOne
     @JoinColumn(name = "option_type_id")

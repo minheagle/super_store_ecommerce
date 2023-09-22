@@ -12,6 +12,8 @@ import java.util.List;
 public interface IUploadImageService {
     ImageUploadResult uploadSingle(MultipartFile file, String folder) throws IOException;
     List<ImageUploadResult> uploadMultiple(MultipartFile[] files, String folder) throws IOException;
+    ImageUploadResult replaceSingle(MultipartFile file, String existsPublicId, String folder) throws IOException;
+    List<ImageUploadResult> replaceMultiple(MultipartFile[] files, List<String> existsPublicIdList) throws IOException;
     void deleteSingleImage(String publicId) throws IOException;
     void deleteMultipleImage(List<String> listPublicId) throws IOException;
 }

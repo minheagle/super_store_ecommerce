@@ -17,6 +17,4 @@ public class LoginResponse {
     private String userName;
     private String email;
     private List<SimpleGrantedAuthority> roles;
-    private String accessToken;
-    private String refreshToken;
 }

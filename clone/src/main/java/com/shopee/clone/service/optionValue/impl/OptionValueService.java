@@ -24,11 +24,11 @@ public class OptionValueService implements IOptionValueService {
     }
 
     @Override
-    public void createOptionValueByOptionType(OptionValueRequest optionValueRequest, OptionType optionType, ProductItem productItem) {
+    public void createOptionValueByOptionType(OptionValueRequest optionValueRequest,
+                                              OptionType optionType, ProductItem productItem) {
         OptionValue optionValue = OptionValue
                 .builder()
                 .valueName(optionValueRequest.getValueName())
-                .percent_price(optionValueRequest.getPercent_price())
                 .optionType(optionType)
                 .productItem(productItem)
                 .build();
@@ -40,7 +40,7 @@ public class OptionValueService implements IOptionValueService {
         List<OptionValue> optionValues = optionValueRequests.stream()
                 .map(optionValueRequest -> OptionValue.builder()
                         .valueName(optionValueRequest.getValueName())
-                        .percent_price(optionValueRequest.getPercent_price())
+//                        .percent_price(optionValueRequest.getPercent_price())
                         .optionType(optionType)
                         .build()).collect(Collectors.toList());
 

@@ -1,7 +1,6 @@
 package com.shopee.clone.service.productItem.impl;
 
 import com.shopee.clone.DTO.product.ImageProduct;
-import com.shopee.clone.DTO.product.OptionValue;
 import com.shopee.clone.DTO.product.Product;
 import com.shopee.clone.DTO.product.ProductItem;
 import com.shopee.clone.DTO.product.request.ProductItemRequest;
@@ -16,7 +15,6 @@ import com.shopee.clone.service.imageProduct.impl.ImageProductService;
 import com.shopee.clone.service.productItem.IProductItemService;
 import com.shopee.clone.util.ResponseObject;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -64,12 +62,12 @@ public class ProductItemService implements IProductItemService {
                 itemResponse.setData(itemSaved);
 
                 return ResponseEntity
-                        .status(HttpStatusCode.valueOf(200))
+                        .status(HttpStatusCode.valueOf(201))
                         .body(
                                 ResponseObject
                                         .builder()
                                         .status("SUCCESS")
-                                        .message("Add ProductItem Success Pls do Next-Step: add OptionType and value")
+                                        .message("Add ProductItem Success Pls go Next-Step: add OptionType and value")
                                         .results(itemResponse)
                                         .build()
                         );
@@ -93,40 +91,19 @@ public class ProductItemService implements IProductItemService {
     @Override
     public ResponseEntity<?> getProductItemByShopIdAndParentProductId(Long productId, Long productItemId) {
         try {
-            ProductItemEntity productItem = itemRepository.findById(productItemId).orElseThrow(NoSuchElementException::new);
-            if(productRepository.existsById(productId) && productItem.getStatus()
-                    && productItem.getProduct().getProductId().equals(productId)){
-                List<OptionTypeDTO> optionTypeDTOList = productItem.getOptionValues()
-                        .stream()
-                        .map(optionValue -> OptionTypeDTO.builder()
-                                .opTypeId(optionValue.getOptionType().getOpTypeId())
-                                .optionName(optionValue.getOptionType().getOptionName())
-                                .optionValue(OptionValueDTO.builder()
-                                        .opValueId(optionValue.getOpValueId())
-                                        .valueName(optionValue.getValueName())
-                                        .percent_price(optionValue.getPercent_price())
-                                        .build())
-                                .build()).collect(Collectors.toList());
-
-                List<ImageProduct> imageProducts = productItem.getImageProductList()
-                        .stream()
-                        .map(imageProductEntity -> ImageProduct.builder()
-                                .imgProductId(imageProductEntity.getImgProductId())
-                                .imgPublicId(imageProductEntity.getImgPublicId())
-                                .imgProductUrl(imageProductEntity.getImgProductUrl())
-                                .build())
-                        .collect(Collectors.toList());
-
-                ProductItemResponseDTO productItemResponseDTO = ProductItemResponseDTO
-                        .builder()
-                        .pItemId(productItem.getPItemId())
-                        .price(productItem.getPrice())
-                        .qtyInStock(productItem.getQtyInStock())
-                        .status(productItem.getStatus())
-                        .imageProductList(imageProducts)
-                        .optionTypes(optionTypeDTOList)
-                        .build();
-                ProductResponseObject<ProductItemResponseDTO> itemResponseDTO = new ProductResponseObject<>();
+            ProductItemResponseDTO productItemResponseDTO = getProductItemByProductId_ItemId(productId, productItemId);
+            if(productItemResponseDTO == null){
+                return ResponseEntity
+                        .status(HttpStatusCode.valueOf(204))
+                        .body(
+                                ResponseObject
+                                        .builder()
+                                        .status("SUCCESS")
+                                        .message("Status's Item: False")
+                                        .build()
+                        );
+            }
+            ProductResponseObject<ProductItemResponseDTO> itemResponseDTO = new ProductResponseObject<>();
                 itemResponseDTO.setData(productItemResponseDTO);
 
                 return ResponseEntity
@@ -139,8 +116,6 @@ public class ProductItemService implements IProductItemService {
                                         .results(itemResponseDTO)
                                         .build()
                         );
-            }
-            return null;
     }catch (Exception e){
             return ResponseEntity
                     .status(HttpStatusCode.valueOf(404))
@@ -156,6 +131,35 @@ public class ProductItemService implements IProductItemService {
     }
 
     @Override
+    public ResponseEntity<?> removeProductItem(Long productId, Long productItemId) {
+        ProductItemEntity productItem = itemRepository.findById(productItemId)
+                .orElseThrow(NoSuchElementException::new);
+        if(productRepository.existsById(productId) && productItem.getProduct().getProductId().equals(productId)){
+            productItem.setStatus(false);
+            itemRepository.save(productItem);
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(200))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("SUCCESS")
+                                    .message("ProductItem is Removed")
+                                    .build()
+                    );
+        }
+
+        return ResponseEntity
+                .status(HttpStatusCode.valueOf(404))
+                .body(
+                        ResponseObject
+                                .builder()
+                                .status("FAIL")
+                                .message("ProductItem Not Exist!")
+                                .build()
+                );
+    }
+
+    @Override
     public Boolean checkAvailableQuantityInStock(Long productItemId, Integer qtyMakeOrder) {
         ProductItemEntity productItem = itemRepository.findById(productItemId)
                 .orElseThrow(NoSuchElementException::new);
@@ -165,5 +169,44 @@ public class ProductItemService implements IProductItemService {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public ProductItemResponseDTO getProductItemByProductId_ItemId(Long productId, Long productItemId) {
+        ProductItemEntity productItem = itemRepository.findById(productItemId).orElseThrow(NoSuchElementException::new);
+        if(productRepository.existsById(productId) && productItem.getStatus()
+                && productItem.getProduct().getProductId().equals(productId)){
+            List<OptionTypeDTO> optionTypeDTOList = productItem.getOptionValues()
+                    .stream()
+                    .map(optionValue -> OptionTypeDTO.builder()
+                            .opTypeId(optionValue.getOptionType().getOpTypeId())
+                            .optionName(optionValue.getOptionType().getOptionName())
+                            .optionValue(OptionValueDTO.builder()
+                                    .opValueId(optionValue.getOpValueId())
+                                    .valueName(optionValue.getValueName())
+                                    .build())
+                            .build()).collect(Collectors.toList());
+
+            List<ImageProduct> imageProducts = productItem.getImageProductList()
+                    .stream()
+                    .map(imageProductEntity -> ImageProduct.builder()
+                            .imgProductId(imageProductEntity.getImgProductId())
+                            .imgPublicId(imageProductEntity.getImgPublicId())
+                            .imgProductUrl(imageProductEntity.getImgProductUrl())
+                            .build())
+                    .collect(Collectors.toList());
+
+            ProductItemResponseDTO productItemResponseDTO = ProductItemResponseDTO
+                    .builder()
+                    .pItemId(productItem.getPItemId())
+                    .price(productItem.getPrice())
+                    .qtyInStock(productItem.getQtyInStock())
+                    .status(productItem.getStatus())
+                    .imageProductList(imageProducts)
+                    .optionTypes(optionTypeDTOList)
+                    .build();
+            return productItemResponseDTO;
+        }
+        return null;
     }
 }

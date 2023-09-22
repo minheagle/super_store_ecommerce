@@ -1,14 +1,15 @@
 package com.shopee.clone.service.auth.impl;
 
 import com.shopee.clone.DTO.auth.login.LoginDTO;
-import com.shopee.clone.DTO.auth.login.LoginResponse;
 import com.shopee.clone.DTO.auth.refresh_token.RefreshTokenResponse;
 import com.shopee.clone.DTO.auth.register.RegisterDTO;
+import com.shopee.clone.DTO.auth.user.User;
 import com.shopee.clone.entity.*;
 import com.shopee.clone.repository.RefreshTokenRepository;
 import com.shopee.clone.repository.RoleRepository;
 import com.shopee.clone.repository.UserRepository;
-import com.shopee.clone.rest_controller.security.impl.UserDetailImpl;
+import com.shopee.clone.response.auth.ResponseLogin;
+import com.shopee.clone.security.impl.UserDetailImpl;
 import com.shopee.clone.service.address.AddressService;
 import com.shopee.clone.service.auth.IAuthService;
 import com.shopee.clone.service.user.UserService;
@@ -25,12 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-
-import java.util.concurrent.locks.StampedLock;
-import java.util.stream.Collectors;
-
 
 @Service
 public class AuthService implements IAuthService {
@@ -71,14 +67,18 @@ public class AuthService implements IAuthService {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String accessToken = jwtProvider.generateJwtToken(authentication);
             UserDetailImpl userDetail = (UserDetailImpl) authentication.getPrincipal();
-            LoginResponse loginResponse = UserDetailImpl.convertAuthPrincipalToLoginResponse(userDetail);
-            loginResponse.setAccessToken(accessToken);
-            loginResponse.setRefreshToken(jwtProvider.createRefreshToken(userDetail.getId()).getRefreshToken());
+            UserEntity userEntity = userRepository.findById(userDetail.getId()).get();
+            User userDTO = mapper.map(userEntity, User.class);
+
+            ResponseLogin<User> responseLogin = new ResponseLogin<>();
+            responseLogin.setData(userDTO);
+            responseLogin.setAccessToken(accessToken);
+            responseLogin.setRefreshToken(jwtProvider.createRefreshToken(userDetail.getId()).getRefreshToken());
             return ResponseEntity.ok().body(ResponseObject
                     .builder()
                     .status("SUCCESS")
                     .message("Login Success !")
-                    .results(loginResponse)
+                    .results(responseLogin)
                     .build()
             );
         }catch (Exception e){
@@ -99,41 +99,29 @@ public class AuthService implements IAuthService {
     @Transactional
     public ResponseEntity<?> register(RegisterDTO registerDTO) {
         try {
+            if(!registerDTO.getPassword().equals(registerDTO.getRePassword())){
+                return ResponseEntity
+                        .badRequest()
+                        .body(
+                                ResponseObject
+                                        .builder()
+                                        .status("FAIL")
+                                        .message("Re-password not match")
+                                        .results("")
+                                        .build()
+                        );
+            }
+
             registerDTO.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
-            Set<String> stringRoles = registerDTO.getRole();
+            RoleEntity userRole = roleRepository.findByName(ERole.ROLE_USER)
+                    .orElseThrow(() -> new RuntimeException("Role not found !"));
             Set<RoleEntity> roles = new HashSet<>();
-            stringRoles.forEach(role -> {
-                switch (role){
-                    case "ROLE_ADMIN":
-                        RoleEntity adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-                                        .orElseThrow(() -> new RuntimeException("Role not found !"));
-                        roles.add(adminRole);
-                        break;
-                    case "ROLE_SELLER" :
-                        RoleEntity sellerRole = roleRepository.findByName(ERole.ROLE_SELLER)
-                                .orElseThrow(() -> new RuntimeException("Role not found !"));
-                        roles.add(sellerRole);
-                        break;
-                    default:
-                        RoleEntity userRole = roleRepository.findByName(ERole.ROLE_USER)
-                                .orElseThrow(() -> new RuntimeException("Role not found !"));
-                        roles.add(userRole);
-                }
-            });
-
-
-
+            roles.add(userRole);
             UserEntity newUser = mapper.map(registerDTO, UserEntity.class);
             newUser.setRoles(roles);
             newUser.setStatus(true);
 
             UserEntity userCreated = userService.save(newUser);
-//                    userRepository.save(newUser);
-            Set<String> stringAddress = registerDTO.getAddress();
-            List<AddressEntity> address = stringAddress.stream()
-                    .map(s -> new AddressEntity(s,userCreated)).toList();
-            addressService.saveAll(address);
-            userCreated.setAddress(address);
             return ResponseEntity
                     .ok()
                     .body(ResponseObject

@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -14,7 +13,7 @@ import java.util.List;
 public class OptionValue {
     private Long opValueId;
     private String valueName;
-    private Double percent_price;
+//    private Double percent_price;
     private OptionType optionType;
     private ProductItem productItem;
 }
