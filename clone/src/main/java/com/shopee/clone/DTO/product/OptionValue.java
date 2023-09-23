@@ -17,3 +17,4 @@ public class OptionValue {
     private OptionType optionType;
     private ProductItem productItem;
 }
+

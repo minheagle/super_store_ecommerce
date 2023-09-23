@@ -10,10 +10,9 @@ import com.shopee.clone.DTO.product.response.ProductItemResponseDTO;
 import com.shopee.clone.DTO.product.response.ProductResponseObject;
 import com.shopee.clone.entity.OptionValueEntity;
 import com.shopee.clone.entity.ProductItemEntity;
-import com.shopee.clone.repository.OptionTypeRepository;
-import com.shopee.clone.repository.OptionValueRepository;
-import com.shopee.clone.repository.ProductItemRepository;
-import com.shopee.clone.repository.ProductRepository;
+import com.shopee.clone.repository.product.OptionValueRepository;
+import com.shopee.clone.repository.product.ProductItemRepository;
+import com.shopee.clone.repository.product.ProductRepository;
 import com.shopee.clone.service.imageProduct.impl.ImageProductService;
 import com.shopee.clone.service.optionValue.impl.OptionValueService;
 import com.shopee.clone.service.productItem.IProductItemService;
@@ -35,18 +34,18 @@ public class ProductItemService implements IProductItemService {
     private final ModelMapper modelMapper;
     private final ImageProductService imageProductService;
     private final ProductRepository productRepository;
-    @Autowired
-    private OptionTypeRepository optionTypeRepository;
-    @Autowired
-    private OptionValueRepository optionValueRepository;
-    @Autowired
-    private OptionValueService optionValueService;
+    private final OptionValueRepository optionValueRepository;
 
-    public ProductItemService(ProductItemRepository itemRepository, ModelMapper modelMapper, ImageProductService imageProductService, ProductRepository productRepository) {
+    public ProductItemService(ProductItemRepository itemRepository,
+                              ModelMapper modelMapper,
+                              ImageProductService imageProductService,
+                              ProductRepository productRepository,
+                              OptionValueRepository optionValueRepository) {
         this.itemRepository = itemRepository;
         this.modelMapper = modelMapper;
         this.imageProductService = imageProductService;
         this.productRepository = productRepository;
+        this.optionValueRepository = optionValueRepository;
     }
 
     @Override

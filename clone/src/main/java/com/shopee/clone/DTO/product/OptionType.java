@@ -1,5 +1,6 @@
 package com.shopee.clone.DTO.product;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,5 +18,6 @@ public class OptionType {
     private Long opTypeId;
     private String optionName;
     private Set<ProductItem> productItems = new HashSet<>();
+    @JsonIgnore
     private List<OptionValue> optionValueList;
 }

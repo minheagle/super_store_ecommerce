@@ -1,4 +1,4 @@
-package com.shopee.clone.repository;
+package com.shopee.clone.repository.product;
 
 import com.shopee.clone.entity.ProductEntity;
 import org.springframework.data.domain.Page;
