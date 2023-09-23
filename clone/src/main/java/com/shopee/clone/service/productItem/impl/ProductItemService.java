@@ -1,23 +1,28 @@
 package com.shopee.clone.service.productItem.impl;
 
-import com.shopee.clone.DTO.product.ImageProduct;
-import com.shopee.clone.DTO.product.Product;
-import com.shopee.clone.DTO.product.ProductItem;
+import com.shopee.clone.DTO.product.*;
+import com.shopee.clone.DTO.product.request.OptionTypeRequest;
 import com.shopee.clone.DTO.product.request.ProductItemRequest;
+import com.shopee.clone.DTO.product.update.ProductItemRequestEdit;
 import com.shopee.clone.DTO.product.response.OptionTypeDTO;
 import com.shopee.clone.DTO.product.response.OptionValueDTO;
 import com.shopee.clone.DTO.product.response.ProductItemResponseDTO;
 import com.shopee.clone.DTO.product.response.ProductResponseObject;
+import com.shopee.clone.entity.OptionValueEntity;
 import com.shopee.clone.entity.ProductItemEntity;
+import com.shopee.clone.repository.product.OptionValueRepository;
 import com.shopee.clone.repository.product.ProductItemRepository;
 import com.shopee.clone.repository.product.ProductRepository;
 import com.shopee.clone.service.imageProduct.impl.ImageProductService;
+import com.shopee.clone.service.optionValue.impl.OptionValueService;
 import com.shopee.clone.service.productItem.IProductItemService;
 import com.shopee.clone.util.ResponseObject;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -29,13 +34,18 @@ public class ProductItemService implements IProductItemService {
     private final ModelMapper modelMapper;
     private final ImageProductService imageProductService;
     private final ProductRepository productRepository;
+    private final OptionValueRepository optionValueRepository;
 
-
-    public ProductItemService(ProductItemRepository itemRepository, ModelMapper modelMapper, ImageProductService imageProductService, ProductRepository productRepository) {
+    public ProductItemService(ProductItemRepository itemRepository,
+                              ModelMapper modelMapper,
+                              ImageProductService imageProductService,
+                              ProductRepository productRepository,
+                              OptionValueRepository optionValueRepository) {
         this.itemRepository = itemRepository;
         this.modelMapper = modelMapper;
         this.imageProductService = imageProductService;
         this.productRepository = productRepository;
+        this.optionValueRepository = optionValueRepository;
     }
 
     @Override
@@ -128,6 +138,57 @@ public class ProductItemService implements IProductItemService {
                                     .build()
                     );
         }
+    }
+
+    @Transactional
+    @Override
+    public ResponseEntity<?> editProductItemById(Long productItemId, ProductItemRequestEdit itemRequestEdit) {
+        try {
+            if(itemRepository.existsById(productItemId)){
+                ProductItemEntity productItem = itemRepository.findById(productItemId)
+                        .orElseThrow(NoSuchElementException::new);
+
+                List<OptionValueEntity> optionValueEntities = productItem.getOptionValues();
+                List<OptionTypeRequest> optionTypeRequests = itemRequestEdit.getOptionTypes();
+
+                optionValueEntities.forEach(optionValue -> {
+                    optionTypeRequests.stream()
+                            .filter(optionTypeRequest -> optionValue.getOptionType().getOptionName()
+                                                                                    .equals(optionTypeRequest.getOptionName()))
+                            .findFirst()
+                            .ifPresent(optionTypeRequest -> {
+                                optionValue.setValueName(optionTypeRequest.getOptionValueRequest().getValueName());
+                                optionValueRepository.save(optionValue);
+                            });
+                });
+
+                productItem.setPrice(itemRequestEdit.getPrice());
+                productItem.setQtyInStock(itemRequestEdit.getQtyInStock());
+                productItem.setOptionValues(optionValueEntities);
+                itemRepository.save(productItem);
+
+                return ResponseEntity
+                        .status(HttpStatusCode.valueOf(200))
+                        .body(
+                                ResponseObject
+                                        .builder()
+                                        .status("SUCCESS")
+                                        .message("Product Item was Updated")
+                                        .build()
+                        );
+            }
+        }catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(404))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("FAIL")
+                                    .message("Product Item Not Exist!")
+                                    .build()
+                    );
+        }
+        return null;
     }
 
     @Override
