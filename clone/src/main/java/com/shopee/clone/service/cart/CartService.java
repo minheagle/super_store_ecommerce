@@ -11,4 +11,6 @@ public interface CartService {
     ResponseEntity<?> reduceQty(Long cartId);
 
     ResponseEntity<?> delete(Long cartId);
+
+    ResponseEntity<?> getCart(Long userId);
 }
