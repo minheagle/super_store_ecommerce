@@ -12,5 +12,6 @@ public interface IProductItemService {
     ResponseEntity<?> editProductItemById(Long productItemId, ProductItemRequestEdit itemRequestEdit);
     ResponseEntity<?> removeProductItem(Long productId, Long productItemId);
     Boolean checkAvailableQuantityInStock(Long productItemId, Integer qtyMakeOrder);
+    Boolean minusQuantityInStock(Long productItemId, Integer qtyMakeOrder);
     ProductItemResponseDTO getProductItemByProductId_ItemId(Long productId, Long productItemId);
 }

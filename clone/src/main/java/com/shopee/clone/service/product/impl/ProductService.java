@@ -11,7 +11,6 @@ import com.shopee.clone.repository.product.ProductRepository;
 import com.shopee.clone.service.product.IProductService;
 import com.shopee.clone.util.ResponseObject;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatusCode;
@@ -26,15 +25,15 @@ import java.util.stream.Collectors;
 public class ProductService implements IProductService {
     private final ProductRepository productRepository;
     private final ProductItemRepository itemRepository;
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
     private final ModelMapper modelMapper;
     public ProductService(ProductRepository productRepository,
                           ProductItemRepository itemRepository,
-                          ModelMapper modelMapper) {
+                          ModelMapper modelMapper, CategoryRepository categoryRepository) {
         this.productRepository = productRepository;
         this.itemRepository = itemRepository;
         this.modelMapper = modelMapper;
+        this.categoryRepository = categoryRepository;
     }
 
     @Override
@@ -410,7 +409,7 @@ public class ProductService implements IProductService {
             ProductEntity productEntity = productRepository.findById(productId)
                     .orElseThrow(NoSuchElementException::new);
             productEntity.setStatus(false);
-            productEntity.getProductItemList().stream()
+            productEntity.getProductItemList()
                             .forEach(productItemEntity -> {
                                 productItemEntity.setStatus(false);
                                 itemRepository.save(productItemEntity);
