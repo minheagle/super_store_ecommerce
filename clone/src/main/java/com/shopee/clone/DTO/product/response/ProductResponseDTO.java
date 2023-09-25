@@ -16,5 +16,7 @@ public class ProductResponseDTO {
     private String productName;
     private String description;
     private Boolean status;
+    private Long sellerId;
+    private Long categoryId;
     private List<ProductItemResponseDTO> productItemResponseList;
 }
