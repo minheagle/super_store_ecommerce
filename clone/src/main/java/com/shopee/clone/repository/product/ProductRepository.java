@@ -14,8 +14,10 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<ProductEntity,Long> {
     @Query("SELECT p from ProductEntity  p")
     Page<ProductEntity> findProducts(Pageable pageable);
-    @Query("SELECT p From ProductEntity p INNER JOIN CategoryEntity c ON p.category.id = c.id")
-    List<ProductEntity> findProductsByCategoryId(Long categoryId);
+    @Query("SELECT p From ProductEntity p INNER JOIN CategoryEntity c ON p.category.id = c.id WHERE c.id = :categoryId")
+    List<ProductEntity> findProductsByCategoryId(@Param("categoryId") Long categoryId);
+    @Query("SELECT p From ProductEntity p INNER JOIN SellerEntity  s ON p.seller.id = s.id WHERE s.id = :sellerId")
+    List<ProductEntity> findProductsByShopId(@Param("sellerId") Long sellerId);
     @Query("SELECT p FROM ProductEntity p WHERE LOWER(p.productName) LIKE LOWER(concat('%', :productName, '%'))")
     List<ProductEntity> searchByProductName(@Param("productName") String productName);
 }

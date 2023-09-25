@@ -6,6 +6,7 @@ import com.shopee.clone.DTO.product.update.ProductRequestEdit;
 import com.shopee.clone.DTO.product.response.*;
 import com.shopee.clone.entity.*;
 import com.shopee.clone.repository.CategoryRepository;
+import com.shopee.clone.repository.SellerRepository;
 import com.shopee.clone.repository.product.ProductItemRepository;
 import com.shopee.clone.repository.product.ProductRepository;
 import com.shopee.clone.service.product.IProductService;
@@ -26,35 +27,40 @@ public class ProductService implements IProductService {
     private final ProductRepository productRepository;
     private final ProductItemRepository itemRepository;
     private final CategoryRepository categoryRepository;
+    private final SellerRepository sellerRepository;
     private final ModelMapper modelMapper;
     public ProductService(ProductRepository productRepository,
                           ProductItemRepository itemRepository,
-                          ModelMapper modelMapper, CategoryRepository categoryRepository) {
+                          ModelMapper modelMapper, CategoryRepository categoryRepository, SellerRepository sellerRepository) {
         this.productRepository = productRepository;
         this.itemRepository = itemRepository;
         this.modelMapper = modelMapper;
         this.categoryRepository = categoryRepository;
+        this.sellerRepository = sellerRepository;
     }
 
     @Override
     public ResponseEntity<?> getAllProductBelongWithShop(Long shopId) {
         try{
-            List<ProductEntity> productEntities = productRepository.findAll();
-            List<ProductResponseDTO> productResponseDTOs = mappingProductEntityListToProductDTOs(productEntities);
+            if(sellerRepository.existsById(shopId)){
+                List<ProductEntity> productEntities = productRepository.findProductsByShopId(shopId);
+                List<ProductResponseDTO> productResponseDTOs = mappingProductEntityListToProductDTOs(productEntities);
 
-            ProductResponseObject<List<ProductResponseDTO>> productsResponse = new ProductResponseObject<>();
-            productsResponse.setData(productResponseDTOs);
+                ProductResponseObject<List<ProductResponseDTO>> productsResponse = new ProductResponseObject<>();
+                productsResponse.setData(productResponseDTOs);
 
-            return ResponseEntity
-                    .status(HttpStatusCode.valueOf(200))
-                    .body(
-                            ResponseObject
-                                    .builder()
-                                    .status("SUCCESS")
-                                    .message("Get Products Success")
-                                    .results(productsResponse)
-                                    .build()
-                    );
+                return ResponseEntity
+                        .status(HttpStatusCode.valueOf(200))
+                        .body(
+                                ResponseObject
+                                        .builder()
+                                        .status("SUCCESS")
+                                        .message("Get Products Success")
+                                        .results(productsResponse)
+                                        .build()
+                        );
+            }
+
         }catch (Exception e){
             return ResponseEntity
                     .status(HttpStatusCode.valueOf(404))
@@ -67,6 +73,7 @@ public class ProductService implements IProductService {
                                     .build()
                     );
         }
+        return null;
     }
 
     @Override
@@ -257,9 +264,22 @@ public class ProductService implements IProductService {
     @Transactional
     public ResponseEntity<?> addNewProduct(ProductRequestCreate productRequest) {
         try {
-            if(categoryRepository.existsById(productRequest.getCategoryId())){
+            if(sellerRepository.existsById(productRequest.getSellerId()) &&
+                    categoryRepository.existsById(productRequest.getCategoryId())){
+                SellerEntity sellerEntity = sellerRepository.findById(productRequest.getSellerId())
+                        .orElseThrow(NoSuchElementException::new);
                 CategoryEntity categoryEntity = categoryRepository.findById(productRequest.getCategoryId())
                         .orElseThrow(NoSuchElementException::new);
+                SellerEntity seller = SellerEntity
+                        .builder()
+                        .id(sellerEntity.getId())
+                        .storeName(sellerEntity.getStoreName())
+                        .storeAddress(sellerEntity.getStoreAddress())
+                        .storeAvatarUrl(sellerEntity.getStoreAvatarUrl())
+                        .storeBackgroundUrl(sellerEntity.getStoreBackgroundUrl())
+                        .createdAt(sellerEntity.getCreatedAt())
+                        .numberFollower(sellerEntity.getNumberFollower())
+                        .build();
                 CategoryEntity category = CategoryEntity
                         .builder()
                         .id(categoryEntity.getId())
@@ -275,6 +295,7 @@ public class ProductService implements IProductService {
                         .description(productRequest.getDescription())
                         .status(true)
                         .category(category)
+                        .seller(seller)
                         .build();
                 Product productAfterSaved = modelMapper.map(
                         productRepository.save(modelMapper.map(product,ProductEntity.class)),Product.class);
@@ -453,6 +474,8 @@ public class ProductService implements IProductService {
                     .productName(productEntity.getProductName())
                     .description(productEntity.getDescription())
                     .status(productEntity.getStatus())
+                    .sellerId(productEntity.getSeller().getId())
+                    .categoryId(productEntity.getCategory().getId())
                     .productItemResponseList(productItemResponseDTOList)
                     .build();
             productResponseDTOList.add(productResponseDTO);
@@ -476,6 +499,8 @@ public class ProductService implements IProductService {
                     .productName(productEntity.getProductName())
                     .description(productEntity.getDescription())
                     .status(productEntity.getStatus())
+                    .sellerId(productEntity.getSeller().getId())
+                    .categoryId(productEntity.getCategory().getId())
                     .productItemResponseList(productItemResponseDTOList)
                     .build();
             productResponseDTOList.add(productResponseDTO);

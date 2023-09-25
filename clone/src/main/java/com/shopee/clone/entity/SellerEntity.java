@@ -2,16 +2,19 @@ package com.shopee.clone.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "sellers")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class SellerEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,4 +31,6 @@ public class SellerEntity {
     private Date createdAt;
     @Column(name = "number_follower")
     private Integer numberFollower = 0;
+    @OneToMany(mappedBy = "seller", fetch = FetchType.EAGER)
+    private List<ProductEntity> productList;
 }
