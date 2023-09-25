@@ -10,7 +10,6 @@ import com.shopee.clone.service.optionType.IOptionTypeService;
 import com.shopee.clone.service.product.IProductService;
 import com.shopee.clone.service.productItem.IProductItemService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -41,26 +40,6 @@ public class ProductRestController {
         }
         return productService.addNewProduct(productRequestCreate);
     }
-//    @PostMapping("add-new/pitem-image")
-//    public ResponseEntity<?> createProductItemWithProductID(@RequestPart("productId") Long productId,
-//                                                            @RequestPart("price") Double price,
-//                                                            @RequestPart("qtyInStock") Integer qtyInStock,
-//                                                            @RequestPart("imgProductFile") MultipartFile[]imgProductFile,
-//                                                            BindingResult bindingResult){
-//        ProductItemRequest itemRequest = ProductItemRequest
-//                .builder()
-//                .productId(productId)
-//                .price(price)
-//                .qtyInStock(qtyInStock)
-//                .imgProductFile(imgProductFile)
-//                .build();
-//        if(bindingResult.hasErrors()) {
-//            if(bindingResult.hasErrors()) {
-//                FieldError.throwErrorHandler(bindingResult);
-//            }
-//        }
-//        return productItemService.createProductItemWithImage(itemRequest);
-//    }
 
     @PostMapping("add-new/pitem-image")
     public ResponseEntity<?> createProductItemWithProductID(@Valid ProductItemRequest itemRequest,
@@ -79,7 +58,7 @@ public class ProductRestController {
     }
 
     @GetMapping("/{shopId}")
-    public ResponseEntity<?> getAll(@PathVariable Long shopId){
+    public ResponseEntity<?> getAllProductByShopId(@PathVariable Long shopId){
         return productService.getAllProductBelongWithShop(shopId);
     }
     @GetMapping("/products-by-category/{categoryId}")

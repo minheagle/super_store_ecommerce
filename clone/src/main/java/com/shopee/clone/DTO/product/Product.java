@@ -2,6 +2,7 @@ package com.shopee.clone.DTO.product;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.shopee.clone.entity.CategoryEntity;
+import com.shopee.clone.entity.SellerEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,4 +22,5 @@ public class Product {
 //    @JsonIgnore
     private List<ProductItem> productItemList;
     private CategoryEntity category;
+    private SellerEntity seller;
 }

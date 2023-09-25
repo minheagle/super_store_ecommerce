@@ -9,16 +9,15 @@ import com.shopee.clone.DTO.product.response.OptionValueDTO;
 import com.shopee.clone.DTO.product.response.ProductItemResponseDTO;
 import com.shopee.clone.DTO.product.response.ProductResponseObject;
 import com.shopee.clone.entity.OptionValueEntity;
+import com.shopee.clone.entity.ProductEntity;
 import com.shopee.clone.entity.ProductItemEntity;
 import com.shopee.clone.repository.product.OptionValueRepository;
 import com.shopee.clone.repository.product.ProductItemRepository;
 import com.shopee.clone.repository.product.ProductRepository;
 import com.shopee.clone.service.imageProduct.impl.ImageProductService;
-import com.shopee.clone.service.optionValue.impl.OptionValueService;
 import com.shopee.clone.service.productItem.IProductItemService;
 import com.shopee.clone.util.ResponseObject;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -53,7 +52,17 @@ public class ProductItemService implements IProductItemService {
         try {
             Long productId = productItemRequest.getProductId();;
             if(productRepository.existsById(productId)){
-                Product product = modelMapper.map(productRepository.findById(productId), Product.class);
+                ProductEntity productEntity = productRepository.findById(productId)
+                        .orElseThrow(NoSuchElementException::new);
+                Product product = Product
+                        .builder()
+                        .productId(productEntity.getProductId())
+                        .productName(productEntity.getProductName())
+                        .description(productEntity.getDescription())
+                        .status(productEntity.getStatus())
+                        .category(productEntity.getCategory())
+                        .build();
+
                 ProductItem item = ProductItem
                         .builder()
                         .price(productItemRequest.getPrice())
@@ -224,6 +233,13 @@ public class ProductItemService implements IProductItemService {
     public Boolean checkAvailableQuantityInStock(Long productItemId, Integer qtyMakeOrder) {
         ProductItemEntity productItem = itemRepository.findById(productItemId)
                 .orElseThrow(NoSuchElementException::new);
+        return productItem.getQtyInStock() >= qtyMakeOrder;
+    }
+
+    @Override
+    public Boolean minusQuantityInStock(Long productItemId, Integer qtyMakeOrder) {
+        ProductItemEntity productItem = itemRepository.findById(productItemId)
+                .orElseThrow(NoSuchElementException::new);
         if(productItem.getQtyInStock() >= qtyMakeOrder){
             productItem.setQtyInStock(productItem.getQtyInStock() - qtyMakeOrder);
             itemRepository.save(productItem);
@@ -257,7 +273,7 @@ public class ProductItemService implements IProductItemService {
                             .build())
                     .collect(Collectors.toList());
 
-            ProductItemResponseDTO productItemResponseDTO = ProductItemResponseDTO
+            return ProductItemResponseDTO
                     .builder()
                     .pItemId(productItem.getPItemId())
                     .price(productItem.getPrice())
@@ -266,7 +282,6 @@ public class ProductItemService implements IProductItemService {
                     .imageProductList(imageProducts)
                     .optionTypes(optionTypeDTOList)
                     .build();
-            return productItemResponseDTO;
         }
         return null;
     }

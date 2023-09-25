@@ -263,6 +263,48 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public ResponseEntity<?> addAddress(Long id, UpdateAddressDTO updateAddressDTO) {
+        try {
+            // Tìm kiếm địa chỉ người dùng trong cơ sở dữ liệu bằng userId
+            Optional<UserEntity> userEntity = userRepository.findById(id);
+
+            if (userEntity.isPresent()) {
+                // Lấy địa chỉ người dùng từ Optional
+                AddressEntity address = new AddressEntity();
+
+                // Them thông tin địa chỉ người dùng từ DTO (Data Transfer Object)
+                address.setAddressName(updateAddressDTO.getAddress());
+                address.setUser(userEntity.get());
+                // Lưu thông tin địa chỉ người dùng đã cập nhật vào cơ sở dữ liệu
+                addressService.save(address);
+
+                // Trả về ResponseEntity chứa thông tin cập nhật thành công
+                return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
+                        "Address add successfully",address.getAddressName()));
+            } else {
+                // Trả về ResponseEntity chứa thông tin lỗi nếu không tìm thấy địa chỉ id
+                return ResponseEntity
+                        .badRequest()
+                        .body(ResponseObject.builder()
+                                .status("FAIL")
+                                .message("User not found")
+                                .results("")
+                                .build());
+            }
+        } catch (Exception e) {
+            // Trả về ResponseEntity chứa thông tin lỗi nếu có lỗi xảy ra
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message(e.getMessage())
+                            .results("")
+                            .build());
+
+        }
+    }
+
+    @Override
     public ResponseEntity<?> findUserByUserName(String userName) {
         try {
             // Tìm kiếm người dùng trong cơ sở dữ liệu bằng userId

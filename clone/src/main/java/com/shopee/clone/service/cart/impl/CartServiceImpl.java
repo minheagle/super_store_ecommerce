@@ -49,8 +49,6 @@ public class CartServiceImpl implements CartService {
             if (user.isPresent()) {
                 List<CartEntity> cartEntities = cartRepository.findByUser(user.get());
                 Optional<ProductItemEntity> productItem = productItemRepository.findById(pItemId);
-
-
                 if (productItem.isPresent()) {
                     Long check = findCartItemId(cartEntities,productItem.get());
                     if(check!=null) {
@@ -287,6 +285,41 @@ public class CartServiceImpl implements CartService {
                     .body(ResponseObject.builder()
                             .status("FAIL")
                             .message("CartId not found!")
+                            .results("")
+                            .build()
+                    );
+        }catch (Exception e){
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message(e.getMessage())
+                            .results("")
+                            .build()
+                    );
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getCart(Long userId) {
+        try{
+            Optional<UserEntity> userOptional = userService.findUserByID(userId);
+            if(userOptional.isPresent()) {
+                UserEntity user = userOptional.get();
+                List<CartEntity> cartList = cartRepository.findByUser(user);
+                List<CartResponse> cartRepositories = converterCartResponses(cartList);
+                return ResponseEntity.ok().body(ResponseObject
+                        .builder()
+                        .status("SUCCESS")
+                        .message("View cart!")
+                        .results(cartRepositories)
+                        .build());
+            }
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message("User not found!")
                             .results("")
                             .build()
                     );
