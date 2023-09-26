@@ -1,30 +1,27 @@
-package com.shopee.clone.entity.cart;
+package com.shopee.clone.entity.order;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.shopee.clone.entity.ProductItemEntity;
 import com.shopee.clone.entity.SellerEntity;
-import com.shopee.clone.entity.UserEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Entity
+@Table(name = "order_detail")
 @Data
-@Table(name = "cart")
-public class CartEntity {
+public class OrderDetailEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    @JoinColumn(name = "order_id")
+    private OrderEntity order;
     @ManyToOne
     @JoinColumn(name = "seller_id")
     private SellerEntity seller;
     @ManyToOne
     @JoinColumn(name = "product_items_id")
     private ProductItemEntity productItems;
+    private Double unitPrice;
     private Integer quantity;
+    private Double shipMoneyOnProduct;
 }
