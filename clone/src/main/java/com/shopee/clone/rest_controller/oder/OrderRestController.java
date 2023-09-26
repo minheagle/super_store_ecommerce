@@ -5,10 +5,7 @@ import com.shopee.clone.DTO.order.request.OrderRequest;
 import com.shopee.clone.service.order.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/cart")
@@ -18,5 +15,9 @@ public class OrderRestController {
     @PostMapping("save-order")
     public ResponseEntity<?> saveOrder(@RequestBody OrderRequest orderRequest){
         return orderService.save(orderRequest);
+    }
+    @GetMapping("history/{userId}")
+    public ResponseEntity<?> getOrderHistory(@PathVariable Long userId){
+        return orderService.getHistoryOrder(userId);
     }
 }

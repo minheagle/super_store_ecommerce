@@ -8,4 +8,6 @@ import org.springframework.http.ResponseEntity;
 public interface OrderService{
 
     ResponseEntity<?> save(OrderRequest orderRequest);
+
+    ResponseEntity<?> getHistoryOrder(Long userId);
 }

@@ -1,6 +1,7 @@
 package com.shopee.clone.entity.order;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.shopee.clone.entity.AddressEntity;
 import com.shopee.clone.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -19,6 +20,9 @@ public class OrderEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity user;
+    @ManyToOne
+    @JoinColumn(name = "address_id")
+    private AddressEntity address;
     private Date date;
     @OneToMany(mappedBy = "order")
     private List<OrderDetailEntity> orderDetails;

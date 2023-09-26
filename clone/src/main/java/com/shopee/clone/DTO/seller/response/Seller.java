@@ -1,10 +1,8 @@
 package com.shopee.clone.DTO.seller.response;
 
-import com.shopee.clone.entity.ProductEntity;
 import lombok.Data;
 
 import java.util.Date;
-import java.util.List;
 @Data
 public class Seller {
     private Long id;
