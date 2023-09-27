@@ -10,6 +10,7 @@ import com.shopee.clone.service.optionType.IOptionTypeService;
 import com.shopee.clone.service.product.IProductService;
 import com.shopee.clone.service.productItem.IProductItemService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -80,8 +81,13 @@ public class ProductRestController {
         return productService.getAllProductPaging(pageable);
     }
     @GetMapping("product/{id}")
-    public ResponseEntity<?> getById(@PathVariable Long id){
+    public ResponseEntity<?> getProductById(@PathVariable Long id){
         return productService.getProductById(id);
+    }
+
+    @GetMapping("confirm-finish-create/{id}")
+    public ResponseEntity<?> confirmFinishCreateProduct(@PathVariable @NotBlank Long id){
+        return productService.confirmFinishCreateProduct(id);
     }
 
     @GetMapping("product/{id}/item/{itemId}")
@@ -89,8 +95,11 @@ public class ProductRestController {
         return productItemService.getProductItemByShopIdAndParentProductId(id, itemId);
     }
     @GetMapping("search")
-    public ResponseEntity<?> searchProductByName(@RequestParam String productName){
-        return  productService.searchProductByName(productName);
+    public ResponseEntity<?> searchAndFilter(@RequestParam(required = false) String productName,
+                                             @RequestParam(required = false) Double minPrice,
+                                             @RequestParam(required = false) Double maxPrice,
+                                             @RequestParam(required = false) Long categoryId){
+        return  productService.searchAndFilter(productName, minPrice, maxPrice, categoryId);
     }
 
     @PutMapping("product/update/{id}")

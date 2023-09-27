@@ -14,6 +14,8 @@ import java.util.List;
 public class ProductResponseDTO {
     private Long productId;
     private String productName;
+    private Double minPrice;
+    private Double maxPrice;
     private String description;
     private Boolean status;
     private Long sellerId;
