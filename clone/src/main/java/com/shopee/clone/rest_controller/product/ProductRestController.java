@@ -1,14 +1,15 @@
 package com.shopee.clone.rest_controller.product;
 
 import com.shopee.clone.DTO.fieldErrorDTO.FieldError;
-import com.shopee.clone.DTO.product.request.OptionTypeCreate;
-import com.shopee.clone.DTO.product.request.ProductItemRequest;
-import com.shopee.clone.DTO.product.request.ProductRequestCreate;
+import com.shopee.clone.DTO.product.request.*;
+import com.shopee.clone.DTO.product.update.ProductItemRequestEdit;
+import com.shopee.clone.DTO.product.update.ProductRequestEdit;
+import com.shopee.clone.DTO.product.update.SingleUpdateChangeImageProductItem;
+import com.shopee.clone.service.imageProduct.impl.ImageProductService;
 import com.shopee.clone.service.optionType.IOptionTypeService;
 import com.shopee.clone.service.product.IProductService;
 import com.shopee.clone.service.productItem.IProductItemService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -19,12 +20,17 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/products")
 public class ProductRestController {
-    @Autowired
-    private IProductService productService;
-    @Autowired
-    private IProductItemService productItemService;
-    @Autowired
-    private IOptionTypeService optionTypeService;
+    private final IProductService productService;
+    private final IProductItemService productItemService;
+    private final IOptionTypeService optionTypeService;
+    private final ImageProductService imageProductService;
+
+    public ProductRestController(IProductService productService, IProductItemService productItemService, IOptionTypeService optionTypeService, ImageProductService imageProductService) {
+        this.productService = productService;
+        this.productItemService = productItemService;
+        this.optionTypeService = optionTypeService;
+        this.imageProductService = imageProductService;
+    }
 
     @PostMapping("add-new/product")
     public ResponseEntity<?> createProduct(@RequestBody @Valid ProductRequestCreate productRequestCreate,
@@ -34,26 +40,6 @@ public class ProductRestController {
         }
         return productService.addNewProduct(productRequestCreate);
     }
-//    @PostMapping("add-new/pitem-image")
-//    public ResponseEntity<?> createProductItemWithProductID(@RequestPart("productId") Long productId,
-//                                                            @RequestPart("price") Double price,
-//                                                            @RequestPart("qtyInStock") Integer qtyInStock,
-//                                                            @RequestPart("imgProductFile") MultipartFile[]imgProductFile,
-//                                                            BindingResult bindingResult){
-//        ProductItemRequest itemRequest = ProductItemRequest
-//                .builder()
-//                .productId(productId)
-//                .price(price)
-//                .qtyInStock(qtyInStock)
-//                .imgProductFile(imgProductFile)
-//                .build();
-//        if(bindingResult.hasErrors()) {
-//            if(bindingResult.hasErrors()) {
-//                FieldError.throwErrorHandler(bindingResult);
-//            }
-//        }
-//        return productItemService.createProductItemWithImage(itemRequest);
-//    }
 
     @PostMapping("add-new/pitem-image")
     public ResponseEntity<?> createProductItemWithProductID(@Valid ProductItemRequest itemRequest,
@@ -72,8 +58,12 @@ public class ProductRestController {
     }
 
     @GetMapping("/{shopId}")
-    public ResponseEntity<?> getAll(@PathVariable Long shopId){
+    public ResponseEntity<?> getAllProductByShopId(@PathVariable Long shopId){
         return productService.getAllProductBelongWithShop(shopId);
+    }
+    @GetMapping("/products-by-category/{categoryId}")
+    public ResponseEntity<?> getAllProductByCategoryId(@PathVariable Long categoryId){
+        return productService.getAllProductByCategoryId(categoryId);
     }
     @GetMapping("/")
     public ResponseEntity<?> getProductsPaging(@RequestParam(name = "page", required = false, defaultValue = "1") Integer page,
@@ -97,6 +87,23 @@ public class ProductRestController {
     @GetMapping("product/{id}/item/{itemId}")
     public ResponseEntity<?> makeOrder(@PathVariable Long id, @PathVariable Long itemId){
         return productItemService.getProductItemByShopIdAndParentProductId(id, itemId);
+    }
+    @GetMapping("search")
+    public ResponseEntity<?> searchProductByName(@RequestParam String productName){
+        return  productService.searchProductByName(productName);
+    }
+
+    @PutMapping("product/update/{id}")
+    public ResponseEntity<?> editProductById(@PathVariable Long id, @RequestBody ProductRequestEdit pRequestEdit){
+        return productService.editProductById(id, pRequestEdit);
+    }
+    @PutMapping("product/update-item/{id}")
+    public ResponseEntity<?> editProductItemById(@PathVariable Long id, @RequestBody ProductItemRequestEdit itemRequestEdit){
+        return productItemService.editProductItemById(id, itemRequestEdit);
+    }
+    @PutMapping("product/image-product-item")
+    public ResponseEntity<?> changeImageProductItem(@RequestBody @Valid SingleUpdateChangeImageProductItem changeImageProductItem){
+        return imageProductService.changeImageProduct(changeImageProductItem);
     }
     @DeleteMapping("product/{productId}")
     public ResponseEntity<?> removeProduct(@PathVariable Long productId){

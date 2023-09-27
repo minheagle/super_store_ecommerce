@@ -40,10 +40,20 @@ public class UserRestController {
     public ResponseEntity<?> updateAddress(@PathVariable Long id, @RequestBody UpdateAddressDTO updateAddressDTO) {
         return userService.updateAddress(id, updateAddressDTO);
     }
+    @PostMapping("/add-address/{id}")
+    public ResponseEntity<?> addAddress(@PathVariable Long id, @RequestBody UpdateAddressDTO updateAddressDTO) {
+        return userService.addAddress(id, updateAddressDTO);
+    }
     @PutMapping("change-password/{id}")
     public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody ChangePasswordDTO changePasswordDTO){
         return userService.changePassword(id,changePasswordDTO);
     }
+
+    @PostMapping("/upload-avatar/{id}")
+    public ResponseEntity<?> uploadAvatar(@PathVariable Long id, @RequestBody ChangePasswordDTO changePasswordDTO){
+        return userService.changePassword(id,changePasswordDTO);
+    }
+
     @GetMapping("/{userName}")
     public ResponseEntity<?> getUserByUserName(@PathVariable String userName){
        return userService.findUserByUserName(userName);

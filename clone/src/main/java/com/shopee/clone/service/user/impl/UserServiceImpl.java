@@ -185,7 +185,7 @@ public class UserServiceImpl implements UserService {
                                 "Change password successfully",changePasswordDTO.getNewPassword()));
                     }
                     // Trả về ResponseEntity chứa thông tin lỗi
-                    return ResponseEntity.ok().body(new ResponseObject("Fail",
+                    return ResponseEntity.badRequest().body(new ResponseObject("Fail",
                             "Confirm password Error","newPass: "+changePasswordDTO.getNewPassword())+ "" +
                             " ConfirmPassword: "+changePasswordDTO.getConfirmPassword());
                 };
@@ -218,14 +218,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResponseEntity<?> updateAddress(Long id, UpdateAddressDTO updateAddressDTO) {
         try {
-            // Tìm kiếm người dùng trong cơ sở dữ liệu bằng userId
+            // Tìm kiếm địa chỉ người dùng trong cơ sở dữ liệu bằng userId
             Optional<AddressEntity> optionalAddress = addressService.findById(id);
 
             if (optionalAddress.isPresent()) {
-                // Lấy đối tượng người dùng từ Optional
+                // Lấy địa chỉ người dùng từ Optional
                 AddressEntity address = optionalAddress.get();
 
-                // Cập nhật thông tin người dùng từ DTO (Data Transfer Object)
+                // Cập nhật thông tin địa chỉ người dùng từ DTO (Data Transfer Object)
                 address.setAddressName(updateAddressDTO.getAddress());
 
                 // Lưu thông tin địa chỉ người dùng đã cập nhật vào cơ sở dữ liệu
@@ -263,6 +263,48 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public ResponseEntity<?> addAddress(Long id, UpdateAddressDTO updateAddressDTO) {
+        try {
+            // Tìm kiếm địa chỉ người dùng trong cơ sở dữ liệu bằng userId
+            Optional<UserEntity> userEntity = userRepository.findById(id);
+
+            if (userEntity.isPresent()) {
+                // Lấy địa chỉ người dùng từ Optional
+                AddressEntity address = new AddressEntity();
+
+                // Them thông tin địa chỉ người dùng từ DTO (Data Transfer Object)
+                address.setAddressName(updateAddressDTO.getAddress());
+                address.setUser(userEntity.get());
+                // Lưu thông tin địa chỉ người dùng đã cập nhật vào cơ sở dữ liệu
+                addressService.save(address);
+
+                // Trả về ResponseEntity chứa thông tin cập nhật thành công
+                return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
+                        "Address add successfully",address.getAddressName()));
+            } else {
+                // Trả về ResponseEntity chứa thông tin lỗi nếu không tìm thấy địa chỉ id
+                return ResponseEntity
+                        .badRequest()
+                        .body(ResponseObject.builder()
+                                .status("FAIL")
+                                .message("User not found")
+                                .results("")
+                                .build());
+            }
+        } catch (Exception e) {
+            // Trả về ResponseEntity chứa thông tin lỗi nếu có lỗi xảy ra
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message(e.getMessage())
+                            .results("")
+                            .build());
+
+        }
+    }
+
+    @Override
     public ResponseEntity<?> findUserByUserName(String userName) {
         try {
             // Tìm kiếm người dùng trong cơ sở dữ liệu bằng userId
@@ -271,9 +313,6 @@ public class UserServiceImpl implements UserService {
             if (optionalUser.isPresent()) {
                 // Lấy đối tượng người dùng từ Optional
                 UserEntity user = optionalUser.get();
-
-                // Lưu thông tin người dùng đã cập nhật vào cơ sở dữ liệu
-                userRepository.save(user);
 
                 // Trả về ResponseEntity chứa thông tin cập nhật thành công
                 return ResponseEntity.ok().body(new ResponseObject("SUCCESS",

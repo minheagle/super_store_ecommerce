@@ -1,4 +1,4 @@
-package com.shopee.clone.DTO.product.request;
+package com.shopee.clone.DTO.product.update;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -11,9 +11,7 @@ import org.hibernate.validator.constraints.Length;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ProductRequestCreate {
-    private Long sellerId;
-    private Long categoryId;
+public class ProductRequestEdit {
     @NotBlank
     @Length(min = 3, max = 150)
     private String productName;
