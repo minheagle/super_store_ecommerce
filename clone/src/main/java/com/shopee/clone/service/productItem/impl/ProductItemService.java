@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -58,6 +59,8 @@ public class ProductItemService implements IProductItemService {
                         .builder()
                         .productId(productEntity.getProductId())
                         .productName(productEntity.getProductName())
+                        .minPrice(productEntity.getMinPrice())
+                        .maxPrice(productEntity.getMaxPrice())
                         .description(productEntity.getDescription())
                         .status(productEntity.getStatus())
                         .category(productEntity.getCategory())
@@ -227,6 +230,22 @@ public class ProductItemService implements IProductItemService {
                                 .message("ProductItem Not Exist!")
                                 .build()
                 );
+    }
+
+    @Override
+    public Double findMinPriceInProductItem(List<ProductItemEntity> productItems) {
+        List<Double> listPrice = productItems.stream()
+                .map(productItem -> productItem.getPrice())
+                .collect(Collectors.toList());
+        return Collections.min(listPrice);
+    }
+
+    @Override
+    public Double findMaxPriceInProductItem(List<ProductItemEntity> productItems) {
+        List<Double> listPrice = productItems.stream()
+                .map(productItem -> productItem.getPrice())
+                .collect(Collectors.toList());
+        return Collections.max(listPrice);
     }
 
     @Override
