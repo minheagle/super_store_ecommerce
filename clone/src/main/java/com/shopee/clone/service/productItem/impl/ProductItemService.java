@@ -268,6 +268,18 @@ public class ProductItemService implements IProductItemService {
     }
 
     @Override
+    public Boolean plusQuantityInStock(Long productItemId, Integer qtyMakeOrder) {
+        ProductItemEntity productItem = itemRepository.findById(productItemId)
+                .orElseThrow(NoSuchElementException::new);
+        if(productItem.getQtyInStock() >= qtyMakeOrder){
+            productItem.setQtyInStock(productItem.getQtyInStock() + qtyMakeOrder);
+            itemRepository.save(productItem);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public ProductItemResponseDTO getProductItemByProductId_ItemId(Long productId, Long productItemId) {
         ProductItemEntity productItem = itemRepository.findById(productItemId).orElseThrow(NoSuchElementException::new);
         if(productRepository.existsById(productId) && productItem.getStatus()

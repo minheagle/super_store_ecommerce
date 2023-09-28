@@ -19,5 +19,6 @@ public interface IProductItemService {
     Double findMaxPriceInProductItem(List<ProductItemEntity> productItems);
     Boolean checkAvailableQuantityInStock(Long productItemId, Integer qtyMakeOrder);
     Boolean minusQuantityInStock(Long productItemId, Integer qtyMakeOrder);
+    Boolean plusQuantityInStock(Long productItemId, Integer qtyMakeOrder);
     ProductItemResponseDTO getProductItemByProductId_ItemId(Long productId, Long productItemId);
 }

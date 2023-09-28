@@ -18,8 +18,6 @@ public interface IProductService {
     ResponseEntity<?> searchAndFilter(String name, Double minPrice, Double maxPrice, Long categoryId);
     ResponseEntity<?> editProductById(Long productId, ProductRequestEdit pRequestEdit);
 
-//This Function might be excuse big change information of product
-    ResponseEntity<?> editProductDetailsById(Long productId);
     ResponseEntity<?> removeProductById(Long productId);
 
 }
