@@ -502,11 +502,6 @@ public class ProductService implements IProductService {
         }
         return null;
     }
-
-    @Override
-    public ResponseEntity<?> editProductDetailsById(Long productId) {
-        return null;
-    }
     @Transactional
     @Override
     public ResponseEntity<?> removeProductById(Long productId) {
