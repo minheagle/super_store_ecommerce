@@ -17,6 +17,8 @@ import java.util.List;
 public class Product {
     private Long productId;
     private String productName;
+    private Double minPrice;
+    private Double maxPrice;
     private String description;
     private Boolean status;
 //    @JsonIgnore

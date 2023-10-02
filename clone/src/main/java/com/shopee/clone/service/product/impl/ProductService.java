@@ -2,6 +2,7 @@ package com.shopee.clone.service.product.impl;
 
 import com.shopee.clone.DTO.product.*;
 import com.shopee.clone.DTO.product.request.ProductRequestCreate;
+import com.shopee.clone.DTO.product.specification.ProductSpecification;
 import com.shopee.clone.DTO.product.update.ProductRequestEdit;
 import com.shopee.clone.DTO.product.response.*;
 import com.shopee.clone.entity.*;
@@ -10,10 +11,13 @@ import com.shopee.clone.repository.SellerRepository;
 import com.shopee.clone.repository.product.ProductItemRepository;
 import com.shopee.clone.repository.product.ProductRepository;
 import com.shopee.clone.service.product.IProductService;
+import com.shopee.clone.service.productItem.IProductItemService;
 import com.shopee.clone.util.ResponseObject;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -26,17 +30,19 @@ import java.util.stream.Collectors;
 public class ProductService implements IProductService {
     private final ProductRepository productRepository;
     private final ProductItemRepository itemRepository;
+    private final IProductItemService productItemService;
     private final CategoryRepository categoryRepository;
     private final SellerRepository sellerRepository;
     private final ModelMapper modelMapper;
     public ProductService(ProductRepository productRepository,
                           ProductItemRepository itemRepository,
-                          ModelMapper modelMapper, CategoryRepository categoryRepository, SellerRepository sellerRepository) {
+                          ModelMapper modelMapper, CategoryRepository categoryRepository, SellerRepository sellerRepository, IProductItemService productItemService) {
         this.productRepository = productRepository;
         this.itemRepository = itemRepository;
         this.modelMapper = modelMapper;
         this.categoryRepository = categoryRepository;
         this.sellerRepository = sellerRepository;
+        this.productItemService = productItemService;
     }
 
     @Override
@@ -229,6 +235,39 @@ public class ProductService implements IProductService {
     }
 
     @Override
+    public ResponseEntity<?> confirmFinishCreateProduct(Long productId) {
+        try{
+            ProductEntity product = productRepository.findById(productId)
+                    .orElseThrow(NoSuchElementException::new);
+            Double minPrice = productItemService.findMinPriceInProductItem(product.getProductItemList());
+            Double maxPrice = productItemService.findMaxPriceInProductItem(product.getProductItemList());
+            product.setMinPrice(minPrice);
+            product.setMaxPrice(maxPrice);
+            productRepository.save(product);
+        }catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(404))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("FAIL")
+                                    .message(e.getMessage())
+                                    .results("")
+                                    .build()
+                    );
+        }
+        return ResponseEntity
+                .status(HttpStatusCode.valueOf(200))
+                .body(
+                        ResponseObject
+                                .builder()
+                                .status("SUCCESS")
+                                .message("Finished!")
+                                .build()
+                );
+    }
+
+    @Override
     public ProductResponseDTO getProductByIdForService(Long productId) {
         try {
             ProductEntity productEntity = productRepository.findById(productId)
@@ -245,6 +284,8 @@ public class ProductService implements IProductService {
                     productResponseDTO = ProductResponseDTO
                             .builder()
                             .productName(productEntity.getProductName())
+                            .minPrice(productEntity.getMinPrice())
+                            .maxPrice(productEntity.getMaxPrice())
                             .description(productEntity.getDescription())
                             .status(productEntity.getStatus())
                             .productItemResponseList(productItemResponseDTOList)
@@ -384,6 +425,49 @@ public class ProductService implements IProductService {
     }
 
     @Override
+    public ResponseEntity<?> searchAndFilter(String name,
+                                             Double minPrice,
+                                             Double maxPrice,
+                                             Long categoryId) {
+
+        ProductResponseObject<List<ProductResponseDTO>> productsResponse = new ProductResponseObject<>();
+        try{
+            //Khởi tạo specification với thiết lập ban đầu là điều kiện rỗng.
+            //Sau đó sẽ lấy điều kiện dựa trên tham số người dùng cung cấp.
+            Specification<ProductEntity> productSpc = Specification.where(null);
+
+            productSpc = productSpc.and(ProductSpecification.searchByName(name));
+            productSpc = productSpc.and(ProductSpecification.filterByPrice(minPrice,maxPrice));
+            productSpc = productSpc.and(ProductSpecification.filterByCategory(categoryId));
+            List<ProductEntity> productEntities = productRepository.findAll(productSpc);
+            System.out.println(productEntities.get(0).getProductName());
+            List<ProductResponseDTO> productResponseDTOs = mappingProductEntityListToProductDTOs(productEntities);
+            productsResponse.setData(productResponseDTOs);
+
+        }catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(404))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("FAIL")
+                                    .message(e.getMessage())
+                                    .results("")
+                                    .build()
+                    );
+        }
+        return ResponseEntity
+                .status(HttpStatusCode.valueOf(200))
+                .body(
+                        ResponseObject
+                                .builder()
+                                .status("SUCCESS")
+                                .results(productsResponse)
+                                .build()
+                );
+    }
+
+    @Override
     public ResponseEntity<?> editProductById(Long productId, ProductRequestEdit pRequestEdit) {
         try {
             if(productRepository.existsById(productId)){
@@ -414,11 +498,6 @@ public class ProductService implements IProductService {
                                     .build()
                     );
         }
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<?> editProductDetailsById(Long productId) {
         return null;
     }
     @Transactional

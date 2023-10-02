@@ -11,13 +11,13 @@ public interface IProductService {
     ResponseEntity<?> getAllProductByCategoryId(Long categoryId);
     ResponseEntity<?> getAllProductPaging(Pageable pageable);
     ResponseEntity<?> getProductById(Long productId);
+    ResponseEntity<?> confirmFinishCreateProduct(Long productId);
     ProductResponseDTO getProductByIdForService (Long productId);
     ResponseEntity<?> addNewProduct(ProductRequestCreate productRequest);
     ResponseEntity<?> searchProductByName(String productName);
+    ResponseEntity<?> searchAndFilter(String name, Double minPrice, Double maxPrice, Long categoryId);
     ResponseEntity<?> editProductById(Long productId, ProductRequestEdit pRequestEdit);
 
-//This Function might be excuse big change information of product
-    ResponseEntity<?> editProductDetailsById(Long productId);
     ResponseEntity<?> removeProductById(Long productId);
 
 }
