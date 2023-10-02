@@ -8,8 +8,10 @@ import java.util.List;
 @Data
 public class OrderResponse {
     private Long id;
-    private List<OrderDetailForShop> orderDetails;
+    private Seller seller;
+    private List<OrderDetailResponse> orderDetailList;
+    private Double shipMoney;
+    private Boolean payment;
     private Date date;
-    private String paymentMethod;
     private String status;
 }

@@ -8,6 +8,6 @@ import lombok.Data;
 public class OrderDetailResponse {
     private Long id;
     private ProductMatchToCartResponse product;
-    private Integer quantity;
     private Double unitPrice;
+    private Integer quantity;
 }

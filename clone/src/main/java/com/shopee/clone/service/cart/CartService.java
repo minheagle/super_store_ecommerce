@@ -1,7 +1,6 @@
 package com.shopee.clone.service.cart;
 
 import com.shopee.clone.DTO.order.request.CheckOutRequest;
-import com.shopee.clone.DTO.order.request.OrderInformationRequest;
 import org.springframework.http.ResponseEntity;
 
 public interface CartService {

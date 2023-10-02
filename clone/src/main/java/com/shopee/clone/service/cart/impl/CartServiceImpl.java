@@ -6,7 +6,6 @@ import com.shopee.clone.DTO.cart.CartResponse;
 import com.shopee.clone.DTO.cart.LineItem;
 import com.shopee.clone.DTO.checkAddress.AddressRequest;
 import com.shopee.clone.DTO.order.request.CheckOutRequest;
-import com.shopee.clone.DTO.order.request.OrderInformationRequest;
 import com.shopee.clone.DTO.order.response.CheckOutResponse;
 import com.shopee.clone.DTO.product.response.OptionTypeDTO;
 import com.shopee.clone.DTO.product.response.OptionValueDTO;
@@ -68,8 +67,7 @@ public class CartServiceImpl implements CartService {
                         increaseQty(check);
                         cartEntities = cartRepository.findByUser(user.get());
                         List<CartResponse> cartRepositories = convertCartResponses(cartEntities);
-                        ResponseData<List<CartResponse>> response = new ResponseData<>();
-                        response.setData(cartRepositories);
+                        ResponseData<Object> response = ResponseData.builder().data(cartRepositories).build();
                         return ResponseEntity.ok().body(ResponseObject
                                 .builder()
                                 .status("SUCCESS")
@@ -87,8 +85,7 @@ public class CartServiceImpl implements CartService {
 
                         List<CartResponse> cartRepositories = convertCartResponses(cartEntities);
 
-                        ResponseData<List<CartResponse>> response = new ResponseData<>();
-                        response.setData(cartRepositories);
+                        ResponseData<Object> response = ResponseData.builder().data(cartRepositories).build();
                         return ResponseEntity.ok().body(ResponseObject
                                 .builder()
                                 .status("SUCCESS")
@@ -191,8 +188,9 @@ public class CartServiceImpl implements CartService {
             Optional<CartEntity> cartOptional = cartRepository.findById(cartId);
             if(cartOptional.isPresent()){
                 CartEntity cart = cartOptional.get();
+//                kiểm tra số lượng sản phẩm còn đủ không?
                 boolean check = productItemService.checkAvailableQuantityInStock
-                        (cart.getProductItems().getPItemId(),cart.getQuantity());
+                        (cart.getProductItems().getPItemId(),cart.getQuantity()+1);
                 if(check){
                     cart.setQuantity(cart.getQuantity()+1);
                     cartRepository.save(cart);
@@ -200,8 +198,7 @@ public class CartServiceImpl implements CartService {
                     List<CartEntity> cartList = cartRepository.findByUser(cart.getUser());
 
                     List<CartResponse> cartRepositories = convertCartResponses(cartList);
-                    ResponseData<List<CartResponse>> response = new ResponseData<>();
-                    response.setData(cartRepositories);
+                    ResponseData<Object> response = ResponseData.builder().data(cartRepositories).build();
                     return ResponseEntity.ok().body(ResponseObject
                             .builder()
                             .status("SUCCESS")
@@ -255,8 +252,7 @@ public class CartServiceImpl implements CartService {
                     List<CartEntity> cartList = cartRepository.findByUser(cart.getUser());
 
                     List<CartResponse> cartRepositories = convertCartResponses(cartList);
-                    ResponseData<List<CartResponse>> response = new ResponseData<>();
-                    response.setData(cartRepositories);
+                    ResponseData<Object> response = ResponseData.builder().data(cartRepositories).build();
                     return ResponseEntity.ok().body(ResponseObject
                             .builder()
                             .status("SUCCESS")
@@ -307,8 +303,7 @@ public class CartServiceImpl implements CartService {
                     List<CartEntity> cartList = cartRepository.findByUser(cart.getUser());
 
                     List<CartResponse> cartRepositories = convertCartResponses(cartList);
-                ResponseData<List<CartResponse>> response = new ResponseData<>();
-                response.setData(cartRepositories);
+                ResponseData<Object> response = ResponseData.builder().data(cartRepositories).build();
                 return ResponseEntity.ok().body(ResponseObject
                         .builder()
                         .status("SUCCESS")
@@ -344,8 +339,7 @@ public class CartServiceImpl implements CartService {
                 UserEntity user = userOptional.get();
                 List<CartEntity> cartList = cartRepository.findByUser(user);
                 List<CartResponse> cartRepositories = convertCartResponses(cartList);
-                ResponseData<List<CartResponse>> response = new ResponseData<>();
-                response.setData(cartRepositories);
+                ResponseData<Object> response = ResponseData.builder().data(cartRepositories).build();
                 return ResponseEntity.ok().body(ResponseObject
                         .builder()
                         .status("SUCCESS")
@@ -397,8 +391,7 @@ public class CartServiceImpl implements CartService {
                     return checkOutResponse;
                 }).toList();
 
-                ResponseData<List<CheckOutResponse>> response = new ResponseData<>();
-                response.setData(checkOutResponses);
+            ResponseData<Object> response = ResponseData.builder().data(checkOutResponses).build();
 
                 return ResponseEntity.ok().body(ResponseObject
                         .builder()

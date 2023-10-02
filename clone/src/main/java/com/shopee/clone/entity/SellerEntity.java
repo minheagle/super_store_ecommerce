@@ -1,5 +1,6 @@
 package com.shopee.clone.entity;
 
+import com.shopee.clone.entity.order.OrderEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

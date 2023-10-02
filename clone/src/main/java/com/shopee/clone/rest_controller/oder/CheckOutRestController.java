@@ -1,7 +1,6 @@
 package com.shopee.clone.rest_controller.oder;
 
 import com.shopee.clone.DTO.order.request.CheckOutRequest;
-import com.shopee.clone.DTO.order.request.OrderInformationRequest;
 import com.shopee.clone.service.cart.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
