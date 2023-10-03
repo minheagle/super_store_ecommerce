@@ -22,6 +22,8 @@ public class SellerEntity {
     private Long id;
     @Column(name = "store_name")
     private String storeName;
+    @Column(name = "user_id")
+    private Long userId;
     @Column(name = "store_address")
     private String storeAddress;
     @Column(name = "store_avatar_url")

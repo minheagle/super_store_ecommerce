@@ -11,21 +11,13 @@ import java.util.List;
 
 public class User {
     private Long id;
-
     private String userName;
-
     private String fullName;
-
     private String email;
-
     private String phone;
-
-    private Date dataOfBirth;
-
-    private String avatar;
-
-    private List<AddressEntity> addressEntities;
-
+    private Date dateOfBirth;
+    private String imageUrl;
+    private String imgPublicId;
+    private List<AddressEntity> address;
     private List<RoleEntity> roles;
-
 }

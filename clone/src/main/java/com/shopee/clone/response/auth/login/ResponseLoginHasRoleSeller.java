@@ -1,4 +1,4 @@
-package com.shopee.clone.response.province;
+package com.shopee.clone.response.auth.login;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ListAllProvinceResponse<T> {
+public class ResponseLoginHasRoleSeller<T, K> {
     private T data;
-    private Integer count;
+    private K shopData;
+    private String accessToken;
+    private String refreshToken;
 }

@@ -238,6 +238,7 @@ public class CategoryService implements ICategoryService {
                         .content(createCategory.getContent())
                         .imageUrl(imageUploadResult.getSecure_url())
                         .imagePublicId(imageUploadResult.getPublic_id())
+                        .parentId(0L)
                         .build();
                 categoryRepository.save(rootCategory);
                 return ResponseEntity
@@ -284,6 +285,7 @@ public class CategoryService implements ICategoryService {
                     .content(createCategory.getContent())
                     .imageUrl(imageUploadResult.getSecure_url())
                     .imagePublicId(imageUploadResult.getPublic_id())
+                    .parentId(createCategory.getParentId())
                     .build();
             categoryRepository.updateLeft(parentCategory.getRight(), 2);
             categoryRepository.updateRight(parentCategory.getRight(), 2);

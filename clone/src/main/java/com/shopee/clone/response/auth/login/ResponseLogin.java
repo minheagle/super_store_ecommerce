@@ -1,4 +1,4 @@
-package com.shopee.clone.response.auth;
+package com.shopee.clone.response.auth.login;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
