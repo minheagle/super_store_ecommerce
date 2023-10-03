@@ -46,11 +46,19 @@ public class ProductRestController {
     public ResponseEntity<?> createProductItemWithProductID(@Valid ProductItemRequest itemRequest,
                                                             BindingResult bindingResult){
         if(bindingResult.hasErrors()) {
-            if(bindingResult.hasErrors()) {
-                FieldError.throwErrorHandler(bindingResult);
-            }
+            FieldError.throwErrorHandler(bindingResult);
         }
         return productItemService.createProductItemWithImage(itemRequest);
+    }
+
+    //WARNING
+    @PostMapping("add-new/product-item")
+    public ResponseEntity<?> createProductItemWithProductID(@Valid ProductItemFullOptionRequest productItemFullOptionRequest,
+                                                            BindingResult bindingResult){
+        if(bindingResult.hasErrors()) {
+            FieldError.throwErrorHandler(bindingResult);
+        }
+        return productItemService.createProductItemFullOption(productItemFullOptionRequest);
     }
 
     @PostMapping("add-new/option-by-item")
