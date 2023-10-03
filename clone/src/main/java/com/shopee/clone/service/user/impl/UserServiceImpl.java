@@ -1,23 +1,35 @@
 package com.shopee.clone.service.user.impl;
 
 import com.shopee.clone.DTO.auth.user.*;
-import com.shopee.clone.entity.AddressEntity;
-import com.shopee.clone.entity.UserEntity;
+import com.shopee.clone.DTO.seller.SellerDTO;
+import com.shopee.clone.DTO.upload_file.ImageUploadResult;
+import com.shopee.clone.entity.*;
+import com.shopee.clone.repository.RoleRepository;
+import com.shopee.clone.repository.SellerRepository;
 import com.shopee.clone.repository.UserRepository;
+import com.shopee.clone.response.auth.login.ResponseLogin;
+import com.shopee.clone.response.auth.login.ResponseLoginHasRoleSeller;
+import com.shopee.clone.response.user.ResponseBecomeSeller;
 import com.shopee.clone.response.user.ResponseDetailUser;
+import com.shopee.clone.response.user.ResponseDetailUserHasRoleSeller;
 import com.shopee.clone.service.address.AddressService;
+import com.shopee.clone.service.imageProduct.IImageProductService;
+import com.shopee.clone.service.upload_cloud.IUploadImageService;
 import com.shopee.clone.service.user.UserService;
 import com.shopee.clone.util.JWTProvider;
 import com.shopee.clone.util.ResponseObject;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,7 +38,13 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
+    private SellerRepository sellerRepository;
+    @Autowired
+    private RoleRepository roleRepository;
+    @Autowired
     private AddressService addressService;
+    @Autowired
+    private IUploadImageService uploadImageService;
 
     @Autowired
     private JWTProvider jwtProvider;
@@ -35,6 +53,9 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private ModelMapper mapper;
+
+    @Value("cloudinary.avatar.folder")
+    private String avatarFolder;
 
     // Hàm cập nhật thông tin người dùng
     public ResponseEntity<?> updateUser(long userId, UserUpdateDTO userUpdateDTO) {
@@ -52,14 +73,17 @@ public class UserServiceImpl implements UserService {
                 user.setPhone(userUpdateDTO.getPhone());
 //                user.setAvatar(userUpdateDTO.getAvatar());
                 user.setEmail(userUpdateDTO.getEmail());
-                user.setDataOfBirth(userUpdateDTO.getDateOfBirth());
+                user.setDateOfBirth(userUpdateDTO.getDateOfBirth());
 
                 // Lưu thông tin người dùng đã cập nhật vào cơ sở dữ liệu
-                UserEntity userCreated= userRepository.save(user);
+                userRepository.save(user);
+
+                User userMapper = mapper.map(user, User.class);
+                System.out.println(userMapper);
 
                 // Trả về ResponseEntity chứa thông tin cập nhật thành công
                 return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
-                        "User updated successfully",user));
+                        "User updated successfully",userMapper));
             } else {
                 // Trả về ResponseEntity chứa thông tin lỗi nếu không tìm thấy người dùng
                 return ResponseEntity
@@ -80,6 +104,47 @@ public class UserServiceImpl implements UserService {
                             .results("")
                             .build());
 
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> changeAvatar(long userId, ChangeAvatarRequest changeAvatarRequest) {
+        try{
+            UserEntity userEntity = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            ImageUploadResult imageUploadResult;
+            if(changeAvatarRequest.getPublicId() == null) {
+                imageUploadResult = uploadImageService
+                        .uploadSingle(changeAvatarRequest.getAvatar(), avatarFolder);
+            }else{
+                imageUploadResult = uploadImageService
+                        .replaceSingle(changeAvatarRequest.getAvatar(), changeAvatarRequest.getPublicId(), avatarFolder);
+            }
+            userEntity.setImageUrl(imageUploadResult.getSecure_url());
+            userEntity.setImgPublicId(imageUploadResult.getPublic_id());
+            userRepository.save(userEntity);
+            ResponseDetailUser<UserEntity> responseDetailUser = new ResponseDetailUser<>();
+            responseDetailUser.setData(userEntity);
+            return ResponseEntity
+                    .ok()
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("Change avatar success")
+                                    .results(responseDetailUser)
+                                    .build()
+                    );
+        }catch (Exception e){
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("FAIL")
+                                    .message(e.getMessage())
+                                    .results("")
+                                    .build()
+                    );
         }
     }
 
@@ -164,7 +229,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<?> changePassword( Long id,ChangePasswordDTO changePasswordDTO) {
+    public ResponseEntity<?> changePassword( Long id, ChangePasswordDTO changePasswordDTO) {
         try {
 
             // Tìm kiếm người dùng trong cơ sở dữ liệu bằng userId
@@ -174,7 +239,7 @@ public class UserServiceImpl implements UserService {
                 // Lấy đối tượng người dùng từ Optional
                 UserEntity user = optionalUser.get();
 
-                if(checkPassword(changePasswordDTO.getOutPassword(),user.getPassword())){
+                if(checkPassword(changePasswordDTO.getOldPassword(),user.getPassword())){
                     if(changePasswordDTO.getNewPassword().equals(changePasswordDTO.getConfirmPassword())){
                         user.setPassword(passwordEncoder.encode(changePasswordDTO.getNewPassword()));
                         // Lưu thông tin người dùng đã cập nhật vào cơ sở dữ liệu
@@ -192,7 +257,7 @@ public class UserServiceImpl implements UserService {
 
                 // Trả về ResponseEntity chứa thông tin lỗi nêú sai mật khẩu
                 return ResponseEntity.ok().body(new ResponseObject("Fail",
-                        "OutPassword error",changePasswordDTO.getOutPassword()));
+                        "OutPassword error",changePasswordDTO.getOldPassword()));
             } else {
                 // Trả về ResponseEntity chứa thông tin lỗi nếu không tìm thấy người dùng
                 return ResponseEntity
@@ -258,39 +323,87 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<?> becomeSellerService(BecomeSellerRequest becomeSellerRequest) {
-        return null;
+    public ResponseEntity<?> becomeSellerService(Long userId, BecomeSellerRequest becomeSellerRequest) {
+        try{
+            UserEntity userEntity = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            if(sellerRepository.existsByStoreName(becomeSellerRequest.getStoreName())){
+                return ResponseEntity
+                        .badRequest()
+                        .body(
+                                ResponseObject
+                                        .builder()
+                                        .status("FAIL")
+                                        .message("Store name already exists")
+                                        .results("")
+                                        .build()
+                        );
+            }
+            RoleEntity roleEntity = roleRepository
+                    .findByName(ERole.ROLE_SELLER)
+                    .orElseThrow(() -> new RuntimeException("Role not found"));
+            Set<RoleEntity> newListRole = userEntity.getRoles();
+            newListRole.add(roleEntity);
+            userEntity.setRoles(newListRole);
+            userRepository.save(userEntity);
+            SellerEntity sellerEntity = new SellerEntity();
+            sellerEntity.setUserId(userId);
+            sellerEntity.setStoreName(becomeSellerRequest.getStoreName());
+            sellerEntity.setStoreAddress(becomeSellerRequest.getStoreAddress());
+            sellerRepository.save(sellerEntity);
+            User userDTO = mapper.map(userEntity, User.class);
+            SellerDTO sellerDTO = mapper.map(sellerEntity, SellerDTO.class);
+            ResponseBecomeSeller<User, SellerDTO> responseBecomeSeller = new ResponseBecomeSeller<>();
+            responseBecomeSeller.setData(userDTO);
+            responseBecomeSeller.setShopData(sellerDTO);
+            return ResponseEntity
+                    .ok()
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("SUCCESS")
+                                    .message("Register seller success")
+                                    .results(responseBecomeSeller)
+                                    .build()
+                    );
+        }catch(Exception e){
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("FAIL")
+                                    .message(e.getMessage())
+                                    .results("")
+                                    .build()
+                    );
+        }
     }
 
     @Override
+    @Transactional
     public ResponseEntity<?> addAddress(Long id, UpdateAddressDTO updateAddressDTO) {
         try {
             // Tìm kiếm địa chỉ người dùng trong cơ sở dữ liệu bằng userId
-            Optional<UserEntity> userEntity = userRepository.findById(id);
+            UserEntity userEntity = userRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-            if (userEntity.isPresent()) {
-                // Lấy địa chỉ người dùng từ Optional
-                AddressEntity address = new AddressEntity();
+            AddressEntity addressEntity = new AddressEntity();
+            addressEntity.setAddressName(updateAddressDTO.getAddress());
+            addressEntity.setUser(userEntity);
+            addressService.save(addressEntity);
 
-                // Them thông tin địa chỉ người dùng từ DTO (Data Transfer Object)
-                address.setAddressName(updateAddressDTO.getAddress());
-                address.setUser(userEntity.get());
-                // Lưu thông tin địa chỉ người dùng đã cập nhật vào cơ sở dữ liệu
-                addressService.save(address);
+            List<AddressEntity> addressEntityList = userEntity.getAddress();
+            addressEntityList.add(addressEntity);
+            userEntity.setAddress(addressEntityList);
+            userRepository.save(userEntity);
 
-                // Trả về ResponseEntity chứa thông tin cập nhật thành công
-                return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
-                        "Address add successfully",address.getAddressName()));
-            } else {
-                // Trả về ResponseEntity chứa thông tin lỗi nếu không tìm thấy địa chỉ id
-                return ResponseEntity
-                        .badRequest()
-                        .body(ResponseObject.builder()
-                                .status("FAIL")
-                                .message("User not found")
-                                .results("")
-                                .build());
-            }
+            User userDTO = mapper.map(userEntity, User.class);
+
+            // Trả về ResponseEntity chứa thông tin cập nhật thành công
+            return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
+                        "Address add successfully", userDTO));
+
         } catch (Exception e) {
             // Trả về ResponseEntity chứa thông tin lỗi nếu có lỗi xảy ra
             return ResponseEntity
@@ -312,11 +425,34 @@ public class UserServiceImpl implements UserService {
 
             if (optionalUser.isPresent()) {
                 // Lấy đối tượng người dùng từ Optional
-                UserEntity user = optionalUser.get();
-
-                // Trả về ResponseEntity chứa thông tin cập nhật thành công
-                return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
-                        "Get user successfully",user));
+                UserEntity userEntity = optionalUser.get();
+                User userDTO = mapper.map(userEntity, User.class);
+                boolean hasRoleSeller = userEntity.getRoles().stream().anyMatch(item -> item.getName().equals(ERole.ROLE_SELLER));
+                if(hasRoleSeller) {
+                    SellerEntity sellerEntity = sellerRepository.findByUserId(userEntity.getId())
+                            .orElseThrow(() -> new RuntimeException("Seller not found"));
+                    SellerDTO sellerDTO = mapper.map(sellerEntity, SellerDTO.class);
+                    ResponseDetailUserHasRoleSeller<User, SellerDTO> responseDetailUserHasRoleSeller = new ResponseDetailUserHasRoleSeller<>();
+                    responseDetailUserHasRoleSeller.setData(userDTO);
+                    responseDetailUserHasRoleSeller.setShopData(sellerDTO);
+                    return ResponseEntity.ok().body(ResponseObject
+                            .builder()
+                            .status("SUCCESS")
+                            .message("Get user detail success")
+                            .results(responseDetailUserHasRoleSeller)
+                            .build()
+                    );
+                }else {
+                    ResponseDetailUser<User> responseDetailUser = new ResponseDetailUser<>();
+                    responseDetailUser.setData(userDTO);
+                    return ResponseEntity.ok().body(ResponseObject
+                            .builder()
+                            .status("SUCCESS")
+                            .message("Get user detail success !")
+                            .results(responseDetailUser)
+                            .build()
+                    );
+                }
             } else {
                 // Trả về ResponseEntity chứa thông tin lỗi nếu không tìm thấy người dùng
                 return ResponseEntity
@@ -349,8 +485,7 @@ public class UserServiceImpl implements UserService {
                 // Lấy đối tượng người dùng từ Optional
                 UserEntity user = optionalUser.get();
 
-                // Lưu thông tin người dùng đã cập nhật vào cơ sở dữ liệu
-                userRepository.save(user);
+                User userDTO = mapper.map(user, User.class);
 
                 // Trả về ResponseEntity chứa thông tin cập nhật thành công
                 return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
@@ -377,8 +512,8 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private boolean checkPassword(String outPassword, String password) {
-        return passwordEncoder.matches(outPassword,password);
+    private boolean checkPassword(String oldPassword, String password) {
+        return passwordEncoder.matches(oldPassword,password);
     }
 
     @Override

@@ -1,12 +1,10 @@
 package com.shopee.clone.rest_controller.user;
 
-import com.shopee.clone.DTO.auth.user.BecomeSellerRequest;
-import com.shopee.clone.DTO.auth.user.ChangePasswordDTO;
-import com.shopee.clone.DTO.auth.user.UpdateAddressDTO;
-import com.shopee.clone.DTO.auth.user.UserUpdateDTO;
+import com.shopee.clone.DTO.auth.user.*;
 import com.shopee.clone.service.user.UserService;
 import com.shopee.clone.validate.RegisterDTOValidate;
 import com.shopee.clone.validate.UpdateDTOValidate;
+import com.shopee.clone.validate.seller.BecomeSellerRequestValidate;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +23,8 @@ public class UserRestController {
     private UserService userService;
     @Autowired
     private UpdateDTOValidate updateDTOValidate;
+    @Autowired
+    private BecomeSellerRequestValidate becomeSellerRequestValidate;
     @PutMapping("/update/{userId}")
     public ResponseEntity<?> updateUser(@PathVariable Long userId, @Valid
     @RequestBody UserUpdateDTO userUpdateDTO, BindingResult bindingResult) {
@@ -37,7 +37,7 @@ public class UserRestController {
         return userService.updateUser(userId, userUpdateDTO);
     }
     @PutMapping("/update-address/{id}")
-    public ResponseEntity<?> updateAddress(@PathVariable Long id, @RequestBody UpdateAddressDTO updateAddressDTO) {
+    public ResponseEntity<?> updateAddress(@PathVariable("id") Long id, @RequestBody UpdateAddressDTO updateAddressDTO) {
         return userService.updateAddress(id, updateAddressDTO);
     }
     @PostMapping("/add-address/{id}")
@@ -50,8 +50,8 @@ public class UserRestController {
     }
 
     @PostMapping("/upload-avatar/{id}")
-    public ResponseEntity<?> uploadAvatar(@PathVariable Long id, @RequestBody ChangePasswordDTO changePasswordDTO){
-        return userService.changePassword(id,changePasswordDTO);
+    public ResponseEntity<?> uploadAvatar(@PathVariable("id") Long userId, @Valid ChangeAvatarRequest changeAvatarRequest){
+        return userService.changeAvatar(userId, changeAvatarRequest);
     }
 
     @GetMapping("/{userName}")
@@ -59,8 +59,14 @@ public class UserRestController {
        return userService.findUserByUserName(userName);
     }
 
-    @PostMapping("/become-seller/{userId}")
-    public ResponseEntity<?> becomeSeller(@PathVariable("userId") Long userId, @RequestBody BecomeSellerRequest becomeSellerRequest){
-        return null;
+    @PostMapping("/{userId}/become-seller")
+    public ResponseEntity<?> becomeSeller(@PathVariable("userId") Long userId,
+                                          @RequestBody BecomeSellerRequest becomeSellerRequest,
+                                          BindingResult bindingResult){
+        becomeSellerRequestValidate.validate(becomeSellerRequest,bindingResult);
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
+        }
+        return userService.becomeSellerService(userId, becomeSellerRequest);
     }
 }
