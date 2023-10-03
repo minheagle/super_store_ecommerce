@@ -20,6 +20,8 @@ public class ProductEntity {
     @Column(name = "id")
     private Long productId;
     private String productName;
+    private Double minPrice;
+    private Double maxPrice;
     private String description;
     private Boolean status = true;
 

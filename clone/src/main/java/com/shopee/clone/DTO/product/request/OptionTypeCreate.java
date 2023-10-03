@@ -1,6 +1,5 @@
 package com.shopee.clone.DTO.product.request;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

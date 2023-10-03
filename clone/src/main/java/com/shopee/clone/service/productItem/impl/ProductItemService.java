@@ -2,19 +2,23 @@ package com.shopee.clone.service.productItem.impl;
 
 import com.shopee.clone.DTO.product.*;
 import com.shopee.clone.DTO.product.request.OptionTypeRequest;
+import com.shopee.clone.DTO.product.request.ProductItemFullOptionRequest;
 import com.shopee.clone.DTO.product.request.ProductItemRequest;
 import com.shopee.clone.DTO.product.update.ProductItemRequestEdit;
 import com.shopee.clone.DTO.product.response.OptionTypeDTO;
 import com.shopee.clone.DTO.product.response.OptionValueDTO;
 import com.shopee.clone.DTO.product.response.ProductItemResponseDTO;
 import com.shopee.clone.DTO.product.response.ProductResponseObject;
+import com.shopee.clone.entity.OptionTypeEntity;
 import com.shopee.clone.entity.OptionValueEntity;
 import com.shopee.clone.entity.ProductEntity;
 import com.shopee.clone.entity.ProductItemEntity;
+import com.shopee.clone.repository.product.OptionTypeRepository;
 import com.shopee.clone.repository.product.OptionValueRepository;
 import com.shopee.clone.repository.product.ProductItemRepository;
 import com.shopee.clone.repository.product.ProductRepository;
 import com.shopee.clone.service.imageProduct.impl.ImageProductService;
+import com.shopee.clone.service.optionValue.IOptionValueService;
 import com.shopee.clone.service.productItem.IProductItemService;
 import com.shopee.clone.util.ResponseObject;
 import org.modelmapper.ModelMapper;
@@ -23,8 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,20 +37,25 @@ public class ProductItemService implements IProductItemService {
     private final ImageProductService imageProductService;
     private final ProductRepository productRepository;
     private final OptionValueRepository optionValueRepository;
+    private final OptionTypeRepository optionTypeRepository;
+    private final IOptionValueService optionValueService;
 
     public ProductItemService(ProductItemRepository itemRepository,
                               ModelMapper modelMapper,
                               ImageProductService imageProductService,
                               ProductRepository productRepository,
-                              OptionValueRepository optionValueRepository) {
+                              OptionValueRepository optionValueRepository, OptionTypeRepository optionTypeRepository, IOptionValueService optionValueService) {
         this.itemRepository = itemRepository;
         this.modelMapper = modelMapper;
         this.imageProductService = imageProductService;
         this.productRepository = productRepository;
         this.optionValueRepository = optionValueRepository;
+        this.optionTypeRepository = optionTypeRepository;
+        this.optionValueService = optionValueService;
     }
 
     @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class})
     public ResponseEntity<?> createProductItemWithImage(ProductItemRequest productItemRequest) {
         try {
             Long productId = productItemRequest.getProductId();;
@@ -58,6 +66,8 @@ public class ProductItemService implements IProductItemService {
                         .builder()
                         .productId(productEntity.getProductId())
                         .productName(productEntity.getProductName())
+                        .minPrice(productEntity.getMinPrice())
+                        .maxPrice(productEntity.getMaxPrice())
                         .description(productEntity.getDescription())
                         .status(productEntity.getStatus())
                         .category(productEntity.getCategory())
@@ -105,6 +115,96 @@ public class ProductItemService implements IProductItemService {
                     );
         }
         return null;
+    }
+
+    @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class})
+    public ResponseEntity<?> createProductItemFullOption(ProductItemFullOptionRequest productItemFullOptionRequest) {
+        try {
+            Long productId = productItemFullOptionRequest.getProductId();;
+            if(productRepository.existsById(productId)){
+                ProductEntity productEntity = productRepository.findById(productId)
+                        .orElseThrow(NoSuchElementException::new);
+                Product product = Product
+                        .builder()
+                        .productId(productEntity.getProductId())
+                        .productName(productEntity.getProductName())
+                        .minPrice(productEntity.getMinPrice())
+                        .maxPrice(productEntity.getMaxPrice())
+                        .description(productEntity.getDescription())
+                        .status(productEntity.getStatus())
+                        .category(productEntity.getCategory())
+                        .build();
+
+                ProductItem item = ProductItem
+                        .builder()
+                        .price(productItemFullOptionRequest.getPrice())
+                        .qtyInStock(productItemFullOptionRequest.getQtyInStock())
+                        .status(true)
+                        .product(product)
+                        .build();
+                ProductItem itemSaved = modelMapper.map(
+                        itemRepository.save(modelMapper.map(item,ProductItemEntity.class))
+                        , ProductItem.class);
+
+                if(itemSaved != null){
+                    imageProductService.saveAllImageProduct(productItemFullOptionRequest.getImgProductFile(), itemSaved);
+
+                    //Begin-Create Option
+                    Set<OptionTypeEntity> setTypes = new HashSet<>();
+
+                    List<OptionTypeEntity> optionTypeEntities = optionTypeRepository.findAll();
+                    List<OptionTypeRequest> optionTypeRequests = productItemFullOptionRequest.getOptionTypeRequestList();
+
+                    for (OptionTypeRequest optionTypeRequest : optionTypeRequests) {
+                        OptionTypeEntity existingOptionType = optionTypeEntities.stream()
+                                .filter(typeEntity -> typeEntity.getOptionName().equalsIgnoreCase(optionTypeRequest.getOptionName()))
+                                .findFirst()
+                                .orElseGet(() -> {
+                                    OptionType optionType = OptionType.builder()
+                                            .optionName(optionTypeRequest.getOptionName())
+                                            .productItems(Set.of(itemSaved))
+                                            .build();
+                                    return optionTypeRepository.save(modelMapper.map(optionType, OptionTypeEntity.class));
+                                });
+
+                        OptionType typeSaved = OptionType
+                                .builder()
+                                .opTypeId(existingOptionType.getOpTypeId())
+                                .optionName(existingOptionType.getOptionName())
+                                .build();
+                        optionValueService.createOptionValueByOptionType(optionTypeRequest.getOptionValueRequest(), typeSaved, itemSaved);
+
+                        setTypes.add(existingOptionType);
+                    }
+                    ProductItemEntity productItemEntity = modelMapper.map(itemSaved,ProductItemEntity.class);
+                    productItemEntity.setOptionTypes(setTypes);
+                    itemRepository.save(productItemEntity);
+
+                }
+            }
+
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(201))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("SUCCESS")
+                                    .message("Add ProductItem FullOption Successfully")
+                                    .build()
+                    );
+        }catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(404))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("FAIL")
+                                    .message(e.getMessage())
+                                    .results("")
+                                    .build()
+                    );
+        }
     }
 
     @Override
@@ -230,6 +330,20 @@ public class ProductItemService implements IProductItemService {
     }
 
     @Override
+    public Double findMinPriceInProductItem(List<ProductItemEntity> productItems) {
+        List<Double> listPrice = productItems.stream()
+                .map(ProductItemEntity::getPrice).toList();
+        return Collections.min(listPrice);
+    }
+
+    @Override
+    public Double findMaxPriceInProductItem(List<ProductItemEntity> productItems) {
+        List<Double> listPrice = productItems.stream()
+                .map(ProductItemEntity::getPrice).toList();
+        return Collections.max(listPrice);
+    }
+
+    @Override
     public Boolean checkAvailableQuantityInStock(Long productItemId, Integer qtyMakeOrder) {
         ProductItemEntity productItem = itemRepository.findById(productItemId)
                 .orElseThrow(NoSuchElementException::new);
@@ -242,6 +356,18 @@ public class ProductItemService implements IProductItemService {
                 .orElseThrow(NoSuchElementException::new);
         if(productItem.getQtyInStock() >= qtyMakeOrder){
             productItem.setQtyInStock(productItem.getQtyInStock() - qtyMakeOrder);
+            itemRepository.save(productItem);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public Boolean plusQuantityInStock(Long productItemId, Integer qtyMakeOrder) {
+        ProductItemEntity productItem = itemRepository.findById(productItemId)
+                .orElseThrow(NoSuchElementException::new);
+        if(productItem.getQtyInStock() >= qtyMakeOrder){
+            productItem.setQtyInStock(productItem.getQtyInStock() + qtyMakeOrder);
             itemRepository.save(productItem);
             return true;
         }
@@ -276,8 +402,6 @@ public class ProductItemService implements IProductItemService {
             return ProductItemResponseDTO
                     .builder()
                     .pItemId(productItem.getPItemId())
-                    .price(productItem.getPrice())
-                    .qtyInStock(productItem.getQtyInStock())
                     .status(productItem.getStatus())
                     .imageProductList(imageProducts)
                     .optionTypes(optionTypeDTOList)

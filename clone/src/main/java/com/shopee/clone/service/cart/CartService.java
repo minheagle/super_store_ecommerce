@@ -1,11 +1,10 @@
 package com.shopee.clone.service.cart;
 
+import com.shopee.clone.DTO.order.request.CheckOutRequest;
 import org.springframework.http.ResponseEntity;
 
 public interface CartService {
     ResponseEntity<?> addToCart(Long pItemId, Long uId);
-    void remove(Long id);
-
     ResponseEntity<?> increaseQty(Long pItemId);
 
     ResponseEntity<?> reduceQty(Long cartId);
@@ -13,4 +12,8 @@ public interface CartService {
     ResponseEntity<?> delete(Long cartId);
 
     ResponseEntity<?> getCart(Long userId);
+
+    ResponseEntity<?> checkOut(CheckOutRequest listCartId);
+
+    ResponseEntity<?> checkAddress(CheckOutRequest order);
 }
