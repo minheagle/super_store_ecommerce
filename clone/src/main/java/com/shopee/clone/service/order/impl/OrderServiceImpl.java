@@ -543,11 +543,11 @@ public class OrderServiceImpl implements OrderService {
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTime();
     }
-    @Scheduled(fixedRate = 60000) // Chạy mỗi 1 phút (60,000 milliseconds)
-    public void printHello() {
-        System.out.println("Hello");
-        callApiDeliveryEveryday();
-    }
+//    @Scheduled(fixedRate = 60000) // Chạy mỗi 1 phút (60,000 milliseconds)
+//    public void printHello() {
+//        System.out.println("Hello");
+//        callApiDeliveryEveryday();
+//    }
     @Scheduled(cron = "0 0 0 * * ?") // Chạy sau 12h đêm hàng ngày
     public void callApiDeliveryEveryday(){
         List<OrderEntity> orderEntityList = summarizeOrdersYesterday();
