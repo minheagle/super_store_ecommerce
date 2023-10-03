@@ -402,8 +402,6 @@ public class ProductItemService implements IProductItemService {
             return ProductItemResponseDTO
                     .builder()
                     .pItemId(productItem.getPItemId())
-                    .price(productItem.getPrice())
-                    .qtyInStock(productItem.getQtyInStock())
                     .status(productItem.getStatus())
                     .imageProductList(imageProducts)
                     .optionTypes(optionTypeDTOList)
