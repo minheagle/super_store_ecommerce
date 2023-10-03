@@ -15,6 +15,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
@@ -39,6 +40,7 @@ public class OptionTypeService implements IOptionTypeService {
 
 
     @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class})
     public ResponseEntity<?> createOptionTypeWithOptionValue(OptionTypeCreate optionTypeCreate) {
         try {
             Long itemId = optionTypeCreate.getProductItemId();
@@ -67,8 +69,7 @@ public class OptionTypeService implements IOptionTypeService {
                                         .optionName(optionTypeRequest.getOptionName())
                                         .productItems(Set.of(productItem))
                                         .build();
-                                OptionTypeEntity typeEntitySaved = optionTypeRepository.save(modelMapper.map(optionType, OptionTypeEntity.class));
-                                return typeEntitySaved;
+                                return optionTypeRepository.save(modelMapper.map(optionType, OptionTypeEntity.class));
                             });
 
                     OptionType typeSaved = OptionType
