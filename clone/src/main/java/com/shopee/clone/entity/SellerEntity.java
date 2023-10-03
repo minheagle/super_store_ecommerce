@@ -34,6 +34,12 @@ public class SellerEntity {
     private Date createdAt;
     @Column(name = "number_follower")
     private Integer numberFollower = 0;
+    @Column(name = "store_phone_number")
+    private String storePhoneNumber;
+    @Column(name = "store_bank_name")
+    private String storeBankName;
+    @Column(name = "store_bank_account_number")
+    private String storeBankAccountNumber;
     @OneToMany(mappedBy = "seller", fetch = FetchType.EAGER)
     private List<ProductEntity> productList;
 }

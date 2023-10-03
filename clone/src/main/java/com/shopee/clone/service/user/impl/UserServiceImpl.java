@@ -79,7 +79,6 @@ public class UserServiceImpl implements UserService {
                 userRepository.save(user);
 
                 User userMapper = mapper.map(user, User.class);
-                System.out.println(userMapper);
 
                 // Trả về ResponseEntity chứa thông tin cập nhật thành công
                 return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
