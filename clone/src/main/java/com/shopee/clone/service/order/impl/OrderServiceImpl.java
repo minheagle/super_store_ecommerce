@@ -27,10 +27,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -44,6 +44,8 @@ public class OrderServiceImpl implements OrderService {
     private OrderRepository orderRepository;
     @Autowired
     private  CartRepository cartRepository;
+    @Autowired
+    private RestTemplate restTemplate;
     @Autowired
     private  OrderDetailRepository orderDetailRepository;
     @Autowired
@@ -64,8 +66,9 @@ public class OrderServiceImpl implements OrderService {
             List<OrderResponse> list = new ArrayList<>();
             Optional<UserEntity> userOptional = userService.findUserByID(orderRequest.getUserId());
             Optional<AddressEntity> addressOptional = addressRepository.findById(orderRequest.getAddressId());
-            if(userOptional.isPresent() && addressOptional.isPresent()){
 
+            if(userOptional.isPresent() && addressOptional.isPresent()){
+                String orderNumber = String.valueOf((userOptional.get().getId().toString() + addressOptional.get().getId().toString() + Instant.now().toString()).hashCode());
 //              Chạy vòng lặp để lưu các đơn hàng theo từng shop
                 orderRequest.getListOrderBelongToSeller().forEach(o ->{
 
@@ -75,12 +78,13 @@ public class OrderServiceImpl implements OrderService {
 
                     orderEntity.setUser(user);
                     orderEntity.setAddress(address);
+                    orderEntity.setOrderNumber(orderNumber);
                     orderEntity.setDate(Date.from(Instant.now()));
                     orderEntity.setNoteTimeRecipient(orderRequest.getNoteTimeRecipient());
-                    orderEntity.setPayment(orderRequest.getPaymentMethod());
+                    orderEntity.setPaymentStatus(orderRequest.getPaymentMethod());
 
 //                  True là thanh toán rồi
-                    if(orderEntity.getPayment()){
+                    if(orderEntity.getPaymentStatus()){
                         orderEntity.setStatus(EOrder.Transferred);
                     }else orderEntity.setStatus(EOrder.Pending);
 
@@ -199,7 +203,7 @@ public class OrderServiceImpl implements OrderService {
         orderResponse.setId(order.getId());
 
         orderResponse.setSeller(mapper.map(order.getSeller(),Seller.class));
-        orderResponse.setPayment(order.getPayment());
+        orderResponse.setPayment(order.getPaymentStatus());
         orderResponse.setDate(order.getDate());
         orderResponse.setShipMoney(order.getShipMoney());
         orderResponse.setStatus(order.getStatus().name());
@@ -543,13 +547,21 @@ public class OrderServiceImpl implements OrderService {
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTime();
     }
-//    @Scheduled(fixedRate = 60000) // Chạy mỗi 1 phút (60,000 milliseconds)
-//    public void printHello() {
-//        System.out.println("Hello");
-//        callApiDeliveryEveryday();
-//    }
+    @Override
+    public ResponseEntity<?> callApi() {
+//      Trả về Json
+        ResponseData<Object> data = ResponseData.builder().data(callApiDeliveryEveryday()).build();
+        return ResponseEntity.ok().body(ResponseObject
+                    .builder()
+                    .status("SUCCESS")
+                    .message("call api success!")
+                    .results(data)
+                    .build());
+
+    }
+
     @Scheduled(cron = "0 0 0 * * ?") // Chạy sau 12h đêm hàng ngày
-    public void callApiDeliveryEveryday(){
+    public RawEcommerceOrderCreate callApiDeliveryEveryday(){
         List<OrderEntity> orderEntityList = summarizeOrdersYesterday();
 //      Tạo một request để gọi qua api delivery
         RawEcommerceOrderCreate rawEcommerceOrderCreate = new RawEcommerceOrderCreate();
@@ -574,10 +586,11 @@ public class OrderServiceImpl implements OrderService {
                 DeliveryInformationRequest deliveryInformationRequest = new DeliveryInformationRequest();
                 deliveryInformationRequest.setDeliveryAddress(o.getAddress().getAddressName());
                 deliveryInformationRequest.setOrderDate(o.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-                deliveryInformationRequest.setOderNumber(o.getId().toString());
+                deliveryInformationRequest.setOrderNumber(o.getId().toString());
                 deliveryInformationRequest.setRecipientName(o.getUser().getFullName());
                 deliveryInformationRequest.setPhoneNumber(o.getUser().getPhone());
                 deliveryInformationRequest.setEmail(o.getUser().getEmail());
+                deliveryInformationRequest.setPaymentSt(o.getPaymentStatus());
                 deliveryInformationRequest.setNoteTimeRecipient(o.getNoteTimeRecipient());
                 List<ItemTransportRequest> itemTransportRequestList = new ArrayList<>();
                 o.getOrderDetails().forEach(oD->{
@@ -604,10 +617,11 @@ public class OrderServiceImpl implements OrderService {
                         DeliveryInformationRequest deliveryInformationRequest = new DeliveryInformationRequest();
                         deliveryInformationRequest.setDeliveryAddress(o.getAddress().getAddressName());
                         deliveryInformationRequest.setOrderDate(o.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-                        deliveryInformationRequest.setOderNumber(o.getId().toString());
+                        deliveryInformationRequest.setOrderNumber(o.getId().toString());
                         deliveryInformationRequest.setRecipientName(o.getUser().getFullName());
                         deliveryInformationRequest.setPhoneNumber(o.getUser().getPhone());
                         deliveryInformationRequest.setEmail(o.getUser().getEmail());
+                        deliveryInformationRequest.setPaymentSt(o.getPaymentStatus());
                         deliveryInformationRequest.setNoteTimeRecipient(o.getNoteTimeRecipient());
                         List<ItemTransportRequest> itemTransportRequestList = new ArrayList<>();
                         o.getOrderDetails().forEach(oD->{
@@ -629,6 +643,9 @@ public class OrderServiceImpl implements OrderService {
         });
 
         rawEcommerceOrderCreate.setRawEcommerceRequestList(rawEcommerceRequestList);
+
+        restTemplate.postForObject("192.168.2.67:8080/api/v1/delivery/receive-order", rawEcommerceOrderCreate, Object.class);
+        return rawEcommerceOrderCreate;
     }
 
 }

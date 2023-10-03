@@ -34,9 +34,10 @@ public class OrderEntity {
     @OneToMany(mappedBy = "order",fetch = FetchType.EAGER)
     private List<OrderDetailEntity> orderDetails;
     private Date date;
-    private Boolean payment;
+    private Boolean paymentStatus;
     private Double shipMoney;
     private LocalDateTime noteTimeRecipient;
+    private String orderNumber;
     private Date confirmDate;
     @Column(name = "status")
     @Enumerated(EnumType.STRING)

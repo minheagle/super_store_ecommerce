@@ -1,4 +1,4 @@
-package com.shopee.clone.rest_controller.oder;
+package com.shopee.clone.rest_controller.order;
 
 import com.shopee.clone.DTO.order.request.CheckOutRequest;
 import com.shopee.clone.service.cart.CartService;
