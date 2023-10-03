@@ -9,9 +9,11 @@ public enum EOrder {
 
 //    Đơn hàng đang được xử lý và chuẩn bị để giao hàng.
     Processing,
-
-//    Đơn hàng đã được giao cho dịch vụ vận chuyển và đang trong quá trình vận chuyển đến địa chỉ của khách hàng.
+//    Đơn hàng đã được giao
     Shipped,
+
+//    Đơn hàng đã bị shop từ chối
+    Rejection,
 //    Đơn hàng đã được giao thành công và đã đến tay khách hàng.
     Delivered,
 //    Đơn hàng đã bị hủy bỏ và không được xử lý hoặc giao hàng.

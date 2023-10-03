@@ -12,4 +12,12 @@ public interface OrderService{
     ResponseEntity<?> getOrder(Long orderId);
 
     ResponseEntity<?> cancelOrder(Long orderId);
+
+    ResponseEntity<?> confirmOrder(Long sellerId, Long orderId);
+
+    ResponseEntity<?> getOrderBySeller(Long sellerId);
+
+    ResponseEntity<?> rejectionOrder(Long sellerId, Long orderId);
+
+    ResponseEntity<?> getAllOrderConfirm();
 }

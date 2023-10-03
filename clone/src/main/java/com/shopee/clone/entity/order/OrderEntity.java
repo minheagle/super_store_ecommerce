@@ -31,12 +31,13 @@ public class OrderEntity {
     @ManyToOne
     @JoinColumn(name = "address_id")
     private AddressEntity address;
-    @OneToMany(mappedBy = "order")
+    @OneToMany(mappedBy = "order",fetch = FetchType.EAGER)
     private List<OrderDetailEntity> orderDetails;
     private Date date;
     private Boolean payment;
     private Double shipMoney;
     private LocalDateTime noteTimeRecipient;
+    private Date confirmDate;
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private EOrder status;

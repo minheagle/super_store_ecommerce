@@ -1,7 +1,7 @@
 package com.shopee.clone.service.order.impl;
 
 import com.shopee.clone.DTO.ResponseData;
-import com.shopee.clone.DTO.order.request.OrderRequest;
+import com.shopee.clone.DTO.order.request.*;
 import com.shopee.clone.DTO.order.response.OrderDetailResponse;
 import com.shopee.clone.DTO.order.response.OrderResponse;
 import com.shopee.clone.DTO.product.response.OptionTypeDTO;
@@ -27,14 +27,16 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -177,8 +179,6 @@ public class OrderServiceImpl implements OrderService {
                         .build());
             }
 
-
-
         }
         catch (Exception e){
             return ResponseEntity
@@ -203,7 +203,8 @@ public class OrderServiceImpl implements OrderService {
         orderResponse.setDate(order.getDate());
         orderResponse.setShipMoney(order.getShipMoney());
         orderResponse.setStatus(order.getStatus().name());
-
+        Optional<AddressEntity> address = addressRepository.findById(order.getAddress().getId());
+        address.ifPresent(addressEntity -> orderResponse.setDeliveryAddress(addressEntity.getAddressName()));
         List<OrderDetailResponse> orderDetailResponseList =
         order.getOrderDetails().stream().map(this::convertOrderDetailToODResponse).toList();
         orderResponse.setOrderDetailList(orderDetailResponseList);
@@ -284,7 +285,9 @@ public class OrderServiceImpl implements OrderService {
                 order.setStatus(EOrder.Cancelled);
 
 //                Trả lại số lượng cho order
-
+                order.getOrderDetails().forEach(oD ->{
+                    productItemService.plusQuantityInStock(oD.getProductItems().getPItemId(),oD.getQuantity());
+                });
                 orderRepository.save(order);
 //              Trả về Json
                 OrderResponse orderResponse = convertOrderEntityToOrderResponse(order);
@@ -318,6 +321,314 @@ public class OrderServiceImpl implements OrderService {
                             .build()
                     );
         }
+    }
+
+    @Override
+    public ResponseEntity<?> confirmOrder(Long sellerId, Long orderId) {
+        try {
+            Optional<OrderEntity> orderOptional = orderRepository.findById(orderId);
+            if(orderOptional.isPresent()){
+                OrderEntity order = orderOptional.get();
+
+                if(order.getStatus().equals(EOrder.Pending)) {
+                    order.setConfirmDate(Date.from(Instant.now()));
+                    order.setStatus(EOrder.Processing);
+                    orderRepository.save(order);
+                    return getOrderBySeller(sellerId);
+//              Trả về Json
+//                    ResponseData<Object> data = ResponseData.builder().data().build();
+//
+//                    return ResponseEntity.ok().body(ResponseObject
+//                            .builder()
+//                            .status("SUCCESS")
+//                            .message("Confirm Order success!")
+//                            .results(data)
+//                            .build());
+                }
+                return ResponseEntity
+                        .badRequest()
+                        .body(ResponseObject.builder()
+                                .status("FAIL")
+                                .message("The status of the order is incorrect!")
+                                .results("")
+                                .build()
+                        );
+            }
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message("Order not exist!")
+                            .results("")
+                            .build()
+                    );
+
+        }
+        catch (Exception e){
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message(e.getMessage())
+                            .results("")
+                            .build()
+                    );
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getOrderBySeller(Long sellerId) {
+        try {
+            Optional<SellerEntity> sellerOptional = sellerRepository.findById(sellerId);
+            if(sellerOptional.isPresent()){
+                SellerEntity seller = sellerOptional.get();
+
+                List<OrderEntity> orderList =  orderRepository.findAllBySeller(seller);
+
+                List<OrderResponse> list = new ArrayList<>();
+                orderList.forEach(o->{
+//              Trả về Json
+                OrderResponse orderResponse = convertOrderEntityToOrderResponse(o);
+                list.add(orderResponse);
+                });
+
+                ResponseData<Object> data = ResponseData.builder().data(list).build();
+
+                return ResponseEntity.ok().body(ResponseObject
+                        .builder()
+                        .status("SUCCESS")
+                        .message("Get Order by Seller success!")
+                        .results(data)
+                        .build());
+            }
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message("Seller not exist!")
+                            .results("")
+                            .build()
+                    );
+
+        }
+        catch (Exception e){
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message(e.getMessage())
+                            .results("")
+                            .build()
+                    );
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> rejectionOrder(Long sellerId, Long orderId) {
+        try {
+            Optional<OrderEntity> orderOptional = orderRepository.findById(orderId);
+            if(orderOptional.isPresent()){
+                OrderEntity order = orderOptional.get();
+
+                if(order.getStatus().equals(EOrder.Pending)) {
+                    order.setConfirmDate(Date.from(Instant.now()));
+                    order.setStatus(EOrder.Rejection);
+                    orderRepository.save(order);
+                    return getOrderBySeller(sellerId);
+//              Trả về Json
+//                    ResponseData<Object> data = ResponseData.builder().data().build();
+//
+//                    return ResponseEntity.ok().body(ResponseObject
+//                            .builder()
+//                            .status("SUCCESS")
+//                            .message("Confirm Order success!")
+//                            .results(data)
+//                            .build());
+                }
+                return ResponseEntity
+                        .badRequest()
+                        .body(ResponseObject.builder()
+                                .status("FAIL")
+                                .message("The status of the order is incorrect!")
+                                .results("")
+                                .build()
+                        );
+            }
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message("Order not exist!")
+                            .results("")
+                            .build()
+                    );
+
+        }
+        catch (Exception e){
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message(e.getMessage())
+                            .results("")
+                            .build()
+                    );
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getAllOrderConfirm() {
+            try {
+                List<OrderEntity> ordersToday = summarizeOrdersYesterday();
+                List<OrderResponse> list = new ArrayList<>();
+                ordersToday.forEach(o->{
+//              Trả về Json
+                    OrderResponse orderResponse = convertOrderEntityToOrderResponse(o);
+                    list.add(orderResponse);
+                });
+
+                ResponseData<Object> data = ResponseData.builder().data(list).build();
+
+                return ResponseEntity.ok().body(ResponseObject
+                        .builder()
+                        .status("SUCCESS")
+                        .message("Get all order yesterday success!")
+                        .results(data)
+                        .build());
+            }
+            catch (Exception e){
+                return ResponseEntity
+                        .badRequest()
+                        .body(ResponseObject.builder()
+                                .status("FAIL")
+                                .message(e.getMessage())
+                                .results("")
+                                .build()
+                        );
+            }
+    }
+
+    public List<OrderEntity> summarizeOrdersYesterday() {
+        // Lấy ngày hôm qua
+        Date yesterday = getYesterday();
+
+        // Lấy ngày bắt đầu của hôm qua (00:00:00)
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(yesterday);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        Date startOfYesterday = calendar.getTime();
+
+        // Lấy ngày kết thúc của hôm qua (23:59:59.999)
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MILLISECOND, 999);
+        Date endOfYesterday = calendar.getTime();
+
+        // Tìm các đơn hàng có ConfirmDate trong khoảng từ startOfYesterday đến endOfYesterday và trạng thái "Processing"
+        return orderRepository.findByConfirmDateBetweenAndStatus(startOfYesterday, endOfYesterday, EOrder.Processing);
+    }
+
+    private Date getYesterday() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, -1); // Lấy ngày hôm qua
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
+    @Scheduled(fixedRate = 60000) // Chạy mỗi 1 phút (60,000 milliseconds)
+    public void printHello() {
+        System.out.println("Hello");
+        callApiDeliveryEveryday();
+    }
+    @Scheduled(cron = "0 0 0 * * ?") // Chạy sau 12h đêm hàng ngày
+    public void callApiDeliveryEveryday(){
+        List<OrderEntity> orderEntityList = summarizeOrdersYesterday();
+//      Tạo một request để gọi qua api delivery
+        RawEcommerceOrderCreate rawEcommerceOrderCreate = new RawEcommerceOrderCreate();
+
+        List<SellerEntity> sellerList = new ArrayList<>();
+        List<RawEcommerceRequest> rawEcommerceRequestList = new ArrayList<>();
+        orderEntityList.forEach(o->{
+            AtomicReference<Double> total = new AtomicReference<>(0D);
+            SellerEntity seller = o.getSeller();
+            if(!sellerList.contains(seller)){
+                sellerList.add(seller);
+                RawEcommerceRequest rawEcommerceRequest = new RawEcommerceRequest();
+                PickupInformationRequest pickupInformationRequest = new PickupInformationRequest();
+                pickupInformationRequest.setPickupAddress(seller.getStoreAddress());
+                pickupInformationRequest.setShopId(seller.getId());
+                pickupInformationRequest.setShopName(seller.getStoreName());
+//              Truyền sdt của shop
+                pickupInformationRequest.setPhoneContact("0123456789");
+//              Truyền thông tin của shop
+                rawEcommerceRequest.setPickupInformationRequest(pickupInformationRequest);
+                List<DeliveryInformationRequest> deliveryInformationRequests = new ArrayList<>();
+                DeliveryInformationRequest deliveryInformationRequest = new DeliveryInformationRequest();
+                deliveryInformationRequest.setDeliveryAddress(o.getAddress().getAddressName());
+                deliveryInformationRequest.setOrderDate(o.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+                deliveryInformationRequest.setOderNumber(o.getId().toString());
+                deliveryInformationRequest.setRecipientName(o.getUser().getFullName());
+                deliveryInformationRequest.setPhoneNumber(o.getUser().getPhone());
+                deliveryInformationRequest.setEmail(o.getUser().getEmail());
+                deliveryInformationRequest.setNoteTimeRecipient(o.getNoteTimeRecipient());
+                List<ItemTransportRequest> itemTransportRequestList = new ArrayList<>();
+                o.getOrderDetails().forEach(oD->{
+                    ItemTransportRequest item = new ItemTransportRequest();
+                    item.setQuantity(oD.getQuantity());
+                    item.setProductName(oD.getProductItems().getProduct().getProductName());
+                    item.setUnitPrice(oD.getUnitPrice());
+                    total.updateAndGet(v -> v + item.getUnitPrice() * item.getQuantity());
+                    itemTransportRequestList.add(item);
+                });
+                deliveryInformationRequest.setItemTransportRequestList(itemTransportRequestList);
+                deliveryInformationRequests.add(deliveryInformationRequest);
+                rawEcommerceRequest.setDeliveryInformationRequestList(deliveryInformationRequests);
+
+                if(rawEcommerceRequest.getTotalAmount()==null){
+                   Double amount=0D;
+                    rawEcommerceRequest.setTotalAmount(total.get()+ amount);
+                }else{
+                rawEcommerceRequest.setTotalAmount(total.get()+ rawEcommerceRequest.getTotalAmount());}
+                rawEcommerceRequestList.add(rawEcommerceRequest);
+            }else {
+                rawEcommerceOrderCreate.getRawEcommerceRequestList().forEach(r ->{
+                    if(r.getPickupInformationRequest().getShopId().equals(seller.getId())){
+                        DeliveryInformationRequest deliveryInformationRequest = new DeliveryInformationRequest();
+                        deliveryInformationRequest.setDeliveryAddress(o.getAddress().getAddressName());
+                        deliveryInformationRequest.setOrderDate(o.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+                        deliveryInformationRequest.setOderNumber(o.getId().toString());
+                        deliveryInformationRequest.setRecipientName(o.getUser().getFullName());
+                        deliveryInformationRequest.setPhoneNumber(o.getUser().getPhone());
+                        deliveryInformationRequest.setEmail(o.getUser().getEmail());
+                        deliveryInformationRequest.setNoteTimeRecipient(o.getNoteTimeRecipient());
+                        List<ItemTransportRequest> itemTransportRequestList = new ArrayList<>();
+                        o.getOrderDetails().forEach(oD->{
+                            ItemTransportRequest item = new ItemTransportRequest();
+                            item.setQuantity(oD.getQuantity());
+                            item.setProductName(oD.getProductItems().getProduct().getProductName());
+                            item.setUnitPrice(oD.getUnitPrice());
+                            total.updateAndGet(v -> v + item.getUnitPrice() * item.getQuantity());
+                            itemTransportRequestList.add(item);
+                        });
+                        deliveryInformationRequest.setItemTransportRequestList(itemTransportRequestList);
+                        r.setTotalAmount(total.get()+ r.getTotalAmount());
+                    }
+                });
+            }
+//          Thay đổi trạng thái của order
+            o.setStatus(EOrder.Shipped);
+            orderRepository.save(o);
+        });
+
+        rawEcommerceOrderCreate.setRawEcommerceRequestList(rawEcommerceRequestList);
     }
 
 }
