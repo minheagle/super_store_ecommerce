@@ -331,16 +331,22 @@ public class ProductItemService implements IProductItemService {
 
     @Override
     public Double findMinPriceInProductItem(List<ProductItemEntity> productItems) {
-        List<Double> listPrice = productItems.stream()
-                .map(ProductItemEntity::getPrice).toList();
-        return Collections.min(listPrice);
+        if(!productItems.isEmpty()){
+            List<Double> listPrice = productItems.stream()
+                    .map(ProductItemEntity::getPrice).toList();
+            return Collections.min(listPrice);
+        }
+        return 0.0;
     }
 
     @Override
     public Double findMaxPriceInProductItem(List<ProductItemEntity> productItems) {
-        List<Double> listPrice = productItems.stream()
-                .map(ProductItemEntity::getPrice).toList();
-        return Collections.max(listPrice);
+        if(!productItems.isEmpty()){
+            List<Double> listPrice = productItems.stream()
+                    .map(ProductItemEntity::getPrice).toList();
+            return Collections.max(listPrice);
+        }
+        return 0.0;
     }
 
     @Override

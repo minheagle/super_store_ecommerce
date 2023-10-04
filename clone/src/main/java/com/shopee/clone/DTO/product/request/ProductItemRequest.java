@@ -17,7 +17,7 @@ public class ProductItemRequest {
     private Long productId;
     @Digits(integer = 9,fraction = 3)
     private Double price;
-    @NotBlank
+//    @NotBlank
     private Integer qtyInStock;
     private MultipartFile[] imgProductFile;
 }

@@ -33,7 +33,7 @@ public class ProductRestController {
         this.imageProductService = imageProductService;
     }
 
-    @PostMapping("add-new/product")
+    @PostMapping("add-new/product") // Step 1
     public ResponseEntity<?> createProduct(@RequestBody @Valid ProductRequestCreate productRequestCreate,
                                            BindingResult bindingResult) {
         if(bindingResult.hasErrors()) {
@@ -42,7 +42,7 @@ public class ProductRestController {
         return productService.addNewProduct(productRequestCreate);
     }
 
-    @PostMapping("add-new/pitem-image")
+    @PostMapping("add-new/pitem-image") // Step 2
     public ResponseEntity<?> createProductItemWithProductID(@Valid ProductItemRequest itemRequest,
                                                             BindingResult bindingResult){
         if(bindingResult.hasErrors()) {
@@ -61,7 +61,7 @@ public class ProductRestController {
         return productItemService.createProductItemFullOption(productItemFullOptionRequest);
     }
 
-    @PostMapping("add-new/option-by-item")
+    @PostMapping("add-new/option-by-item") // Step 3
     public ResponseEntity<?> createOptionWithItemID(@RequestBody OptionTypeCreate optionTypeCreate){
         return optionTypeService.createOptionTypeWithOptionValue(optionTypeCreate);
     }
