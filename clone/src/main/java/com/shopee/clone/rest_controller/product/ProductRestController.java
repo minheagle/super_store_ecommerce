@@ -74,7 +74,7 @@ public class ProductRestController {
     public ResponseEntity<?> getAllProductByCategoryId(@PathVariable Long categoryId){
         return productService.getAllProductByCategoryId(categoryId);
     }
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<?> getProductsPaging(@RequestParam(name = "page", required = false, defaultValue = "1") Integer page,
                                                 @RequestParam(name = "size", required = false, defaultValue = "25") Integer size,
                                                 @RequestParam(name = "sort", required = false, defaultValue = "ASC") String sort){
