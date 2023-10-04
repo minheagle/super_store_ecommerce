@@ -13,6 +13,8 @@ import java.util.List;
 @Builder
 public class ProductItemResponseDTO {
     private Long pItemId;
+    private Double price;
+    private Integer qtyInStock;
     private Boolean status;
     private List<ImageProduct> imageProductList;
     private List<OptionTypeDTO> optionTypes;

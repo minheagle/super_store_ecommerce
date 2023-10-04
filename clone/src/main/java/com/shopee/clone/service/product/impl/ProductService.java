@@ -197,6 +197,8 @@ public class ProductService implements IProductService {
         ProductItemResponseDTO productItemResponseDTO = ProductItemResponseDTO
                 .builder()
                 .pItemId(productItemEntity.getPItemId())
+                .price(productItemEntity.getPrice())
+                .qtyInStock(productItemEntity.getQtyInStock())
                 .status(productItemEntity.getStatus())
                 .imageProductList(imageProducts)
                 .optionTypes(optionTypeDTOS)
