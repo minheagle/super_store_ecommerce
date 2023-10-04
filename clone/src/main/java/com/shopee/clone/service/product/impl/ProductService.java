@@ -551,6 +551,8 @@ public class ProductService implements IProductService {
                     .builder()
                     .productId(productEntity.getProductId())
                     .productName(productEntity.getProductName())
+                    .minPrice(productItemService.findMinPriceInProductItem(productItemEntities))
+                    .maxPrice(productItemService.findMaxPriceInProductItem(productItemEntities))
                     .description(productEntity.getDescription())
                     .status(productEntity.getStatus())
                     .sellerId(productEntity.getSeller().getId())
