@@ -537,6 +537,7 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findByConfirmDateBetweenAndStatus(startOfYesterday, endOfYesterday, EOrder.Processing);
     }
 
+
     private Date getYesterday() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Calendar calendar = Calendar.getInstance();
@@ -560,6 +561,10 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
+//    @Scheduled(fixedRate = 120000) // Lên lịch chạy mỗi 2 phút (120,000 milliseconds)
+//    public void sayHello() {
+//        callApi();
+//    }
     @Scheduled(cron = "0 0 0 * * ?") // Chạy sau 12h đêm hàng ngày
     public RawEcommerceOrderCreate callApiDeliveryEveryday(){
         List<OrderEntity> orderEntityList = summarizeOrdersYesterday();
@@ -644,7 +649,7 @@ public class OrderServiceImpl implements OrderService {
 
         rawEcommerceOrderCreate.setRawEcommerceRequestList(rawEcommerceRequestList);
 
-        restTemplate.postForObject("192.168.2.67:8080/api/v1/delivery/receive-order", rawEcommerceOrderCreate, Object.class);
+        restTemplate.postForObject("http://192.168.1.113:8080/api/v1/delivery/receive-order", rawEcommerceOrderCreate, Object.class);
         return rawEcommerceOrderCreate;
     }
 

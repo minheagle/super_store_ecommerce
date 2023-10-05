@@ -5,6 +5,9 @@ import com.shopee.clone.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Setter
 @Getter
 @AllArgsConstructor
@@ -25,4 +28,6 @@ public class CommentEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private CommentEntity parentComment;
+    @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL)
+    private List<CommentEntity> childComments = new ArrayList<>();
 }

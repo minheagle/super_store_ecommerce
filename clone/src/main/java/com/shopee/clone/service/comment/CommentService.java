@@ -5,4 +5,8 @@ import org.springframework.http.ResponseEntity;
 
 public interface CommentService {
     ResponseEntity<?> createComment(CreateCommentRequest createCommentRequest);
+
+    ResponseEntity<?> getListCommentByProduct(Long productId);
+
+    ResponseEntity<?> deleteCommentAndChildren(Long commentId);
 }

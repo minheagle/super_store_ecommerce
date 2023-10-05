@@ -12,8 +12,16 @@ import org.springframework.web.bind.annotation.*;
 public class CommentRestController {
     @Autowired
     private CommentService commentService;
-    @PostMapping("create/{userId}/{productId}/{parentId}")
+    @PostMapping("/create")
     public ResponseEntity<?> createComment(@RequestBody CreateCommentRequest createCommentRequest){
         return commentService.createComment(createCommentRequest);
+    }
+    @GetMapping("/{productId}")
+    public ResponseEntity<?> getListCommentByProduct(@PathVariable Long productId){
+        return commentService.getListCommentByProduct(productId);
+    }
+    @PostMapping("/delete/{commentId}")
+    public ResponseEntity<?> deleteComments(@PathVariable Long commentId){
+        return commentService.deleteCommentAndChildren(commentId);
     }
 }
