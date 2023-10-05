@@ -1,4 +1,4 @@
-package com.shopee.clone.rest_controller.oder;
+package com.shopee.clone.rest_controller.order;
 
 import com.shopee.clone.service.order.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,4 +30,9 @@ public class ConfirmOrderRestController {
     public ResponseEntity<?> getAllOrderConfirm(){
         return orderService.getAllOrderConfirm();
     }
+    @GetMapping("/test-call-api")
+    public ResponseEntity<?> testCallApi(){
+        return orderService.callApi();
+    }
+
 }

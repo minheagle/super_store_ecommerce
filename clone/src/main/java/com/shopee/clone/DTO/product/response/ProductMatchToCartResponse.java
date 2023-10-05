@@ -1,5 +1,6 @@
 package com.shopee.clone.DTO.product.response;
 
+import com.shopee.clone.DTO.cart.ProductItemMatchToCart;
 import lombok.*;
 
 @Getter
@@ -11,5 +12,5 @@ public class ProductMatchToCartResponse {
     private String productName;
     private String description;
     private Boolean status;
-    private ProductItemResponseDTO productItemResponse;
+    private ProductItemMatchToCart productItemResponse;
 }

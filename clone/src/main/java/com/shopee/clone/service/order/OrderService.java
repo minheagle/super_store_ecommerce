@@ -20,4 +20,5 @@ public interface OrderService{
     ResponseEntity<?> rejectionOrder(Long sellerId, Long orderId);
 
     ResponseEntity<?> getAllOrderConfirm();
+    ResponseEntity<?> callApi();
 }

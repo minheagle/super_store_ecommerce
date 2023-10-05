@@ -5,6 +5,7 @@ import com.shopee.clone.DTO.call_api_delivery.request.GetMoneyShip;
 import com.shopee.clone.DTO.cart.AddToCartRequest;
 import com.shopee.clone.DTO.cart.CartResponse;
 import com.shopee.clone.DTO.cart.LineItem;
+import com.shopee.clone.DTO.cart.ProductItemMatchToCart;
 import com.shopee.clone.DTO.checkAddress.AddressRequest;
 import com.shopee.clone.DTO.order.request.CheckOutRequest;
 import com.shopee.clone.DTO.order.response.CheckOutResponse;
@@ -61,7 +62,7 @@ public class CartServiceImpl implements CartService {
                     Long check = findCartItemId(cartEntities, productItem.get());
                     if(check!=null) {
 //                        increaseQty(check);
-                        updateQuantity(check);
+                        updateQuantity(check,addToCartRequest.getQuantity());
                         cartEntities = cartRepository.findByUser(user.get());
                         List<CartResponse> cartRepositories = convertCartResponses(cartEntities);
                         ResponseData<Object> response = ResponseData.builder().data(cartRepositories).build();
@@ -110,8 +111,6 @@ public class CartServiceImpl implements CartService {
                             .build()
                     );
         }catch (Exception e){
-            System.out.println(e.getMessage());
-            System.out.println(e.getCause());
             return ResponseEntity
                     .badRequest()
                     .body(ResponseObject.builder()
@@ -124,22 +123,17 @@ public class CartServiceImpl implements CartService {
 
     }
 
-    public void updateQuantity(Long cartId) {
+    public void updateQuantity(Long cartId,Integer quantity) {
         try{
             Optional<CartEntity> cartOptional = cartRepository.findById(cartId);
             if(cartOptional.isPresent()){
                 CartEntity cart = cartOptional.get();
 //                kiểm tra số lượng sản phẩm còn đủ không?
                 boolean check = productItemService.checkAvailableQuantityInStock
-                        (cart.getProductItems().getPItemId(),cart.getQuantity()+1);
+                        (cart.getProductItems().getPItemId(),cart.getQuantity()+quantity);
                 if(check){
-                    cart.setQuantity(cart.getQuantity()+1);
+                    cart.setQuantity(cart.getQuantity()+quantity);
                     cartRepository.save(cart);
-//
-//                    List<CartEntity> cartList = cartRepository.findByUser(cart.getUser());
-//
-//                    List<CartResponse> cartRepositories = convertCartResponses(cartList);
-//                    ResponseData<Object> response = ResponseData.builder().data(cartRepositories).build();
                 }
             }
         }catch (Exception e){
@@ -160,11 +154,11 @@ public class CartServiceImpl implements CartService {
 
     private List<CartResponse> convertCartResponses(List<CartEntity> cartEntities){
         List<CartResponse> responses = new ArrayList<>() ;
-        List<Seller> sellers = new ArrayList<>();
+        List<Long> sellers = new ArrayList<>();
         cartEntities
                 .forEach(c -> {
-                    if(!sellers.contains(modelMapper.map(c.getSeller(), Seller.class))){
-                    sellers.add(modelMapper.map(c.getSeller(), Seller.class));
+                    if(!sellers.contains(c.getSeller().getId())){
+                    sellers.add(c.getSeller().getId());
                     CartResponse cartResponse = new CartResponse();
                     cartResponse.setSeller(modelMapper.map(c.getSeller(), Seller.class));
                     List<CartEntity> cartList = cartRepository.findByUserAndSeller(c.getUser(),c.getSeller());
@@ -184,7 +178,7 @@ public class CartServiceImpl implements CartService {
                         modelMapper
                                 .map(c.getProductItems().getProduct(), ProductMatchToCartResponse.class)
                                  ,c.getQuantity());
-                    ProductItemResponseDTO productItemDTO = modelMapper.map(c.getProductItems(), ProductItemResponseDTO.class);
+                    ProductItemMatchToCart productItemDTO = modelMapper.map(c.getProductItems(), ProductItemMatchToCart.class);
 
                     List<OptionTypeDTO> typeList = new ArrayList<>();
                     c.getProductItems()
