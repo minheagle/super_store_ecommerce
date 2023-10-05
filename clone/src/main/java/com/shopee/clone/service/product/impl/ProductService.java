@@ -285,6 +285,10 @@ public class ProductService implements IProductService {
 
                     productResponseDTO = ProductResponseDTO
                             .builder()
+                            .productId(productEntity.getProductId())
+                            .sellerId(productEntity.getSeller().getId())
+                            .minPrice(productItemService.findMinPriceInProductItem(productEntity.getProductItemList()))
+                            .maxPrice(productItemService.findMaxPriceInProductItem(productEntity.getProductItemList()))
                             .productName(productEntity.getProductName())
                             .minPrice(productEntity.getMinPrice())
                             .maxPrice(productEntity.getMaxPrice())
@@ -445,7 +449,15 @@ public class ProductService implements IProductService {
             System.out.println(productEntities.get(0).getProductName());
             List<ProductResponseDTO> productResponseDTOs = mappingProductEntityListToProductDTOs(productEntities);
             productsResponse.setData(productResponseDTOs);
-
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(200))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("SUCCESS")
+                                    .results(productsResponse)
+                                    .build()
+                    );
         }catch (Exception e){
             return ResponseEntity
                     .status(HttpStatusCode.valueOf(404))
@@ -458,15 +470,7 @@ public class ProductService implements IProductService {
                                     .build()
                     );
         }
-        return ResponseEntity
-                .status(HttpStatusCode.valueOf(200))
-                .body(
-                        ResponseObject
-                                .builder()
-                                .status("SUCCESS")
-                                .results(productsResponse)
-                                .build()
-                );
+
     }
 
     @Override

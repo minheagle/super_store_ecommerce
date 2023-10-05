@@ -1,18 +1,21 @@
 package com.shopee.clone.rest_controller.cart;
 
+import com.shopee.clone.DTO.cart.AddToCartRequest;
 import com.shopee.clone.service.cart.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/cart")
+@PreAuthorize("hasRole('ROLE_USER')")
 public class CartRestController {
     @Autowired
     private CartService cartService;
-    @PostMapping("add-to-cart/{pItemId}/{uId}")
-    public ResponseEntity<?> addToCart(@PathVariable Long pItemId,@PathVariable Long uId){
-        return cartService.addToCart(pItemId,uId);
+    @PostMapping("add-to-cart/{uId}")
+    public ResponseEntity<?> addToCart(@PathVariable Long uId, @RequestBody AddToCartRequest addToCartRequest){
+        return cartService.addToCart(addToCartRequest, uId);
     }
 
     @PostMapping("update-qty-cart/up/{cartId}")

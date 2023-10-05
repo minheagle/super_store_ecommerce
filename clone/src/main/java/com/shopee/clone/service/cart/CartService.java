@@ -1,10 +1,11 @@
 package com.shopee.clone.service.cart;
 
+import com.shopee.clone.DTO.cart.AddToCartRequest;
 import com.shopee.clone.DTO.order.request.CheckOutRequest;
 import org.springframework.http.ResponseEntity;
 
 public interface CartService {
-    ResponseEntity<?> addToCart(Long pItemId, Long uId);
+    ResponseEntity<?> addToCart(AddToCartRequest addToCartRequest, Long uId);
     ResponseEntity<?> increaseQty(Long pItemId);
 
     ResponseEntity<?> reduceQty(Long cartId);
