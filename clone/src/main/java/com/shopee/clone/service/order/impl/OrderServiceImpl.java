@@ -1,6 +1,7 @@
 package com.shopee.clone.service.order.impl;
 
 import com.shopee.clone.DTO.ResponseData;
+import com.shopee.clone.DTO.cart.ProductItemMatchToCart;
 import com.shopee.clone.DTO.order.request.*;
 import com.shopee.clone.DTO.order.response.OrderDetailResponse;
 import com.shopee.clone.DTO.order.response.OrderResponse;
@@ -222,7 +223,7 @@ public class OrderServiceImpl implements OrderService {
         orderDetailResponse.setUnitPrice(x.getUnitPrice());
         orderDetailResponse.setProduct(mapper.map(x.getProductItems().getProduct(), ProductMatchToCartResponse.class));
 
-        ProductItemResponseDTO productItemDTO = mapper.map(x.getProductItems(), ProductItemResponseDTO.class);
+        ProductItemMatchToCart productItemDTO = mapper.map(x.getProductItems(), ProductItemMatchToCart.class);
 
         List<OptionTypeDTO> typeList = new ArrayList<>();
         x.getProductItems()
