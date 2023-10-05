@@ -5,12 +5,13 @@ import com.shopee.clone.entity.ProductItemEntity;
 import com.shopee.clone.entity.SellerEntity;
 import com.shopee.clone.entity.UserEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "cart")
 public class CartEntity {
     @Id
