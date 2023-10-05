@@ -16,6 +16,7 @@ public interface UserService {
     void delete(Long id);
 
     ResponseEntity<?> updateUser(long userId, UserUpdateDTO userUpdateDTO);
+    ResponseEntity<?> changeAvatar(long userId, ChangeAvatarRequest changeAvatarRequest);
 
     ResponseEntity<?> blockUser(Long id);
 
@@ -28,7 +29,7 @@ public interface UserService {
     ResponseEntity<?> findUserByUserName(String userName);
 
     ResponseEntity<?> getUserById(Long id);
-    ResponseEntity<?> becomeSellerService(BecomeSellerRequest becomeSellerRequest);
+    ResponseEntity<?> becomeSellerService(Long userId,BecomeSellerRequest becomeSellerRequest);
 
     ResponseEntity<?> addAddress(Long id, UpdateAddressDTO updateAddressDTO);
 }

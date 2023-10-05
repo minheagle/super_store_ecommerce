@@ -28,6 +28,8 @@ public class CategoryEntity {
     private Integer left;
     @Column(name = "right_position")
     private Integer right;
+    @Column(name = "parent_id")
+    private Long parentId;
 
     @OneToMany(mappedBy = "category", fetch = FetchType.EAGER)
     private List<ProductEntity> productList;

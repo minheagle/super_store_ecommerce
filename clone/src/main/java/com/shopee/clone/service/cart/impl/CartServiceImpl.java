@@ -2,6 +2,7 @@ package com.shopee.clone.service.cart.impl;
 
 import com.shopee.clone.DTO.ResponseData;
 import com.shopee.clone.DTO.call_api_delivery.request.GetMoneyShip;
+import com.shopee.clone.DTO.cart.AddToCartRequest;
 import com.shopee.clone.DTO.cart.CartResponse;
 import com.shopee.clone.DTO.cart.LineItem;
 import com.shopee.clone.DTO.checkAddress.AddressRequest;
@@ -31,12 +32,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
-
 public class CartServiceImpl implements CartService {
-
     private static final String DELIVERY_API_URL = "DELIVERY_API_URL";
     @Autowired
     private RestTemplate restTemplate;
@@ -46,25 +44,24 @@ public class CartServiceImpl implements CartService {
     private UserService userService;
     @Autowired
     private ModelMapper modelMapper;
-
     @Autowired
     private ProductItemRepository productItemRepository;
     @Autowired
     private ProductItemService productItemService;
 
-
     @Override
-    public ResponseEntity<?> addToCart(Long pItemId, Long uId) {
+    public ResponseEntity<?> addToCart(AddToCartRequest addToCartRequest, Long uId) {
         try{
             CartEntity cartEntity = new CartEntity();
             Optional<UserEntity> user = userService.findUserByID(uId);
             if (user.isPresent()) {
                 List<CartEntity> cartEntities = cartRepository.findByUser(user.get());
-                Optional<ProductItemEntity> productItem = productItemRepository.findById(pItemId);
+                Optional<ProductItemEntity> productItem = productItemRepository.findById(addToCartRequest.getProductItemId());
                 if (productItem.isPresent()) {
-                    Long check = findCartItemId(cartEntities,productItem.get());
+                    Long check = findCartItemId(cartEntities, productItem.get());
                     if(check!=null) {
-                        increaseQty(check);
+//                        increaseQty(check);
+                        updateQuantity(check);
                         cartEntities = cartRepository.findByUser(user.get());
                         List<CartResponse> cartRepositories = convertCartResponses(cartEntities);
                         ResponseData<Object> response = ResponseData.builder().data(cartRepositories).build();
@@ -77,7 +74,7 @@ public class CartServiceImpl implements CartService {
                     }else {
                         cartEntity.setUser(user.get());
                         cartEntity.setProductItems(productItem.get());
-                        cartEntity.setQuantity(1);
+                        cartEntity.setQuantity(addToCartRequest.getQuantity());
                         cartEntity.setSeller(productItem.get().getProduct().getSeller());
                         cartRepository.save(cartEntity);
 
@@ -113,6 +110,8 @@ public class CartServiceImpl implements CartService {
                             .build()
                     );
         }catch (Exception e){
+            System.out.println(e.getMessage());
+            System.out.println(e.getCause());
             return ResponseEntity
                     .badRequest()
                     .body(ResponseObject.builder()
@@ -123,6 +122,29 @@ public class CartServiceImpl implements CartService {
                     );
         }
 
+    }
+
+    public void updateQuantity(Long cartId) {
+        try{
+            Optional<CartEntity> cartOptional = cartRepository.findById(cartId);
+            if(cartOptional.isPresent()){
+                CartEntity cart = cartOptional.get();
+//                kiểm tra số lượng sản phẩm còn đủ không?
+                boolean check = productItemService.checkAvailableQuantityInStock
+                        (cart.getProductItems().getPItemId(),cart.getQuantity()+1);
+                if(check){
+                    cart.setQuantity(cart.getQuantity()+1);
+                    cartRepository.save(cart);
+//
+//                    List<CartEntity> cartList = cartRepository.findByUser(cart.getUser());
+//
+//                    List<CartResponse> cartRepositories = convertCartResponses(cartList);
+//                    ResponseData<Object> response = ResponseData.builder().data(cartRepositories).build();
+                }
+            }
+        }catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     private Long findCartItemId(List<CartEntity> cartEntities, ProductItemEntity productItemEntity) {

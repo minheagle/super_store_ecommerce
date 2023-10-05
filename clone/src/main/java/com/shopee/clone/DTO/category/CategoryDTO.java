@@ -16,4 +16,5 @@ public class CategoryDTO {
     private String imagePublicId;
     private Integer left;
     private Integer right;
+    private Long parentId;
 }

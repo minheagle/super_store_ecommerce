@@ -1,18 +1,15 @@
 package com.shopee.clone.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "users")
-@Data
+//@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserEntity {
@@ -37,7 +34,7 @@ public class UserEntity {
     private String password;
 
     @Column(name = "date_of_birth")
-    private Date dataOfBirth;
+    private Date dateOfBirth;
 
     @Column(name = "image_url")
     private String imageUrl;
@@ -45,8 +42,8 @@ public class UserEntity {
     @Column(name = "img_public_id")
     private String imgPublicId;
 
-    @OneToMany(mappedBy = "user",fetch = FetchType.EAGER)
-    private List<AddressEntity> address;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<AddressEntity> address = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_has_role",

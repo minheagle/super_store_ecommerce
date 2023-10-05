@@ -1,9 +1,12 @@
 package com.shopee.clone.DTO.seller.response;
 
-import lombok.Data;
+import lombok.*;
 
 import java.util.Date;
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Seller {
     private Long id;
     private String storeName;

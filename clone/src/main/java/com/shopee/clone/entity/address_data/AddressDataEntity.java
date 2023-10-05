@@ -1,5 +1,6 @@
 package com.shopee.clone.entity.address_data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -19,13 +20,8 @@ public class AddressDataEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-//    private Integer code;
-//    private String codename;
-//    @JsonProperty("division_type")
-//    private String divisionType;
-//    @JsonProperty("phone_code")
-//    private Integer phoneCode;
+    @JsonIgnore
     @JsonProperty("districts")
-    @OneToMany(mappedBy = "addressData",fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "addressData")
     private List<DistrictEntity> districtEntities;
 }

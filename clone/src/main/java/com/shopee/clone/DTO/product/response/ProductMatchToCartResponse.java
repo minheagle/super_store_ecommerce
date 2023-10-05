@@ -1,15 +1,12 @@
 package com.shopee.clone.DTO.product.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-
 public class ProductMatchToCartResponse {
     private String productName;
     private String description;

@@ -17,12 +17,7 @@ public class DistrictEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-//    private Integer code;
-//    private String codename;
-//    @JsonProperty("division_type")
-//    private String divisionType;
-//    @JsonProperty("short_codename")
-//    private String shortCodename;
+    @JsonIgnore
     @OneToMany(mappedBy = "district",fetch = FetchType.EAGER)
     private List<WardEntity> wards;
     @JsonIgnore
