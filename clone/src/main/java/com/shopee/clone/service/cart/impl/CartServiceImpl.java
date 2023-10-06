@@ -11,7 +11,6 @@ import com.shopee.clone.DTO.order.request.CheckOutRequest;
 import com.shopee.clone.DTO.order.response.CheckOutResponse;
 import com.shopee.clone.DTO.product.response.OptionTypeDTO;
 import com.shopee.clone.DTO.product.response.OptionValueDTO;
-import com.shopee.clone.DTO.product.response.ProductItemResponseDTO;
 import com.shopee.clone.DTO.product.response.ProductMatchToCartResponse;
 import com.shopee.clone.DTO.seller.response.Seller;
 import com.shopee.clone.entity.ProductItemEntity;
@@ -29,10 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class CartServiceImpl implements CartService {
@@ -463,6 +459,6 @@ public class CartServiceImpl implements CartService {
 
         // Gọi API và nhận giá trị boolean trả về
         return Boolean.TRUE.equals(
-                restTemplate.postForObject(DELIVERY_API_URL, addressRequest, Boolean.class));
+                restTemplate.getForObject(DELIVERY_API_URL, Boolean.class));
     }
 }
