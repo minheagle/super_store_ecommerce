@@ -69,17 +69,24 @@ public class OrderServiceImpl implements OrderService {
             Optional<AddressEntity> addressOptional = addressRepository.findById(orderRequest.getAddressId());
 
             if(userOptional.isPresent() && addressOptional.isPresent()){
-                String orderNumber = String.valueOf((userOptional.get().getId().toString() + addressOptional.get().getId().toString() + Instant.now().toString()).hashCode());
-//              Chạy vòng lặp để lưu các đơn hàng theo từng shop
-                orderRequest.getListOrderBelongToSeller().forEach(o ->{
+                int orderNumber = randomOrderNumber();
+                while(checkOrderNumber(orderNumber)){
+                    orderNumber = randomOrderNumber();
+                }
+                int finalOrderNumber = orderNumber;
 
+//              xu ly  dieu kien thanh toan
+
+//              Chạy vòng lặp để lưu các đơn hàng theo từng shop
+
+                orderRequest.getListOrderBelongToSeller().forEach(o ->{
                     UserEntity user = userOptional.get();
                     AddressEntity address = addressOptional.get();
                     OrderEntity orderEntity = new OrderEntity();
 
                     orderEntity.setUser(user);
                     orderEntity.setAddress(address);
-                    orderEntity.setOrderNumber(orderNumber);
+                    orderEntity.setOrderNumber(finalOrderNumber);
                     orderEntity.setDate(Date.from(Instant.now()));
                     orderEntity.setNoteTimeRecipient(orderRequest.getNoteTimeRecipient());
                     orderEntity.setPaymentStatus(orderRequest.getPaymentMethod());
@@ -381,6 +388,17 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    private int randomOrderNumber() {
+        Random random = new Random();
+        int min = 100; // Số nhỏ nhất có 5 chữ số
+        int max = 99999; // Số lớn nhất có 5 chữ số
+        return random.nextInt(max - min + 1) + min;
+    }
+
+    private Boolean checkOrderNumber(int orderNumber){
+        Optional<OrderEntity> order =  orderRepository.findByOrderNumber(orderNumber);
+        return order.isPresent();
+    }
     @Override
     public ResponseEntity<?> getOrderBySeller(Long sellerId) {
         try {

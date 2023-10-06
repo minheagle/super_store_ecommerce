@@ -37,7 +37,7 @@ public class OrderEntity {
     private Boolean paymentStatus;
     private Double shipMoney;
     private LocalDateTime noteTimeRecipient;
-    private String orderNumber;
+    private int orderNumber;
     private Date confirmDate;
     @Column(name = "status")
     @Enumerated(EnumType.STRING)

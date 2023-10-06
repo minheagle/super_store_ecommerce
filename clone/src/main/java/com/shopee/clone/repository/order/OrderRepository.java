@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity,Long> {
@@ -16,7 +17,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity,Long> {
 
     List<OrderEntity> findAllBySeller(SellerEntity seller);
 
-    List<OrderEntity> findByConfirmDateAndStatus(Date now, EOrder eOrder);
-
     List<OrderEntity> findByConfirmDateBetweenAndStatus(Date startOfYesterday, Date endOfYesterday, EOrder eOrder);
+
+    Optional<OrderEntity> findByOrderNumber(int orderNumber);
 }
