@@ -35,6 +35,8 @@ public class TestUploadImage {
 
     @Autowired
     private AddressDataService addressDataService;
+    @Autowired
+    private IProductService productService;
 
     @Value("${cloudinary.category.folder}")
     private String categoryFolder;
@@ -72,5 +74,15 @@ public class TestUploadImage {
     @PostMapping("/address-detail")
     public ResponseEntity<?> getDetailAddress(@RequestBody GetAddressDetailRequest getAddressDetailRequest){
         return addressDataService.getDetailAddress(getAddressDetailRequest);
+    }
+
+    @GetMapping("search")
+    public ResponseEntity<?> searchAndFilter(@RequestParam(required = false) String productName,
+                                             @RequestParam(required = false) Double minPrice,
+                                             @RequestParam(required = false) Double maxPrice,
+                                             @RequestParam(required = false) Long categoryId,
+                                             @RequestParam(defaultValue = "0") int page,
+                                             @RequestParam(defaultValue = "10") int size){
+        return  productService.searchAndFilter(productName, minPrice, maxPrice, categoryId, page, size);
     }
 }

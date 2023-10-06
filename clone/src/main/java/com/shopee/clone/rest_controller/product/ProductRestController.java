@@ -106,8 +106,10 @@ public class ProductRestController {
     public ResponseEntity<?> searchAndFilter(@RequestParam(required = false) String productName,
                                              @RequestParam(required = false) Double minPrice,
                                              @RequestParam(required = false) Double maxPrice,
-                                             @RequestParam(required = false) Long categoryId){
-        return  productService.searchAndFilter(productName, minPrice, maxPrice, categoryId);
+                                             @RequestParam(required = false) Long categoryId,
+                                             @RequestParam(defaultValue = "0") int page,
+                                             @RequestParam(defaultValue = "10") int size){
+        return  productService.searchAndFilter(productName, minPrice, maxPrice, categoryId, page, size);
     }
 
     @PutMapping("product/update/{id}")
