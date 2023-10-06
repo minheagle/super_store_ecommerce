@@ -14,8 +14,13 @@ public interface IProductService {
     ResponseEntity<?> confirmFinishCreateProduct(Long productId);
     ProductResponseDTO getProductByIdForService (Long productId);
     ResponseEntity<?> addNewProduct(ProductRequestCreate productRequest);
-    ResponseEntity<?> searchProductByName(String productName);
-    ResponseEntity<?> searchAndFilter(String name, Double minPrice, Double maxPrice, Long categoryId);
+//    ResponseEntity<?> searchProductByName(String productName);
+    ResponseEntity<?> searchAndFilter(String name,
+                                      Double minPrice,
+                                      Double maxPrice,
+                                      Long categoryId,
+                                      int page,
+                                      int size);
     ResponseEntity<?> editProductById(Long productId, ProductRequestEdit pRequestEdit);
 
     ResponseEntity<?> removeProductById(Long productId);
