@@ -15,8 +15,8 @@ public class CheckOutRestController {
     public ResponseEntity<?> checkOut(@RequestBody CheckOutRequest listCartId){
         return cartService.checkOut(listCartId);
     }
-    @PostMapping("check-address")
-    public ResponseEntity<?> checkAddress(@RequestBody CheckOutRequest order){
-        return cartService.checkAddress(order);
-    }
+//    @PostMapping("check-address")
+//    public ResponseEntity<?> checkAddress(@RequestBody String address){
+//        return cartService.checkAddress(address);
+//    }
 }

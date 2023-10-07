@@ -6,7 +6,6 @@ import com.shopee.clone.DTO.cart.AddToCartRequest;
 import com.shopee.clone.DTO.cart.CartResponse;
 import com.shopee.clone.DTO.cart.LineItem;
 import com.shopee.clone.DTO.cart.ProductItemMatchToCart;
-import com.shopee.clone.DTO.checkAddress.AddressRequest;
 import com.shopee.clone.DTO.order.request.CheckOutRequest;
 import com.shopee.clone.DTO.order.response.CheckOutResponse;
 import com.shopee.clone.DTO.product.response.OptionTypeDTO;
@@ -57,7 +56,6 @@ public class CartServiceImpl implements CartService {
                 if (productItem.isPresent()) {
                     Long check = findCartItemId(cartEntities, productItem.get());
                     if(check!=null) {
-//                        increaseQty(check);
                         updateQuantity(check,addToCartRequest.getQuantity());
                         cartEntities = cartRepository.findByUser(user.get());
                         List<CartResponse> cartRepositories = convertCartResponses(cartEntities);
@@ -395,9 +393,8 @@ public class CartServiceImpl implements CartService {
                     Double shipMoney = 30000D * getMoneyShip.getQuantity();
 //                    Double shipMoney =
 //                            restTemplate
-//                                    .postForObject
-//                                            (DELIVERY_API_URL,
-//                                                    getMoneyShip
+//                                    .getForObject
+//                                            (DELIVERY_API_URL
 //                                                    , Double.class);
                     checkOutResponse.setShipMoney(shipMoney);
                     return checkOutResponse;
@@ -422,36 +419,35 @@ public class CartServiceImpl implements CartService {
                     );
         }
     }
-
-    @Override
-    public ResponseEntity<?> checkAddress(CheckOutRequest order) {
-        try{
-            boolean check =  isAddressValid(order);
-            if(check){
-            return ResponseEntity.ok().body(ResponseObject
-                    .builder()
-                    .status("SUCCESS")
-                    .message("Valid address!")
-                    .results(true)
-                    .build());
-            }
-            return ResponseEntity.ok().body(ResponseObject
-                    .builder()
-                    .status("Fail")
-                    .message("Invalid address!")
-                    .results(false)
-                    .build());
-        }catch (Exception e){
-            return ResponseEntity
-                    .badRequest()
-                    .body(ResponseObject.builder()
-                            .status("FAIL")
-                            .message(e.getMessage())
-                            .results("")
-                            .build()
-                    );
-        }
-    }
+//    @Override
+//    public ResponseEntity<?> checkAddress(String address) {
+//        try{
+//            boolean check =  isAddressValid(address);
+//            if(check){
+//            return ResponseEntity.ok().body(ResponseObject
+//                    .builder()
+//                    .status("SUCCESS")
+//                    .message("Valid address!")
+//                    .results(true)
+//                    .build());
+//            }
+//            return ResponseEntity.ok().body(ResponseObject
+//                    .builder()
+//                    .status("Fail")
+//                    .message("Invalid address!")
+//                    .results(false)
+//                    .build());
+//        }catch (Exception e){
+//            return ResponseEntity
+//                    .badRequest()
+//                    .body(ResponseObject.builder()
+//                            .status("FAIL")
+//                            .message(e.getMessage())
+//                            .results("")
+//                            .build()
+//                    );
+//        }
+//    }
 
     @Override
     public ResponseEntity<?> updateQty(Long cartId, Integer qty) {
@@ -508,12 +504,10 @@ public class CartServiceImpl implements CartService {
 
     }
 
-    private boolean isAddressValid(CheckOutRequest order) {
-        AddressRequest addressRequest = new AddressRequest();
-        addressRequest.setAddress(order.getShipAddress());
-
-        // Gọi API và nhận giá trị boolean trả về
-        return Boolean.TRUE.equals(
-                restTemplate.getForObject(DELIVERY_API_URL, Boolean.class));
-    }
+//    private boolean isAddressValid(String address) {
+//       String api = DELIVERY_API_URL + "/a";
+//        // Gọi API và nhận giá trị boolean trả về
+//        return Boolean.TRUE.equals(
+//                restTemplate.getForObject(DELIVERY_API_URL, Boolean.class));
+//    }
 }

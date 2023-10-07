@@ -16,7 +16,7 @@ public interface CartService {
 
     ResponseEntity<?> checkOut(CheckOutRequest listCartId);
 
-    ResponseEntity<?> checkAddress(CheckOutRequest order);
+//    ResponseEntity<?> checkAddress(String address);
 
     ResponseEntity<?> updateQty(Long cartId, Integer qty);
 }
