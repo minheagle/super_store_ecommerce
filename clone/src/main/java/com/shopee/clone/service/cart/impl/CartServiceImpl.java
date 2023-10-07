@@ -463,7 +463,7 @@ public class CartServiceImpl implements CartService {
                 boolean check = productItemService.checkAvailableQuantityInStock
                         (cart.getProductItems().getPItemId(),qty);
                 if(check){
-                    cart.setQuantity(cart.getQuantity()-1);
+                    cart.setQuantity(qty);
                     cartRepository.save(cart);
 
                     List<CartEntity> cartList = cartRepository.findByUser(cart.getUser());
