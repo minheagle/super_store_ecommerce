@@ -453,6 +453,61 @@ public class CartServiceImpl implements CartService {
         }
     }
 
+    @Override
+    public ResponseEntity<?> updateQty(Long cartId, Integer qty) {
+        try{
+            Optional<CartEntity> cartOptional = cartRepository.findById(cartId);
+            if(cartOptional.isPresent()){
+                CartEntity cart = cartOptional.get();
+//              kiểm tra số lượng sản phẩm còn đủ không?
+                boolean check = productItemService.checkAvailableQuantityInStock
+                        (cart.getProductItems().getPItemId(),qty);
+                if(check){
+                    cart.setQuantity(cart.getQuantity()-1);
+                    cartRepository.save(cart);
+
+                    List<CartEntity> cartList = cartRepository.findByUser(cart.getUser());
+
+                    List<CartResponse> cartRepositories = convertCartResponses(cartList);
+                    ResponseData<Object> response = ResponseData.builder().data(cartRepositories).build();
+                    return ResponseEntity.ok().body(ResponseObject
+                            .builder()
+                            .status("SUCCESS")
+                            .message("Update quantity success!")
+                            .results(response)
+                            .build());
+                }
+                return ResponseEntity
+                        .badRequest()
+                        .body(ResponseObject.builder()
+                                .status("FAIL")
+                                .message("Invalid quantity!")
+                                .results("")
+                                .build()
+                        );
+
+            }
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message("CartId not found!")
+                            .results("")
+                            .build()
+                    );
+        }catch (Exception e){
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message(e.getMessage())
+                            .results("")
+                            .build()
+                    );
+        }
+
+    }
+
     private boolean isAddressValid(CheckOutRequest order) {
         AddressRequest addressRequest = new AddressRequest();
         addressRequest.setAddress(order.getShipAddress());

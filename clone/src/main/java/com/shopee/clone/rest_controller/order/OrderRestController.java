@@ -24,7 +24,6 @@ public class OrderRestController {
     public ResponseEntity<?> getOrder(@PathVariable Long orderId){
         return orderService.getOrder(orderId);
     }
-
     @PostMapping("order/cancel/{orderId}")
     public ResponseEntity<?> cancelOrder(@PathVariable Long orderId){
         return orderService.cancelOrder(orderId);
