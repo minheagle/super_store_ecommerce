@@ -16,6 +16,7 @@ import com.shopee.clone.util.ResponseObject;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatusCode;
@@ -373,68 +374,70 @@ public class ProductService implements IProductService {
         return null;
     }
 
-    @Override
-    public ResponseEntity<?> searchProductByName(String productName) {
-        try {
-            if(productName.isBlank()){
-                return ResponseEntity
-                        .badRequest()
-                        .body(
-                                ResponseObject
-                                        .builder()
-                                        .status("FAIL")
-                                        .message("Name Search Not Null")
-                                        .build()
-                        );
-            }
-            List<ProductEntity> productEntities = productRepository.searchByProductName(productName);
-            if(productEntities.isEmpty()){
-                return ResponseEntity
-                        .status(HttpStatusCode.valueOf(204))
-                        .body(
-                                ResponseObject
-                                        .builder()
-                                        .status("FAIL")
-                                        .message("NOT FOUND")
-                                        .build()
-                        );
-            }
-            List<ProductResponseDTO> productResponseDTOs = mappingProductEntityListToProductDTOs(productEntities);
-
-            ProductResponseObject<List<ProductResponseDTO>> productsResponse = new ProductResponseObject<>();
-            productsResponse.setData(productResponseDTOs);
-
-            return ResponseEntity
-                    .status(HttpStatusCode.valueOf(200))
-                    .body(
-                            ResponseObject
-                                    .builder()
-                                    .status("SUCCESS")
-                                    .message("Search Products Success")
-                                    .results(productsResponse)
-                                    .build()
-                    );
-
-
-        }catch (Exception e){
-            return ResponseEntity
-                    .status(HttpStatusCode.valueOf(404))
-                    .body(
-                            ResponseObject
-                                    .builder()
-                                    .status("FAIL")
-                                    .message(e.getMessage())
-                                    .results("")
-                                    .build()
-                    );
-        }
-    }
+//    @Override
+//    public ResponseEntity<?> searchProductByName(String productName) {
+//        try {
+//            if(productName.isBlank()){
+//                return ResponseEntity
+//                        .badRequest()
+//                        .body(
+//                                ResponseObject
+//                                        .builder()
+//                                        .status("FAIL")
+//                                        .message("Name Search Not Null")
+//                                        .build()
+//                        );
+//            }
+//            List<ProductEntity> productEntities = productRepository.searchByProductName(productName);
+//            if(productEntities.isEmpty()){
+//                return ResponseEntity
+//                        .status(HttpStatusCode.valueOf(204))
+//                        .body(
+//                                ResponseObject
+//                                        .builder()
+//                                        .status("FAIL")
+//                                        .message("NOT FOUND")
+//                                        .build()
+//                        );
+//            }
+//            List<ProductResponseDTO> productResponseDTOs = mappingProductEntityListToProductDTOs(productEntities);
+//
+//            ProductResponseObject<List<ProductResponseDTO>> productsResponse = new ProductResponseObject<>();
+//            productsResponse.setData(productResponseDTOs);
+//
+//            return ResponseEntity
+//                    .status(HttpStatusCode.valueOf(200))
+//                    .body(
+//                            ResponseObject
+//                                    .builder()
+//                                    .status("SUCCESS")
+//                                    .message("Search Products Success")
+//                                    .results(productsResponse)
+//                                    .build()
+//                    );
+//
+//
+//        }catch (Exception e){
+//            return ResponseEntity
+//                    .status(HttpStatusCode.valueOf(404))
+//                    .body(
+//                            ResponseObject
+//                                    .builder()
+//                                    .status("FAIL")
+//                                    .message(e.getMessage())
+//                                    .results("")
+//                                    .build()
+//                    );
+//        }
+//    }
 
     @Override
     public ResponseEntity<?> searchAndFilter(String name,
                                              Double minPrice,
                                              Double maxPrice,
-                                             Long categoryId) {
+                                             Long categoryId,
+                                             int page,
+                                             int size) {
 
         ProductResponseObject<List<ProductResponseDTO>> productsResponse = new ProductResponseObject<>();
         try{
@@ -445,10 +448,24 @@ public class ProductService implements IProductService {
             productSpc = productSpc.and(ProductSpecification.searchByName(name));
             productSpc = productSpc.and(ProductSpecification.filterByPrice(minPrice,maxPrice));
             productSpc = productSpc.and(ProductSpecification.filterByCategory(categoryId));
-            List<ProductEntity> productEntities = productRepository.findAll(productSpc);
-            System.out.println(productEntities.get(0).getProductName());
+
+            // Tạo đối tượng Pageable để phân trang
+            Pageable pageable = PageRequest.of(page, size);
+            // Sử dụng phân trang danh sách product trong truy vấn
+            Page<ProductEntity> productPage = productRepository.findAll(productSpc, pageable);
+
+            List<ProductEntity> productEntities = productPage.getContent();
+            System.out.println("Data: "+productEntities.size());
+
             List<ProductResponseDTO> productResponseDTOs = mappingProductEntityListToProductDTOs(productEntities);
             productsResponse.setData(productResponseDTOs);
+
+            // Lấy thông tin phân trang từ đối tượng Page
+            PaginationResponse paginationResponse = new PaginationResponse(
+                    productPage.getTotalPages(),
+                    productPage.getTotalElements(),
+                    productPage.getNumber(),
+                    productPage.getSize());
             return ResponseEntity
                     .status(HttpStatusCode.valueOf(200))
                     .body(
@@ -456,6 +473,7 @@ public class ProductService implements IProductService {
                                     .builder()
                                     .status("SUCCESS")
                                     .results(productsResponse)
+                                    .pagination(paginationResponse)
                                     .build()
                     );
         }catch (Exception e){

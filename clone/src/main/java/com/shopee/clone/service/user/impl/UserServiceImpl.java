@@ -81,8 +81,13 @@ public class UserServiceImpl implements UserService {
                 User userMapper = mapper.map(user, User.class);
 
                 // Trả về ResponseEntity chứa thông tin cập nhật thành công
-                return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
-                        "User updated successfully",userMapper));
+                return ResponseEntity.ok().body(
+                        ResponseObject.builder()
+                                .status("SUCCESS")
+                                .message("User updated successfully")
+                                .results(userMapper)
+                                .build()
+                       );
             } else {
                 // Trả về ResponseEntity chứa thông tin lỗi nếu không tìm thấy người dùng
                 return ResponseEntity
@@ -163,8 +168,13 @@ public class UserServiceImpl implements UserService {
                 userRepository.save(user);
 
                 // Trả về ResponseEntity chứa thông tin cập nhật thành công
-                return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
-                        "Ban User successfully",user));
+                return ResponseEntity.ok().body(
+                        ResponseObject.builder()
+                                .status("SUCCESS")
+                                .message("Ban User successfully")
+                                .results(user)
+                                .build()
+                        );
             } else {
                 // Trả về ResponseEntity chứa thông tin lỗi nếu không tìm thấy người dùng
                 return ResponseEntity
@@ -203,8 +213,13 @@ public class UserServiceImpl implements UserService {
                 userRepository.save(user);
 
                 // Trả về ResponseEntity chứa thông tin cập nhật thành công
-                return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
-                        "unBan User successfully",user));
+                return ResponseEntity.ok().body(
+                        ResponseObject.builder()
+                                .status("SUCCESS")
+                                .message("unBan User successfully")
+                                .results(user)
+                                .build()
+                );
             } else {
                 // Trả về ResponseEntity chứa thông tin lỗi nếu không tìm thấy người dùng
                 return ResponseEntity
@@ -245,18 +260,31 @@ public class UserServiceImpl implements UserService {
                         userRepository.save(user);
 
                         // Trả về ResponseEntity chứa thông tin cập nhật thành công
-                        return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
-                                "Change password successfully",changePasswordDTO.getNewPassword()));
+                        return ResponseEntity.ok().body(
+                                ResponseObject.builder()
+                                        .status("SUCCESS")
+                                        .message("Change password successfully")
+                                        .results(changePasswordDTO.getNewPassword())
+                                        .build()
+                                );
                     }
                     // Trả về ResponseEntity chứa thông tin lỗi
-                    return ResponseEntity.badRequest().body(new ResponseObject("Fail",
-                            "Confirm password Error","newPass: "+changePasswordDTO.getNewPassword())+ "" +
-                            " ConfirmPassword: "+changePasswordDTO.getConfirmPassword());
+                    return ResponseEntity.badRequest().body(
+                            ResponseObject.builder()
+                                    .status("Fail")
+                                    .message("Confirm password Error")
+                                    .build()
+                            );
                 };
 
                 // Trả về ResponseEntity chứa thông tin lỗi nêú sai mật khẩu
-                return ResponseEntity.ok().body(new ResponseObject("Fail",
-                        "OutPassword error",changePasswordDTO.getOldPassword()));
+                return ResponseEntity.ok().body(
+                        ResponseObject.builder()
+                                .status("Fail")
+                                .message("OutPassword error")
+                                .results(changePasswordDTO.getOldPassword())
+                                .build()
+                        );
             } else {
                 // Trả về ResponseEntity chứa thông tin lỗi nếu không tìm thấy người dùng
                 return ResponseEntity
@@ -296,8 +324,13 @@ public class UserServiceImpl implements UserService {
                 addressService.save(address);
 
                 // Trả về ResponseEntity chứa thông tin cập nhật thành công
-                return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
-                        "Address updated successfully",address.getAddressName()));
+                return ResponseEntity.ok().body(
+                        ResponseObject.builder()
+                                .status("SUCCESS")
+                                .message("Address updated successfully")
+                                .results(address.getAddressName())
+                                .build()
+                        );
             } else {
                 // Trả về ResponseEntity chứa thông tin lỗi nếu không tìm thấy địa chỉ id
                 return ResponseEntity
@@ -400,8 +433,13 @@ public class UserServiceImpl implements UserService {
             User userDTO = mapper.map(userEntity, User.class);
 
             // Trả về ResponseEntity chứa thông tin cập nhật thành công
-            return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
-                        "Address add successfully", userDTO));
+            return ResponseEntity.ok().body(
+                    ResponseObject.builder()
+                            .status("SUCCESS")
+                            .message("Address add successfully")
+                            .results(userDTO)
+                            .build()
+                    );
 
         } catch (Exception e) {
             // Trả về ResponseEntity chứa thông tin lỗi nếu có lỗi xảy ra
@@ -487,8 +525,13 @@ public class UserServiceImpl implements UserService {
                 User userDTO = mapper.map(user, User.class);
 
                 // Trả về ResponseEntity chứa thông tin cập nhật thành công
-                return ResponseEntity.ok().body(new ResponseObject("SUCCESS",
-                        "Get user successfully",user));
+                return ResponseEntity.ok().body(
+                        ResponseObject.builder()
+                                .status("SUCCESS")
+                                .message("Get user successfully")
+                                .results(user)
+                                .build()
+                        );
             } else {
                 // Trả về ResponseEntity chứa thông tin lỗi nếu không tìm thấy người dùng
                 return ResponseEntity
