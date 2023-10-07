@@ -11,5 +11,6 @@ public class OrderRequest {
     private Long userId;
     private List<OrderBelongToSellerRequest> listOrderBelongToSeller;
     private Boolean paymentMethod;
+    private Double shipMoney;
     private LocalDateTime noteTimeRecipient;
 }

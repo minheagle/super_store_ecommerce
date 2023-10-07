@@ -1,7 +1,6 @@
 package com.shopee.clone.service.cart.impl;
 
 import com.shopee.clone.DTO.ResponseData;
-import com.shopee.clone.DTO.call_api_delivery.request.GetMoneyShip;
 import com.shopee.clone.DTO.cart.AddToCartRequest;
 import com.shopee.clone.DTO.cart.CartResponse;
 import com.shopee.clone.DTO.cart.LineItem;
@@ -26,12 +25,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
 
 @Service
 public class CartServiceImpl implements CartService {
-    private static final String DELIVERY_API_URL = "DELIVERY_API_URL";
+    private static final String DELIVERY_API_URL = "http://192.168.1.113:8080/api/v1/delivery/cost";
     @Autowired
     private RestTemplate restTemplate;
     @Autowired
@@ -155,7 +155,11 @@ public class CartServiceImpl implements CartService {
                     sellers.add(c.getSeller().getId());
                     CartResponse cartResponse = new CartResponse();
                     cartResponse.setSeller(modelMapper.map(c.getSeller(), Seller.class));
-                    List<CartEntity> cartList = cartRepository.findByUserAndSeller(c.getUser(),c.getSeller());
+                    List<CartEntity> cartList = new ArrayList<>();
+                    cartEntities.forEach(x->{
+                        if(x.getSeller().equals(c.getSeller()))
+                            cartList.add(x);
+                    });
                     cartResponse.setLineItems(convertLineItem(cartList));
                     responses.add(cartResponse);
                     }
@@ -386,17 +390,15 @@ public class CartServiceImpl implements CartService {
                         cartResponse.stream().map(c -> {
                     CheckOutResponse checkOutResponse = new CheckOutResponse();
                     checkOutResponse.setCartResponse(c);
-                    GetMoneyShip getMoneyShip = new GetMoneyShip();
-                    getMoneyShip.setAddressOfShop(c.getSeller().getStoreAddress());
-                    getMoneyShip.setAddressOfUser(checkOutRequest.getShipAddress());
-                    getMoneyShip.setQuantity(c.getLineItems().size());
-                    Double shipMoney = 30000D * getMoneyShip.getQuantity();
+
+//                    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(DELIVERY_API_URL)
+//                            .queryParam("deliveryAddress",checkOutRequest.getShipAddress() );
 //                    Double shipMoney =
 //                            restTemplate
 //                                    .getForObject
-//                                            (DELIVERY_API_URL
+//                                            (builder.toUriString()
 //                                                    , Double.class);
-                    checkOutResponse.setShipMoney(shipMoney);
+//                    checkOutResponse.setShipMoney(shipMoney);
                     return checkOutResponse;
                 }).toList();
 
