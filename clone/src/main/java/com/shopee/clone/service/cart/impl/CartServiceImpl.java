@@ -1,12 +1,10 @@
 package com.shopee.clone.service.cart.impl;
 
 import com.shopee.clone.DTO.ResponseData;
-import com.shopee.clone.DTO.call_api_delivery.request.GetMoneyShip;
 import com.shopee.clone.DTO.cart.AddToCartRequest;
 import com.shopee.clone.DTO.cart.CartResponse;
 import com.shopee.clone.DTO.cart.LineItem;
 import com.shopee.clone.DTO.cart.ProductItemMatchToCart;
-import com.shopee.clone.DTO.checkAddress.AddressRequest;
 import com.shopee.clone.DTO.order.request.CheckOutRequest;
 import com.shopee.clone.DTO.order.response.CheckOutResponse;
 import com.shopee.clone.DTO.product.response.OptionTypeDTO;
@@ -27,12 +25,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
 
 @Service
 public class CartServiceImpl implements CartService {
-    private static final String DELIVERY_API_URL = "DELIVERY_API_URL";
+    private static final String DELIVERY_API_URL = "http://192.168.1.113:8080/api/v1/delivery/cost";
     @Autowired
     private RestTemplate restTemplate;
     @Autowired
@@ -57,7 +56,6 @@ public class CartServiceImpl implements CartService {
                 if (productItem.isPresent()) {
                     Long check = findCartItemId(cartEntities, productItem.get());
                     if(check!=null) {
-//                        increaseQty(check);
                         updateQuantity(check,addToCartRequest.getQuantity());
                         cartEntities = cartRepository.findByUser(user.get());
                         List<CartResponse> cartRepositories = convertCartResponses(cartEntities);
@@ -142,7 +140,7 @@ public class CartServiceImpl implements CartService {
         for (CartEntity cartEntity : cartEntities) {
             if (Objects.equals(cartEntity.getProductItems().getPItemId(), productItemEntity.getPItemId())) {
                 result = cartEntity.getId();
-                break; // Exit the loop as soon as a match is found
+                break;
             }
         }
         return result;
@@ -157,7 +155,11 @@ public class CartServiceImpl implements CartService {
                     sellers.add(c.getSeller().getId());
                     CartResponse cartResponse = new CartResponse();
                     cartResponse.setSeller(modelMapper.map(c.getSeller(), Seller.class));
-                    List<CartEntity> cartList = cartRepository.findByUserAndSeller(c.getUser(),c.getSeller());
+                    List<CartEntity> cartList = new ArrayList<>();
+                    cartEntities.forEach(x->{
+                        if(x.getSeller().equals(c.getSeller()))
+                            cartList.add(x);
+                    });
                     cartResponse.setLineItems(convertLineItem(cartList));
                     responses.add(cartResponse);
                     }
@@ -388,18 +390,15 @@ public class CartServiceImpl implements CartService {
                         cartResponse.stream().map(c -> {
                     CheckOutResponse checkOutResponse = new CheckOutResponse();
                     checkOutResponse.setCartResponse(c);
-                    GetMoneyShip getMoneyShip = new GetMoneyShip();
-                    getMoneyShip.setAddressOfShop(c.getSeller().getStoreAddress());
-                    getMoneyShip.setAddressOfUser(checkOutRequest.getShipAddress());
-                    getMoneyShip.setQuantity(c.getLineItems().size());
-                    Double shipMoney = 30000D * getMoneyShip.getQuantity();
+
+//                    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(DELIVERY_API_URL)
+//                            .queryParam("deliveryAddress",checkOutRequest.getShipAddress() );
 //                    Double shipMoney =
 //                            restTemplate
-//                                    .postForObject
-//                                            (DELIVERY_API_URL,
-//                                                    getMoneyShip
+//                                    .getForObject
+//                                            (builder.toUriString()
 //                                                    , Double.class);
-                    checkOutResponse.setShipMoney(shipMoney);
+//                    checkOutResponse.setShipMoney(shipMoney);
                     return checkOutResponse;
                 }).toList();
 
@@ -422,36 +421,35 @@ public class CartServiceImpl implements CartService {
                     );
         }
     }
-
-    @Override
-    public ResponseEntity<?> checkAddress(CheckOutRequest order) {
-        try{
-            boolean check =  isAddressValid(order);
-            if(check){
-            return ResponseEntity.ok().body(ResponseObject
-                    .builder()
-                    .status("SUCCESS")
-                    .message("Valid address!")
-                    .results(true)
-                    .build());
-            }
-            return ResponseEntity.ok().body(ResponseObject
-                    .builder()
-                    .status("Fail")
-                    .message("Invalid address!")
-                    .results(false)
-                    .build());
-        }catch (Exception e){
-            return ResponseEntity
-                    .badRequest()
-                    .body(ResponseObject.builder()
-                            .status("FAIL")
-                            .message(e.getMessage())
-                            .results("")
-                            .build()
-                    );
-        }
-    }
+//    @Override
+//    public ResponseEntity<?> checkAddress(String address) {
+//        try{
+//            boolean check =  isAddressValid(address);
+//            if(check){
+//            return ResponseEntity.ok().body(ResponseObject
+//                    .builder()
+//                    .status("SUCCESS")
+//                    .message("Valid address!")
+//                    .results(true)
+//                    .build());
+//            }
+//            return ResponseEntity.ok().body(ResponseObject
+//                    .builder()
+//                    .status("Fail")
+//                    .message("Invalid address!")
+//                    .results(false)
+//                    .build());
+//        }catch (Exception e){
+//            return ResponseEntity
+//                    .badRequest()
+//                    .body(ResponseObject.builder()
+//                            .status("FAIL")
+//                            .message(e.getMessage())
+//                            .results("")
+//                            .build()
+//                    );
+//        }
+//    }
 
     @Override
     public ResponseEntity<?> updateQty(Long cartId, Integer qty) {
@@ -463,7 +461,7 @@ public class CartServiceImpl implements CartService {
                 boolean check = productItemService.checkAvailableQuantityInStock
                         (cart.getProductItems().getPItemId(),qty);
                 if(check){
-                    cart.setQuantity(cart.getQuantity()-1);
+                    cart.setQuantity(qty);
                     cartRepository.save(cart);
 
                     List<CartEntity> cartList = cartRepository.findByUser(cart.getUser());
@@ -508,12 +506,10 @@ public class CartServiceImpl implements CartService {
 
     }
 
-    private boolean isAddressValid(CheckOutRequest order) {
-        AddressRequest addressRequest = new AddressRequest();
-        addressRequest.setAddress(order.getShipAddress());
-
-        // Gọi API và nhận giá trị boolean trả về
-        return Boolean.TRUE.equals(
-                restTemplate.getForObject(DELIVERY_API_URL, Boolean.class));
-    }
+//    private boolean isAddressValid(String address) {
+//       String api = DELIVERY_API_URL + "/a";
+//        // Gọi API và nhận giá trị boolean trả về
+//        return Boolean.TRUE.equals(
+//                restTemplate.getForObject(DELIVERY_API_URL, Boolean.class));
+//    }
 }

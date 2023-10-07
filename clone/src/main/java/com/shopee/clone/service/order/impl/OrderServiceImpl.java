@@ -90,7 +90,7 @@ public class OrderServiceImpl implements OrderService {
                     orderEntity.setDate(Date.from(Instant.now()));
                     orderEntity.setNoteTimeRecipient(orderRequest.getNoteTimeRecipient());
                     orderEntity.setPaymentStatus(orderRequest.getPaymentMethod());
-
+                    orderEntity.setShipMoney(orderRequest.getShipMoney());
 //                  True là thanh toán rồi
                     if(orderEntity.getPaymentStatus()){
                         orderEntity.setStatus(EOrder.Transferred);
