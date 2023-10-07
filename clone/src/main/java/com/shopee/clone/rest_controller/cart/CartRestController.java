@@ -18,6 +18,11 @@ public class CartRestController {
         return cartService.addToCart(addToCartRequest, uId);
     }
 
+    @PostMapping("update/{cartId}/{qty}")
+    public ResponseEntity<?> updateQty(@PathVariable Long cartId, @PathVariable Integer qty){
+        return cartService.updateQty(cartId,qty);
+    }
+
     @PostMapping("update-qty-cart/up/{cartId}")
     public ResponseEntity<?> increaseQty(@PathVariable Long cartId){
         return cartService.increaseQty(cartId);

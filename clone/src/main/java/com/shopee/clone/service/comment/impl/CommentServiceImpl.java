@@ -1,5 +1,6 @@
 package com.shopee.clone.service.comment.impl;
 
+import com.shopee.clone.DTO.ResponseData;
 import com.shopee.clone.DTO.comment.CommentDTO;
 import com.shopee.clone.DTO.comment.request.CreateCommentRequest;
 import com.shopee.clone.entity.ProductEntity;
@@ -90,11 +91,12 @@ public class CommentServiceImpl implements CommentService {
                 Optional<ProductEntity> productEntity = productRepository.findById(productId);
                 if(productEntity.isPresent()) {
                     List<CommentDTO> commentEntities = getRootCommentsByProduct(productEntity.get());
+                    ResponseData<Object> data = ResponseData.builder().data(commentEntities).build();
                     return ResponseEntity.ok().body(ResponseObject
                             .builder()
                             .status("SUCCESS")
                             .message("get list comment success!")
-                            .results(commentEntities)
+                            .results(data)
                             .build());
                 }
 
