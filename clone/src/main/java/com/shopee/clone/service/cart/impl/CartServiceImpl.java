@@ -142,7 +142,7 @@ public class CartServiceImpl implements CartService {
         for (CartEntity cartEntity : cartEntities) {
             if (Objects.equals(cartEntity.getProductItems().getPItemId(), productItemEntity.getPItemId())) {
                 result = cartEntity.getId();
-                break; // Exit the loop as soon as a match is found
+                break;
             }
         }
         return result;
