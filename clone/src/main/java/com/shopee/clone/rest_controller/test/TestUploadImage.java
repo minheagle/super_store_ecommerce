@@ -75,14 +75,4 @@ public class TestUploadImage {
     public ResponseEntity<?> getDetailAddress(@RequestBody GetAddressDetailRequest getAddressDetailRequest){
         return addressDataService.getDetailAddress(getAddressDetailRequest);
     }
-
-    @GetMapping("search")
-    public ResponseEntity<?> searchAndFilter(@RequestParam(required = false) String productName,
-                                             @RequestParam(required = false) Double minPrice,
-                                             @RequestParam(required = false) Double maxPrice,
-                                             @RequestParam(required = false) Long categoryId,
-                                             @RequestParam(defaultValue = "0") int page,
-                                             @RequestParam(defaultValue = "10") int size){
-        return  productService.searchAndFilter(productName, minPrice, maxPrice, categoryId, page, size);
-    }
 }

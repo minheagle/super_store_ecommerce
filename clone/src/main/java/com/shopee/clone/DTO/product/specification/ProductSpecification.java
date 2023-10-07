@@ -2,6 +2,7 @@ package com.shopee.clone.DTO.product.specification;
 
 import com.shopee.clone.entity.ProductEntity;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.util.StringUtils;
 
 public class ProductSpecification {
     public static Specification<ProductEntity> searchByName(String productName){
