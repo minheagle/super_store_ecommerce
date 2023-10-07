@@ -109,6 +109,10 @@ public class ProductRestController {
                                              @RequestParam(required = false) Long categoryId,
                                              @RequestParam(defaultValue = "0") int page,
                                              @RequestParam(defaultValue = "10") int size){
+        if(productName.isBlank()){
+            Pageable pageable = PageRequest.of(page, size);
+            return productService.getAllProductPaging(pageable);
+        }
         return  productService.searchAndFilter(productName, minPrice, maxPrice, categoryId, page, size);
     }
 
