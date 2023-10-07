@@ -74,20 +74,20 @@ public class ProductRestController {
     public ResponseEntity<?> getAllProductByCategoryId(@PathVariable Long categoryId){
         return productService.getAllProductByCategoryId(categoryId);
     }
-    @GetMapping("")
-    public ResponseEntity<?> getProductsPaging(@RequestParam(name = "page", required = false, defaultValue = "1") Integer page,
-                                                @RequestParam(name = "size", required = false, defaultValue = "25") Integer size,
-                                                @RequestParam(name = "sort", required = false, defaultValue = "ASC") String sort){
-        Sort sortable = null;
-        if (sort.equals("ASC")) {
-            sortable = Sort.by("productId").ascending();
-        }
-        if (sort.equals("DESC")) {
-            sortable = Sort.by("productId").descending();
-        }
-        Pageable pageable = PageRequest.of((page-1), size, sortable);
-        return productService.getAllProductPaging(pageable);
-    }
+//    @GetMapping("")
+//    public ResponseEntity<?> getProductsPaging(@RequestParam(name = "page", required = false, defaultValue = "1") Integer page,
+//                                                @RequestParam(name = "size", required = false, defaultValue = "25") Integer size,
+//                                                @RequestParam(name = "sort", required = false, defaultValue = "ASC") String sort){
+//        Sort sortable = null;
+//        if (sort.equals("ASC")) {
+//            sortable = Sort.by("productId").ascending();
+//        }
+//        if (sort.equals("DESC")) {
+//            sortable = Sort.by("productId").descending();
+//        }
+//        Pageable pageable = PageRequest.of((page-1), size, sortable);
+//        return productService.getAllProductPaging(pageable);
+//    }
     @GetMapping("product/{id}")
     public ResponseEntity<?> getProductById(@PathVariable Long id){
         return productService.getProductById(id);
@@ -103,17 +103,24 @@ public class ProductRestController {
         return productItemService.getProductItemByShopIdAndParentProductId(id, itemId);
     }
     @GetMapping("search")
-    public ResponseEntity<?> searchAndFilter(@RequestParam(required = false) String productName,
-                                             @RequestParam(required = false) Double minPrice,
-                                             @RequestParam(required = false) Double maxPrice,
-                                             @RequestParam(required = false) Long categoryId,
-                                             @RequestParam(defaultValue = "0") int page,
-                                             @RequestParam(defaultValue = "10") int size){
-        if(productName.isBlank()){
-            Pageable pageable = PageRequest.of(page, size);
-            return productService.getAllProductPaging(pageable);
+    public ResponseEntity<?> searchAndFilter(@RequestParam(name = "productName", required = false, defaultValue = "") String productName,
+                                             @RequestParam(name = "minPrice", required = false, defaultValue = "") Double minPrice,
+                                             @RequestParam(name = "maxPrice", required = false, defaultValue = "") Double maxPrice,
+                                             @RequestParam(name = "categoryId", required = false, defaultValue = "") Long categoryId,
+                                             @RequestParam(name = "page", required = false, defaultValue = "1") Integer page,
+                                             @RequestParam(name = "size", required = false, defaultValue = "10") Integer size,
+                                             @RequestParam(name = "sort", required = false, defaultValue = "ASC") String sort){
+        Sort sortable = null;
+        if (sort.equals("ASC")) {
+            sortable = Sort.by("minPrice").ascending();
         }
-        return  productService.searchAndFilter(productName, minPrice, maxPrice, categoryId, page, size);
+        if (sort.equals("DESC")) {
+            sortable = Sort.by("minPrice").descending();
+        }
+        // Tạo đối tượng Pageable để phân trang
+        Pageable pageable = PageRequest.of((page-1), size, sortable);
+
+        return  productService.searchAndFilter(productName, minPrice, maxPrice, categoryId, pageable);
     }
 
     @PutMapping("product/update/{id}")

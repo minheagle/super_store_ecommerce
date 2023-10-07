@@ -19,8 +19,7 @@ public interface IProductService {
                                       Double minPrice,
                                       Double maxPrice,
                                       Long categoryId,
-                                      int page,
-                                      int size);
+                                      Pageable pageable);
     ResponseEntity<?> editProductById(Long productId, ProductRequestEdit pRequestEdit);
 
     ResponseEntity<?> removeProductById(Long productId);
