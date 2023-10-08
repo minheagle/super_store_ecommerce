@@ -1,6 +1,8 @@
 package com.shopee.clone.rest_controller.payment;
 
+import com.shopee.clone.DTO.payment.requestServe.PaymentServiceRequest;
 import com.shopee.clone.service.payment.IPaymentService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -33,11 +35,9 @@ public class PaymentRestController {
     }
 
     @PostMapping("")
-    public ResponseEntity<?> getLinkPayment(@RequestBody @NotBlank Long userId,
-                                            @RequestBody @NotBlank Integer orderNumber,
-                                            @RequestBody @NotBlank Integer amountPayment){
+    public ResponseEntity<?> getLinkPayment(@RequestBody PaymentServiceRequest paymentServiceRequest){
 
-        return paymentService.getLinkPayment(userId, orderNumber, amountPayment);
+        return paymentService.getLinkPayment(paymentServiceRequest);
     }
 
 }

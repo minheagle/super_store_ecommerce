@@ -36,6 +36,27 @@ public class ProductPublicRestController {
         return productService.getAllProductPaging(pageable);
     }
 
+    @GetMapping("search")
+    public ResponseEntity<?> searchAndFilter(@RequestParam(name = "productName", required = false, defaultValue = "") String productName,
+                                             @RequestParam(name = "minPrice", required = false, defaultValue = "") Double minPrice,
+                                             @RequestParam(name = "maxPrice", required = false, defaultValue = "") Double maxPrice,
+                                             @RequestParam(name = "categoryId", required = false, defaultValue = "") Long categoryId,
+                                             @RequestParam(name = "page", required = false, defaultValue = "1") Integer page,
+                                             @RequestParam(name = "size", required = false, defaultValue = "10") Integer size,
+                                             @RequestParam(name = "sort", required = false, defaultValue = "ASC") String sort){
+        Sort sortable = null;
+        if (sort.equals("ASC")) {
+            sortable = Sort.by("minPrice").ascending();
+        }
+        if (sort.equals("DESC")) {
+            sortable = Sort.by("minPrice").descending();
+        }
+        // Tạo đối tượng Pageable để phân trang
+        Pageable pageable = PageRequest.of((page-1), size, sortable);
+
+        return  productService.searchAndFilter(productName, minPrice, maxPrice, categoryId, pageable);
+    }
+
     @GetMapping("product/{id}")
     public ResponseEntity<?> getProductById(@PathVariable Long id){
         return productService.getProductById(id);

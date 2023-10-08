@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopee.clone.DTO.ResponseData;
 import com.shopee.clone.DTO.payment.requestAPI.PaymentRequest;
 import com.shopee.clone.DTO.payment.requestAPI.SignatureRequest;
+import com.shopee.clone.DTO.payment.requestServe.PaymentServiceRequest;
 import com.shopee.clone.DTO.payment.responseAPI.PaymentResponse;
 import com.shopee.clone.entity.UserEntity;
 import com.shopee.clone.repository.UserRepository;
@@ -41,19 +42,19 @@ public class PaymentService implements IPaymentService {
     private final String successUrl = "localhost:8080/api/v1/payment/success";
 
     @Override
-    public ResponseEntity<?> getLinkPayment(Long userId, Integer orderNumber, Integer amountPayment) {
+    public ResponseEntity<?> getLinkPayment(PaymentServiceRequest paymentServiceRequest) {
         try {
-            if(userRepository.existsById(userId)){
-                UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
+            if(userRepository.existsById(paymentServiceRequest.getUserId())){
+                UserEntity user = userRepository.findById(paymentServiceRequest.getUserId()).orElseThrow(NoSuchElementException::new);
 
-                String desc = "FThB: "+orderNumber;
+                String desc = "FThB: "+paymentServiceRequest.getOrderNumber();
 
                 SignatureRequest signatureRequest = SignatureRequest
                         .builder()
-                        .amount(amountPayment.toString())
+                        .amount(paymentServiceRequest.getAmountPayment().toString())
                         .cancelUrl(cancelUrl)
-                        .description("FthB: "+orderNumber)
-                        .orderCode(orderNumber.toString())
+                        .description(desc)
+                        .orderCode(paymentServiceRequest.getOrderNumber().toString())
                         .returnUrl(successUrl)
                         .secretKey(secretKey)
                         .build();
@@ -61,8 +62,8 @@ public class PaymentService implements IPaymentService {
 
                 PaymentRequest paymentRequest = PaymentRequest
                         .builder()
-                        .orderCode(orderNumber)
-                        .amount(amountPayment)
+                        .orderCode(paymentServiceRequest.getOrderNumber())
+                        .amount(paymentServiceRequest.getAmountPayment())
                         .description(desc)
                         .buyerName(user.getFullName())
                         .buyerEmail(user.getEmail())
