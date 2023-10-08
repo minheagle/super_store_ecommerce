@@ -7,6 +7,7 @@ import com.shopee.clone.DTO.cart.LineItem;
 import com.shopee.clone.DTO.cart.ProductItemMatchToCart;
 import com.shopee.clone.DTO.order.request.CheckOutRequest;
 import com.shopee.clone.DTO.order.response.CheckOutResponse;
+import com.shopee.clone.DTO.order.response.ResponseDataCheckOut;
 import com.shopee.clone.DTO.product.response.OptionTypeDTO;
 import com.shopee.clone.DTO.product.response.OptionValueDTO;
 import com.shopee.clone.DTO.product.response.ProductMatchToCartResponse;
@@ -17,6 +18,7 @@ import com.shopee.clone.entity.cart.CartEntity;
 import com.shopee.clone.repository.cart.CartRepository;
 import com.shopee.clone.repository.product.ProductItemRepository;
 import com.shopee.clone.service.cart.CartService;
+import com.shopee.clone.service.order.OrderService;
 import com.shopee.clone.service.productItem.impl.ProductItemService;
 import com.shopee.clone.service.user.UserService;
 import com.shopee.clone.util.ResponseObject;
@@ -25,8 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import java.util.*;
 
 @Service
@@ -34,6 +34,8 @@ public class CartServiceImpl implements CartService {
     private static final String DELIVERY_API_URL = "http://192.168.1.113:8080/api/v1/delivery/cost";
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private OrderService orderService;
     @Autowired
     private CartRepository cartRepository;
     @Autowired
@@ -390,7 +392,6 @@ public class CartServiceImpl implements CartService {
                         cartResponse.stream().map(c -> {
                     CheckOutResponse checkOutResponse = new CheckOutResponse();
                     checkOutResponse.setCartResponse(c);
-
 //                    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(DELIVERY_API_URL)
 //                            .queryParam("deliveryAddress",checkOutRequest.getShipAddress() );
 //                    Double shipMoney =
@@ -401,8 +402,12 @@ public class CartServiceImpl implements CartService {
 //                    checkOutResponse.setShipMoney(shipMoney);
                     return checkOutResponse;
                 }).toList();
-
-            ResponseData<Object> response = ResponseData.builder().data(checkOutResponses).build();
+                int orderNumber = orderService.randomOrder();
+            ResponseDataCheckOut<Object,Object> response = ResponseDataCheckOut
+                    .builder()
+                    .data(checkOutResponses)
+                    .orderNumber(orderNumber)
+                    .build();
 
                 return ResponseEntity.ok().body(ResponseObject
                         .builder()
@@ -505,7 +510,6 @@ public class CartServiceImpl implements CartService {
         }
 
     }
-
 //    private boolean isAddressValid(String address) {
 //       String api = DELIVERY_API_URL + "/a";
 //        // Gọi API và nhận giá trị boolean trả về

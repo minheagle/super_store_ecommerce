@@ -69,11 +69,7 @@ public class OrderServiceImpl implements OrderService {
             Optional<AddressEntity> addressOptional = addressRepository.findById(orderRequest.getAddressId());
 
             if(userOptional.isPresent() && addressOptional.isPresent()){
-                int orderNumber = randomOrderNumber();
-                while(checkOrderNumber(orderNumber)){
-                    orderNumber = randomOrderNumber();
-                }
-                int finalOrderNumber = orderNumber;
+                int finalOrderNumber = getFinalOrderNumber();
 
 //              xu ly  dieu kien thanh toan
 
@@ -166,6 +162,15 @@ public class OrderServiceImpl implements OrderService {
         }
 
     }
+
+    private int getFinalOrderNumber() {
+        int orderNumber = randomOrderNumber();
+        while(checkOrderNumber(orderNumber)){
+            orderNumber = randomOrderNumber();
+        }
+        return orderNumber;
+    }
+
     @Override
     public ResponseEntity<?> getHistoryOrder(Long userId) {
         try {
@@ -530,6 +535,11 @@ public class OrderServiceImpl implements OrderService {
                                 .build()
                         );
             }
+    }
+
+    @Override
+    public int randomOrder() {
+        return getFinalOrderNumber();
     }
 
     public List<OrderEntity> summarizeOrdersYesterday() {
