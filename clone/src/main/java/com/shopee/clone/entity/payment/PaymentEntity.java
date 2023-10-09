@@ -1,10 +1,7 @@
 package com.shopee.clone.entity.payment;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -14,14 +11,16 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 public class PaymentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long paymentId;
     private Long userId;
-    private Long orderNumber;
-    private Double paymentAmount;
+    private Integer orderNumber;
+    private Integer paymentAmount;
+    @Column(name = "description")
     private String desc_payment;
     private LocalDateTime paymentDate;
     private Boolean paymentStatus;

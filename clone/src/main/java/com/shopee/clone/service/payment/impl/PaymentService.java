@@ -8,7 +8,9 @@ import com.shopee.clone.DTO.payment.requestAPI.SignatureRequest;
 import com.shopee.clone.DTO.payment.requestServe.PaymentServiceRequest;
 import com.shopee.clone.DTO.payment.responseAPI.PaymentResponse;
 import com.shopee.clone.entity.UserEntity;
+import com.shopee.clone.entity.payment.PaymentEntity;
 import com.shopee.clone.repository.UserRepository;
+import com.shopee.clone.repository.payment.PaymentRepository;
 import com.shopee.clone.service.payment.IPaymentService;
 import com.shopee.clone.util.ResponseObject;
 import org.apache.commons.lang3.StringUtils;
@@ -22,16 +24,20 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
 public class PaymentService implements IPaymentService {
     private final RestTemplate restTemplate;
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+   private final PaymentRepository paymentRepository;
 
-    public PaymentService(RestTemplate restTemplate) {
+    public PaymentService(RestTemplate restTemplate, UserRepository userRepository, PaymentRepository paymentRepository) {
         this.restTemplate = restTemplate;
+        this.userRepository = userRepository;
+
+        this.paymentRepository = paymentRepository;
     }
 
     private final String baseURL="https://api-merchant.payos.vn/";
@@ -104,6 +110,19 @@ public class PaymentService implements IPaymentService {
                         .exchange(baseURL+"v2/payment-requests", HttpMethod.POST, request, PaymentResponse.class);
 
                 PaymentResponse paymentData = responseEntity.getBody();
+                //Save data
+                if(paymentData.getCode().equals("00")){
+                    PaymentEntity paymentEntity = PaymentEntity
+                            .builder()
+                            .userId(paymentServiceRequest.getUserId())
+                            .orderNumber(paymentRequest.getOrderCode())
+                            .paymentAmount(paymentRequest.getAmount())
+                            .desc_payment(paymentRequest.getDescription())
+                            .paymentDate(LocalDateTime.now())
+                            .paymentStatus(Boolean.FALSE)
+                            .build();
+                    paymentRepository.save(paymentEntity);
+                }
                 ResponseData<PaymentResponse> paymentResponse = new ResponseData<>();
                 paymentResponse.setData(paymentData);
 
@@ -135,7 +154,6 @@ public class PaymentService implements IPaymentService {
 
     @Override
     public String createSignature(SignatureRequest signatureRequest) {
-        String signature="";
         if(signatureRequest != null){
 
             Map<String, String> rawData = new TreeMap<>();
@@ -161,14 +179,21 @@ public class PaymentService implements IPaymentService {
                 SecretKeySpec secretKeySpec = new
                         SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
                 sha256HMac.init(secretKeySpec);
-                byte[] signatureByte = sha256HMac.doFinal(dataSorted.getBytes(StandardCharsets.UTF_8));
-                signature = Base64.getEncoder().encodeToString(signatureByte);
+                byte[] signatureBytes = sha256HMac.doFinal(dataSorted.getBytes(StandardCharsets.UTF_8));
+//                signature = Base64.getEncoder().encodeToString(signatureByte);
+
+                // Chuyển đổi chữ ký sang dạng hex
+                StringBuilder signature = new StringBuilder();
+                for (byte b : signatureBytes) {
+                    signature.append(String.format("%02x", b));
+                }
+                return signature.toString();
 
             }catch (NoSuchAlgorithmException | InvalidKeyException e){
                 e.printStackTrace();
             }
         }
-        return signature;
+        return "";
     }
 
     @Override
@@ -177,7 +202,17 @@ public class PaymentService implements IPaymentService {
                                                    Boolean cancel,
                                                    String status,
                                                    Integer orderCode) {
+
+        PaymentEntity paymentEntity = paymentRepository.findByOrderNumber(orderCode);
+        ResponseData<PaymentEntity> responsePayment = new ResponseData<>();
+
         if(code==00 && !cancel){
+
+            paymentEntity.setPaymentStatus(Boolean.TRUE);
+            paymentRepository.save(paymentEntity);
+
+
+            responsePayment.setData(paymentEntity);
             return ResponseEntity
                     .status(HttpStatusCode.valueOf(200))
                     .body(
@@ -185,10 +220,11 @@ public class PaymentService implements IPaymentService {
                                     .builder()
                                     .status("SUCCESS")
                                     .message("PAID")
-                                    .results("")
+                                    .results(responsePayment)
                                     .build()
                     );
         }else{
+            responsePayment.setData(paymentEntity);
             return ResponseEntity
                     .status(HttpStatusCode.valueOf(200))
                     .body(
@@ -196,7 +232,7 @@ public class PaymentService implements IPaymentService {
                                     .builder()
                                     .status("SUCCESS")
                                     .message("CANCELLED")
-                                    .results("")
+                                    .results(responsePayment)
                                     .build()
                     );
         }

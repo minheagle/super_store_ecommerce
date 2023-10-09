@@ -2,17 +2,17 @@ package com.shopee.clone.rest_controller.payment;
 
 import com.shopee.clone.DTO.payment.requestServe.PaymentServiceRequest;
 import com.shopee.clone.service.payment.IPaymentService;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/payment")
 public class PaymentRestController {
-    @Autowired
-    private IPaymentService paymentService;
+    private final IPaymentService paymentService;
+
+    public PaymentRestController(IPaymentService paymentService) {
+        this.paymentService = paymentService;
+    }
 
     @GetMapping("success")
     public ResponseEntity<?> getDataPaymentSuccess(@RequestParam(name = "code", required = false) Integer code,
