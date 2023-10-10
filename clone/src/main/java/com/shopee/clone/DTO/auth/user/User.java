@@ -20,4 +20,5 @@ public class User {
     private String imgPublicId;
     private List<AddressEntity> address;
     private List<RoleEntity> roles;
+    private String chatId;
 }
