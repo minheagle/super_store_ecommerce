@@ -304,6 +304,7 @@ public class ProductService implements IProductService {
                             .maxPrice(productEntity.getMaxPrice())
                             .description(productEntity.getDescription())
                             .status(productEntity.getStatus())
+                            .categoryId(productEntity.getCategory().getId())
                             .productItemResponseList(productItemResponseDTOList)
                             .build();
                 }

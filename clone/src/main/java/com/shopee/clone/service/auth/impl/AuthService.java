@@ -2,6 +2,7 @@ package com.shopee.clone.service.auth.impl;
 
 import com.shopee.clone.DTO.auth.login.LoginDTO;
 import com.shopee.clone.DTO.auth.refresh_token.RefreshTokenResponse;
+import com.shopee.clone.DTO.auth.register.AddChatIdRequest;
 import com.shopee.clone.DTO.auth.register.RegisterDTO;
 import com.shopee.clone.DTO.auth.user.User;
 import com.shopee.clone.DTO.seller.SellerDTO;
@@ -170,6 +171,39 @@ public class AuthService implements IAuthService {
                     );
         }
     }
+
+    @Override
+    public ResponseEntity<?> addChatId(Long id, AddChatIdRequest addChatIdRequest) {
+        try{
+            UserEntity userEntity = userRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            userEntity.setChatId(addChatIdRequest.getChatId());
+            userRepository.save(userEntity);
+            User user = mapper.map(userEntity, User.class);
+            return ResponseEntity
+                    .ok()
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("SUCCESS")
+                                    .message("Add chat id success")
+                                    .results(user)
+                                    .build()
+                    );
+        }catch (Exception e){
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("FAIL")
+                                    .message(e.getMessage())
+                                    .results("")
+                                    .build()
+                    );
+        }
+    }
+
 
     @Override
     public ResponseEntity<?> refreshToken(String refreshToken) {
