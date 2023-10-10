@@ -2,6 +2,7 @@ package com.shopee.clone.rest_controller.auth;
 
 import com.shopee.clone.DTO.auth.login.LoginDTO;
 import com.shopee.clone.DTO.auth.refresh_token.RefreshTokenRequest;
+import com.shopee.clone.DTO.auth.register.AddChatIdRequest;
 import com.shopee.clone.DTO.auth.register.RegisterDTO;
 import org.springframework.validation.BindingResult;
 import com.shopee.clone.service.auth.IAuthService;
@@ -36,6 +37,11 @@ public class AuthRestController {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
         }
         return authService.register(registerDTO);
+    }
+
+    @PostMapping("/add-chat-id/{id}")
+    public ResponseEntity<?> addChatId(@PathVariable Long id, @RequestBody AddChatIdRequest addChatIdRequest){
+        return authService.addChatId(id, addChatIdRequest);
     }
 
     @PostMapping("/login")

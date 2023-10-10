@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -55,6 +56,11 @@ public class ProductPublicRestController {
         Pageable pageable = PageRequest.of((page-1), size, sortable);
 
         return  productService.searchAndFilter(productName, minPrice, maxPrice, categoryId, pageable);
+    }
+
+    @GetMapping("/{shopId}")
+    public ResponseEntity<?> getAllProductByShopId(@PathVariable Long shopId){
+        return productService.getAllProductBelongWithShop(shopId);
     }
 
     @GetMapping("product/{id}")

@@ -12,7 +12,7 @@ public interface UserService {
     Optional<UserEntity> findUserByID(Long id);
     UserEntity save(UserEntity user);
 
-    List<User> getListUser();
+    ResponseEntity<?> getListUser();
     void delete(Long id);
 
     ResponseEntity<?> updateUser(long userId, UserUpdateDTO userUpdateDTO);

@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 @Repository
-
 public interface CartRepository extends JpaRepository<CartEntity,Long> {
     List<CartEntity> findByUser_Id(Long userId);
     List<CartEntity> findByUser(UserEntity user);

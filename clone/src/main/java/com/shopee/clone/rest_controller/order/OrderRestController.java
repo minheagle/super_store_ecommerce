@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/cart")
 public class OrderRestController {
@@ -28,4 +30,14 @@ public class OrderRestController {
     public ResponseEntity<?> cancelOrder(@PathVariable Long orderId){
         return orderService.cancelOrder(orderId);
     }
+    @GetMapping("order/top-selling-product")
+    public List<Long> getTopSellingProduct(){
+        return orderService.getTopSellingProduct();
+    }
+
+    @GetMapping("order/top-user")
+    public List<Long> findTopUsersByOrderCountInCurrentMonth(){
+        return orderService.findTopUsersByOrderCountInCurrentMonth();
+    }
+
 }
