@@ -7,6 +7,9 @@ public enum EOrder {
     //    Đơn hàng đã nhận được tiền và đang chờ xác nhận.
     Transferred,
 
+//    Đang chờ thanh toán
+    Awaiting_Payment,
+
 //    Đơn hàng đang được xử lý và chuẩn bị để giao hàng.
     Processing,
 //    Đơn hàng đã được giao

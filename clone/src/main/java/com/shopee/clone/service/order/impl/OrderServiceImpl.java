@@ -5,12 +5,11 @@ import com.shopee.clone.DTO.cart.ProductItemMatchToCart;
 import com.shopee.clone.DTO.order.request.*;
 import com.shopee.clone.DTO.order.response.OrderDetailResponse;
 import com.shopee.clone.DTO.order.response.OrderResponse;
-import com.shopee.clone.DTO.product.response.OptionTypeDTO;
-import com.shopee.clone.DTO.product.response.OptionValueDTO;
-import com.shopee.clone.DTO.product.response.ProductItemResponseDTO;
-import com.shopee.clone.DTO.product.response.ProductMatchToCartResponse;
+import com.shopee.clone.DTO.order.response.ResponseDataCheckOut;
+import com.shopee.clone.DTO.product.response.*;
 import com.shopee.clone.DTO.seller.response.Seller;
 import com.shopee.clone.entity.AddressEntity;
+import com.shopee.clone.entity.ProductEntity;
 import com.shopee.clone.entity.SellerEntity;
 import com.shopee.clone.entity.UserEntity;
 import com.shopee.clone.entity.cart.CartEntity;
@@ -35,6 +34,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -84,12 +84,10 @@ public class OrderServiceImpl implements OrderService {
                     orderEntity.setAddress(address);
                     orderEntity.setOrderNumber(finalOrderNumber);
                     orderEntity.setDate(Date.from(Instant.now()));
-                    orderEntity.setNoteTimeRecipient(orderRequest.getNoteTimeRecipient());
-                    orderEntity.setPaymentStatus(orderRequest.getPaymentMethod());
-                    orderEntity.setShipMoney(orderRequest.getShipMoney());
+                    orderEntity.setPaymentStatus(orderRequest.getPaymentStatus());
 //                  True là thanh toán rồi
                     if(orderEntity.getPaymentStatus()){
-                        orderEntity.setStatus(EOrder.Transferred);
+                        orderEntity.setStatus(EOrder.Awaiting_Payment);
                     }else orderEntity.setStatus(EOrder.Pending);
 
                     Optional<SellerEntity> sellerOptional = sellerRepository.findById(o.getSellerId());
@@ -122,11 +120,10 @@ public class OrderServiceImpl implements OrderService {
                     OrderResponse response = convertOrderEntityToOrderResponse(order);
                     list.add(response);
                     }
-
                 });
 
-
-                ResponseData<Object> data = ResponseData.builder().data(list).build();
+                ResponseDataCheckOut<Object, Object> data = ResponseDataCheckOut.builder().data(list).orderNumber(finalOrderNumber)
+                        .build();
                 return ResponseEntity
                         .status(HttpStatusCode.valueOf(200))
                         .body(
@@ -161,6 +158,17 @@ public class OrderServiceImpl implements OrderService {
                     );
         }
 
+    }
+    @Override
+    public void changeStatusWhenCallPayment(Integer orderNumber, Boolean bl){
+        List<OrderEntity> orderList = orderRepository.findAllByOrderNumber(orderNumber);
+        orderList.forEach(o->{
+            if(bl){
+                o.setStatus(EOrder.Transferred);
+            }else{
+                o.setStatus(EOrder.Pending);
+            }
+        });
     }
 
     private int getFinalOrderNumber() {
@@ -347,7 +355,7 @@ public class OrderServiceImpl implements OrderService {
             if(orderOptional.isPresent()){
                 OrderEntity order = orderOptional.get();
 
-                if(order.getStatus().equals(EOrder.Pending)) {
+                if(order.getStatus().equals(EOrder.Pending) || order.getStatus().equals(EOrder.Awaiting_Payment)) {
                     order.setConfirmDate(Date.from(Instant.now()));
                     order.setStatus(EOrder.Processing);
                     orderRepository.save(order);
@@ -462,6 +470,9 @@ public class OrderServiceImpl implements OrderService {
                 if(order.getStatus().equals(EOrder.Pending)) {
                     order.setConfirmDate(Date.from(Instant.now()));
                     order.setStatus(EOrder.Rejection);
+                    order.getOrderDetails().forEach(oD ->{
+                        productItemService.plusQuantityInStock(oD.getProductItems().getPItemId(),oD.getQuantity());
+                    });
                     orderRepository.save(order);
                     return getOrderBySeller(sellerId);
 //              Trả về Json
@@ -576,7 +587,7 @@ public class OrderServiceImpl implements OrderService {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTime();
-    }
+}
     @Override
     public ResponseEntity<?> callApi() {
 //      Trả về Json
@@ -590,7 +601,13 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
-//    @Scheduled(fixedRate = 120000) // Lên lịch chạy mỗi 2 phút (120,000 milliseconds)
+    @Override
+    public List<Long> getTopSellingProduct() {
+        List<ProductEntity> list = orderDetailRepository.findMostSoldProduct();
+        return list.stream().map(ProductEntity::getProductId).toList();
+    }
+
+    //    @Scheduled(fixedRate = 120000) // Lên lịch chạy mỗi 2 phút (120,000 milliseconds)
 //    public void sayHello() {
 //        callApi();
 //    }
@@ -680,6 +697,15 @@ public class OrderServiceImpl implements OrderService {
 
         restTemplate.postForObject("http://192.168.1.113:8080/api/v1/delivery/receive-order", rawEcommerceOrderCreate, Object.class);
         return rawEcommerceOrderCreate;
+    }
+
+    public List<Long> findTopUsersByOrderCountInCurrentMonth() {
+        // Lấy tháng hiện tại
+        LocalDate currentDate = LocalDate.now();
+        int currentMonth = currentDate.getMonthValue();
+
+        // Truyền giá trị tháng hiện tại vào phương thức repository
+        return orderRepository.findTopUserIdsByOrderCountInMonth(currentMonth);
     }
 
 }

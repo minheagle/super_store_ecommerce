@@ -1,11 +1,15 @@
 package com.shopee.clone.DTO.order.response;
 
 import com.shopee.clone.DTO.seller.response.Seller;
-import lombok.Data;
+import lombok.*;
 
 import java.util.Date;
 import java.util.List;
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class OrderResponse {
     private Long id;
     private Seller seller;
