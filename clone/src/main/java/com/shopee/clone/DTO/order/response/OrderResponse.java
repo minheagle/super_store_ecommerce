@@ -13,6 +13,7 @@ import java.util.List;
 public class OrderResponse {
     private Long id;
     private Seller seller;
+    private Integer orderNumber;
     private List<OrderDetailResponse> orderDetailList;
     private Double shipMoney;
     private String deliveryAddress;
