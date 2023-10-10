@@ -122,7 +122,8 @@ public class OrderServiceImpl implements OrderService {
                     }
                 });
 
-                ResponseDataCheckOut<Object, Object> data = ResponseDataCheckOut.builder().data(list).orderNumber(finalOrderNumber)
+                ResponseData<Object> data = ResponseData.builder()
+                        .data(list)
                         .build();
                 return ResponseEntity
                         .status(HttpStatusCode.valueOf(200))
@@ -225,6 +226,7 @@ public class OrderServiceImpl implements OrderService {
 
         orderResponse.setSeller(mapper.map(order.getSeller(),Seller.class));
         orderResponse.setPayment(order.getPaymentStatus());
+        orderResponse.setOrderNumber(order.getOrderNumber());
         orderResponse.setDate(order.getDate());
         orderResponse.setShipMoney(order.getShipMoney());
         orderResponse.setStatus(order.getStatus().name());
@@ -359,16 +361,10 @@ public class OrderServiceImpl implements OrderService {
                     order.setConfirmDate(Date.from(Instant.now()));
                     order.setStatus(EOrder.Processing);
                     orderRepository.save(order);
-                    return getOrderBySeller(sellerId);
 //              Trả về Json
 //                    ResponseData<Object> data = ResponseData.builder().data().build();
 //
-//                    return ResponseEntity.ok().body(ResponseObject
-//                            .builder()
-//                            .status("SUCCESS")
-//                            .message("Confirm Order success!")
-//                            .results(data)
-//                            .build());
+                    return ResponseEntity.ok().body(getOrderBySeller(sellerId));
                 }
                 return ResponseEntity
                         .badRequest()
