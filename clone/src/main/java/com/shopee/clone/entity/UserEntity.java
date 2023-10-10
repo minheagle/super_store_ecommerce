@@ -53,6 +53,8 @@ public class UserEntity {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<RoleEntity> roles = new HashSet<>();
     private boolean status;
+    @Column(name = "chat_id")
+    private String chatId;
 
     @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
     private Set<PromotionBeLongUserEntity> promotionEntities = new HashSet<>();
