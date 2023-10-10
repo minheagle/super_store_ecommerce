@@ -1,5 +1,7 @@
 package com.shopee.clone.entity;
 
+import com.shopee.clone.entity.promotion.PromotionBeLongUserEntity;
+import com.shopee.clone.entity.promotion.PromotionEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -51,4 +53,7 @@ public class UserEntity {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<RoleEntity> roles = new HashSet<>();
     private boolean status;
+
+    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
+    private Set<PromotionBeLongUserEntity> promotionEntities = new HashSet<>();
 }

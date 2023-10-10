@@ -1,11 +1,14 @@
 package com.shopee.clone.entity.promotion;
 
 import com.shopee.clone.entity.SellerEntity;
+import com.shopee.clone.entity.UserEntity;
 import com.shopee.clone.entity.payment.EDiscountType;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "promotions")
@@ -39,4 +42,7 @@ public class PromotionEntity {
     private Boolean isActive;
 
     private Integer usageLimitPerUser;
+
+    @OneToMany(mappedBy = "promotion")
+    private Set<PromotionBeLongUserEntity> userEntities = new HashSet<>();
 }

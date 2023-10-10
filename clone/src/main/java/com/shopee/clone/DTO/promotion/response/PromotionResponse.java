@@ -1,5 +1,6 @@
 package com.shopee.clone.DTO.promotion.response;
 
+import com.shopee.clone.DTO.seller.response.Seller;
 import com.shopee.clone.entity.payment.EDiscountType;
 import lombok.*;
 
@@ -16,7 +17,7 @@ public class PromotionResponse {
     private String description;
     private LocalDate startDate;
     private LocalDate endDate;
-    private Long sellerId;
+    private Seller seller;
     private EDiscountType discountType;
     private Integer discountValue;
     private Integer minPurchaseAmount;
