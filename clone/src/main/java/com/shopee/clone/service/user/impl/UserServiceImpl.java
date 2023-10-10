@@ -1,5 +1,6 @@
 package com.shopee.clone.service.user.impl;
 
+import com.shopee.clone.DTO.ResponseData;
 import com.shopee.clone.DTO.auth.user.*;
 import com.shopee.clone.DTO.seller.SellerDTO;
 import com.shopee.clone.DTO.upload_file.ImageUploadResult;
@@ -524,14 +525,14 @@ public class UserServiceImpl implements UserService {
 
                 User userDTO = mapper.map(user, User.class);
 
-                // Trả về ResponseEntity chứa thông tin cập nhật thành công
+                ResponseData<Object> data = ResponseData.builder().data(userDTO).build();
                 return ResponseEntity.ok().body(
                         ResponseObject.builder()
                                 .status("SUCCESS")
                                 .message("Get user successfully")
-                                .results(user)
+                                .results(data)
                                 .build()
-                        );
+                );
             } else {
                 // Trả về ResponseEntity chứa thông tin lỗi nếu không tìm thấy người dùng
                 return ResponseEntity
@@ -569,9 +570,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getListUser() {
-        return userRepository.findAll().stream().map(userEntity ->
-                mapper.map(userEntity,User.class)).collect(Collectors.toList());
+    public ResponseEntity<?> getListUser() {
+        List<User> list = userRepository.findAll().stream().map(userEntity ->
+                mapper.map(userEntity,User.class)).toList();
+        ResponseData<Object> data = ResponseData.builder().data(list).build();
+        return ResponseEntity.ok().body(
+                ResponseObject.builder()
+                        .status("SUCCESS")
+                        .message("Get user successfully")
+                        .results(data)
+                        .build()
+        );
     }
 
     @Override

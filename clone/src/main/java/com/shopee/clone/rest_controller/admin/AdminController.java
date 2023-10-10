@@ -12,7 +12,11 @@ public class AdminController {
     private UserService userService;
     @GetMapping("/list-user")
     public ResponseEntity<?> getListUser(){
-        return ResponseEntity.ok(userService.getListUser());
+        return userService.getListUser();
+    }
+    @GetMapping("/list-seller")
+    public ResponseEntity<?> getListSeller(){
+        return userService.getListUser();
     }
     @GetMapping("/ban-user/{id}")
     public ResponseEntity<?> banUser(@PathVariable Long id){
@@ -23,4 +27,5 @@ public class AdminController {
     public ResponseEntity<?> unBanUser(@PathVariable Long id){
         return userService.unBlockUser(id);
     }
+//    @GetMapping("/data")
 }

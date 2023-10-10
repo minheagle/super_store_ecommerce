@@ -1,11 +1,15 @@
 package com.shopee.clone.service.order;
 
 import com.shopee.clone.DTO.order.request.OrderRequest;
+import com.shopee.clone.DTO.product.response.ProductResponseDTO;
 import org.springframework.http.ResponseEntity;
+
+import java.util.List;
 
 public interface OrderService{
 
     ResponseEntity<?> save(OrderRequest orderRequest);
+    void changeStatusWhenCallPayment(Integer orderNumber, Boolean bl);
 
     ResponseEntity<?> getHistoryOrder(Long userId);
 
@@ -22,4 +26,7 @@ public interface OrderService{
     ResponseEntity<?> getAllOrderConfirm();
     int randomOrder();
     ResponseEntity<?> callApi();
+    List<Long> getTopSellingProduct();
+
+    List<Long> findTopUsersByOrderCountInCurrentMonth();
 }
