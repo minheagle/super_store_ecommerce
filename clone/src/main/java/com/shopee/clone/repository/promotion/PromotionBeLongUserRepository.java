@@ -11,6 +11,6 @@ import java.util.List;
 
 @Repository
 public interface PromotionBeLongUserRepository extends JpaRepository<PromotionBeLongUserEntity,Long> {
-    @Query("Select pbl.promotion, pbl.usageAvailable From PromotionBeLongUserEntity pbl Where pbl.user = :user ")
+    @Query("Select pbl From PromotionBeLongUserEntity pbl Where pbl.user = :user ")
     List<PromotionBeLongUserEntity> getPromotionOfUser(@Param("user") UserEntity user);
 }
