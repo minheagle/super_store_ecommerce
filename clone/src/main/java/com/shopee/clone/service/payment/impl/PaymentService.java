@@ -45,7 +45,7 @@ public class PaymentService implements IPaymentService {
     private final String apiKey="2aa24408-0509-4afd-980d-3fd58a01aa38";
     private final String secretKey="d8b5113be36e2274a79604c96143f99f01488b4b51895316284caf5d5e1f65d8";
     private final String cancelUrl = "localhost:8080/api/v1/payment/cancel";
-    private final String successUrl = "localhost:8080/api/v1/payment/success";
+    private final String successUrl = "http://127.0.0.1:3000/customer/purchase";
 
     @Override
     public ResponseEntity<?> getLinkPayment(PaymentServiceRequest paymentServiceRequest) {

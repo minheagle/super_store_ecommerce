@@ -1,6 +1,7 @@
 package com.shopee.clone.entity;
 
 import com.shopee.clone.entity.order.OrderEntity;
+import com.shopee.clone.entity.promotion.PromotionEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,4 +43,6 @@ public class SellerEntity {
     private String storeBankAccountNumber;
     @OneToMany(mappedBy = "seller", fetch = FetchType.EAGER)
     private List<ProductEntity> productList;
+    @OneToMany(mappedBy = "seller_created", fetch = FetchType.EAGER)
+    private List<PromotionEntity> promotions;
 }

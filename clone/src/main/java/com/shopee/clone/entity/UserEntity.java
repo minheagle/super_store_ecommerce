@@ -1,5 +1,7 @@
 package com.shopee.clone.entity;
 
+import com.shopee.clone.entity.promotion.PromotionBeLongUserEntity;
+import com.shopee.clone.entity.promotion.PromotionEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -53,4 +55,7 @@ public class UserEntity {
     private boolean status;
     @Column(name = "chat_id")
     private String chatId;
+
+    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
+    private Set<PromotionBeLongUserEntity> promotionEntities = new HashSet<>();
 }
