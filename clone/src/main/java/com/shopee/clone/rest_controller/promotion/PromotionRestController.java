@@ -39,6 +39,7 @@ public class PromotionRestController {
         return promotionService.editStatusPromotion(promotionId,status);
     }
 
+    //This Function Service View ALl Available Promotion For User Choose
     @GetMapping("")
     public ResponseEntity<?> getAllAvailablePromotion(){
         return promotionService.getAllPromotionAvailable();

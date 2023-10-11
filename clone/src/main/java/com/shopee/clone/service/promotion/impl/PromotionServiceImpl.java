@@ -145,10 +145,13 @@ public class PromotionServiceImpl implements IPromotionService {
         return null;
     }
 
+    //Function check existPromotionByName And Check Available Date.
     @Override
     public Boolean isValidPromotion(String name) {
         PromotionEntity promotion = promotionRepository.findByName(name);
-        if((promotion != null) && LocalDate.now().isBefore(promotion.getEndDate())){
+        LocalDate currentDate = LocalDate.now();
+        if((promotion != null) && (currentDate.isBefore(promotion.getEndDate()) || currentDate.equals(promotion.getEndDate()))
+            && (currentDate.equals(promotion.getStartDate()) || currentDate.isAfter(promotion.getStartDate()))){
             return Boolean.TRUE;
         }
         return Boolean.FALSE;
@@ -175,17 +178,6 @@ public class PromotionServiceImpl implements IPromotionService {
                     PromotionBeLongUserEntity addPromotionWithUser = promotionBeLongUserRepository.save(promotionBeLongUser);
                     promotionList.add(promotion);
                 }
-
-//                List<PromotionEntity> promotionList = listPromotionId.stream()
-//                        .map(promotionId -> {
-//                            PromotionEntity promotion = promotionRepository.findById(promotionId)
-//                                    .orElseThrow(NoSuchElementException::new);
-//                            promotion.setUserEntities(Set.of(user));
-//                            return promotion;
-//                        }).toList();
-//                promotionRepository.saveAll(promotionList);
-//                user.setPromotionEntities(Set.copyOf(promotionList));
-//                userRepository.save(user);
 
                 List<PromotionResponse> promotionResponses = promotionList.stream()
                         .map(promotionEntity -> {
@@ -234,6 +226,7 @@ public class PromotionServiceImpl implements IPromotionService {
         return null;
     }
 
+    //Function Check Available Usage
     @Override
     public Boolean checkValidUsage(Long userId, String promotionName) {
         if(userRepository.existsById(userId) && this.isValidPromotion(promotionName)){
@@ -296,11 +289,26 @@ public class PromotionServiceImpl implements IPromotionService {
         try{
             LocalDate currentDate = LocalDate.now();
             List<PromotionEntity> promotionEntities = promotionRepository.findAllByIsActiveAvailable(currentDate);
-            List<PromotionResponse> promotionResponseList = promotionEntities.stream()
-                    .map(promotionEntity -> modelMapper.map(promotionEntity, PromotionResponse.class)).toList();
+            List<PromotionResponse> promotionResponses = promotionEntities.stream()
+                    .map(promotionEntity -> {
+                        return PromotionResponse
+                                .builder()
+                                .promotionId(promotionEntity.getPromotionId())
+                                .name(promotionEntity.getName())
+                                .description(promotionEntity.getDescription())
+                                .startDate(promotionEntity.getStartDate())
+                                .endDate(promotionEntity.getEndDate())
+                                .seller(modelMapper.map(promotionEntity.getSeller_created(), Seller.class))
+                                .discountType(promotionEntity.getDiscountType())
+                                .discountValue(promotionEntity.getDiscountValue())
+                                .minPurchaseAmount(promotionEntity.getMinPurchaseAmount())
+                                .isActive(promotionEntity.getIsActive())
+                                .usageLimitPerUser(promotionEntity.getUsageLimitPerUser())
+                                .build();
+                    }).toList();
 
             ResponseData<List<PromotionResponse>> promotionDataResponses= new ResponseData<>();
-            promotionDataResponses.setData(promotionResponseList);
+            promotionDataResponses.setData(promotionResponses);
             return ResponseEntity
                     .status(HttpStatusCode.valueOf(200))
                     .body(
@@ -372,7 +380,7 @@ public class PromotionServiceImpl implements IPromotionService {
     @Override
     public ResponseEntity<?> getPromotionOfUser(Long userId) {
         try{
-            if(userRepository.existsById(userId)){
+            if(!userRepository.existsById(userId)){
                 return ResponseEntity
                         .status(HttpStatusCode.valueOf(403))
                         .body(
