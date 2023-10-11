@@ -36,5 +36,5 @@ public class ProductEntity {
     @JoinColumn(name = "seller_id")
     private SellerEntity seller;
 
-    private Double voteStart;
+    private Double voteStar;
 }
