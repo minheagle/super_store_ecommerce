@@ -148,7 +148,7 @@ public class PromotionServiceImpl implements IPromotionService {
     @Override
     public Boolean isValidPromotion(String name) {
         PromotionEntity promotion = promotionRepository.findByName(name);
-        if(promotion != null){
+        if((promotion != null) && LocalDate.now().isBefore(promotion.getEndDate())){
             return Boolean.TRUE;
         }
         return Boolean.FALSE;
