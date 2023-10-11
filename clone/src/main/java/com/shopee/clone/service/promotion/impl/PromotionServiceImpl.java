@@ -2,6 +2,7 @@ package com.shopee.clone.service.promotion.impl;
 
 import com.shopee.clone.DTO.ResponseData;
 import com.shopee.clone.DTO.promotion.request.PromotionRequestCreate;
+import com.shopee.clone.DTO.promotion.response.PromotionOfUserResponse;
 import com.shopee.clone.DTO.promotion.response.PromotionResponse;
 import com.shopee.clone.DTO.seller.response.Seller;
 import com.shopee.clone.entity.SellerEntity;
@@ -15,7 +16,6 @@ import com.shopee.clone.repository.promotion.PromotionRepository;
 import com.shopee.clone.service.promotion.IPromotionService;
 import com.shopee.clone.util.ResponseObject;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class PromotionServiceImpl implements IPromotionService {
@@ -190,7 +189,7 @@ public class PromotionServiceImpl implements IPromotionService {
 
                 List<PromotionResponse> promotionResponses = promotionList.stream()
                         .map(promotionEntity -> {
-                            PromotionResponse promotionResponse = PromotionResponse
+                            return PromotionResponse
                                     .builder()
                                     .promotionId(promotionEntity.getPromotionId())
                                     .name(promotionEntity.getName())
@@ -204,7 +203,6 @@ public class PromotionServiceImpl implements IPromotionService {
                                     .isActive(promotionEntity.getIsActive())
                                     .usageLimitPerUser(promotionEntity.getUsageLimitPerUser())
                                     .build();
-                            return promotionResponse;
                         }).toList();
 
                 ResponseData<List<PromotionResponse>> listPromotionAvailable = new ResponseData<>();
@@ -292,5 +290,139 @@ public class PromotionServiceImpl implements IPromotionService {
             }
         }
         return Boolean.FALSE;
+    }
+    @Override
+    public ResponseEntity<?> getAllPromotionAvailable() {
+        try{
+            LocalDate currentDate = LocalDate.now();
+            List<PromotionEntity> promotionEntities = promotionRepository.findAllByIsActiveAvailable(currentDate);
+            List<PromotionResponse> promotionResponseList = promotionEntities.stream()
+                    .map(promotionEntity -> modelMapper.map(promotionEntity, PromotionResponse.class)).toList();
+
+            ResponseData<List<PromotionResponse>> promotionDataResponses= new ResponseData<>();
+            promotionDataResponses.setData(promotionResponseList);
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(200))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("SUCCESS")
+                                    .message("Get All Promotion success")
+                                    .results(promotionDataResponses)
+                                    .build()
+                    );
+        }catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(404))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("FAIL")
+                                    .message(e.getMessage())
+                                    .build()
+                    );
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getAllPromotionBySellerId(Long sellerId) {
+        try {
+            if(!sellerRepository.existsById(sellerId)){
+                return ResponseEntity
+                        .status(HttpStatusCode.valueOf(403))
+                        .body(
+                                ResponseObject
+                                        .builder()
+                                        .status("Fail")
+                                        .message("Seller Not Exist")
+                                        .results("")
+                                        .build()
+                        );
+            }
+            SellerEntity seller = sellerRepository.findById(sellerId).orElseThrow(NoSuchElementException::new);
+            List<PromotionEntity> promotionEntities = promotionRepository.findAllBySeller_created(seller);
+            List<PromotionResponse> promotionResponses = promotionEntities.stream()
+                    .map(promotionEntity -> modelMapper.map(promotionEntity,PromotionResponse.class)).toList();
+
+            ResponseData<List<PromotionResponse>> responseData = new ResponseData<>();
+            responseData.setData(promotionResponses);
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(200))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("SUCCESS")
+                                    .message("Get Promotions By Seller success")
+                                    .results(responseData)
+                                    .build()
+                    );
+
+        }catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(404))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("FAIL")
+                                    .message(e.getMessage())
+                                    .build()
+                    );
+        }
+    }
+    @Override
+    public ResponseEntity<?> getPromotionOfUser(Long userId) {
+        try{
+            if(userRepository.existsById(userId)){
+                return ResponseEntity
+                        .status(HttpStatusCode.valueOf(403))
+                        .body(
+                                ResponseObject
+                                        .builder()
+                                        .status("Fail")
+                                        .message("User Not Exist")
+                                        .results("")
+                                        .build()
+                        );
+            }
+            UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
+
+            List<PromotionBeLongUserEntity> listPromotionOfUser = promotionBeLongUserRepository.getPromotionOfUser(user);
+            //Convert fromEntity To Data response
+            List<PromotionOfUserResponse> promotionOfUserResponseList = listPromotionOfUser.stream()
+                    .map(promotionBeLongUserEntity -> PromotionOfUserResponse
+                            .builder()
+                            .name(promotionBeLongUserEntity.getPromotion().getName())
+                            .description(promotionBeLongUserEntity.getPromotion().getDescription())
+                            .startDate(promotionBeLongUserEntity.getPromotion().getStartDate())
+                            .endDate(promotionBeLongUserEntity.getPromotion().getEndDate())
+                            .seller(modelMapper.map(promotionBeLongUserEntity.getPromotion().getSeller_created(),Seller.class))
+                            .discountType(promotionBeLongUserEntity.getPromotion().getDiscountType())
+                            .discountValue(promotionBeLongUserEntity.getPromotion().getDiscountValue())
+                            .minPurchaseAmount(promotionBeLongUserEntity.getPromotion().getMinPurchaseAmount())
+                            .usageAvailable(promotionBeLongUserEntity.getUsageAvailable())
+                            .build()).toList();
+            ResponseData<List<PromotionOfUserResponse>> responseData = new ResponseData<>();
+            responseData.setData(promotionOfUserResponseList);
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(200))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("SUCCESS")
+                                    .message("Get Promotions By Seller success")
+                                    .results(responseData)
+                                    .build()
+                    );
+        }catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(404))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("FAIL")
+                                    .message(e.getMessage())
+                                    .build()
+                    );
+        }
     }
 }

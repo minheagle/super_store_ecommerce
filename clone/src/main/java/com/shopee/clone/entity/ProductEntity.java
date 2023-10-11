@@ -35,4 +35,6 @@ public class ProductEntity {
     @ManyToOne
     @JoinColumn(name = "seller_id")
     private SellerEntity seller;
+
+    private Double voteStart;
 }
