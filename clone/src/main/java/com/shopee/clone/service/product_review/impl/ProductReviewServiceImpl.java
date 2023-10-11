@@ -54,7 +54,7 @@ public class ProductReviewServiceImpl implements ProductReviewService {
 
                 ProductReviewEntity finalProductReview = productReviewRepository.save(productReviewEntity);
                 imgProductReviewService.saveAllImageProduct(productReviewRequest.getImageProductReviewFile(),finalProductReview);
-
+                setRatingProduct(productReviewRequest.getProductId());
                 return ResponseEntity
                         .status(HttpStatusCode.valueOf(200))
                         .body(
@@ -164,6 +164,7 @@ public class ProductReviewServiceImpl implements ProductReviewService {
                 ProductReviewEntity productReview = productReviewEntity.get();
                 imgProductReviewService.delete(productReview.getImageProductReview());
                 productReviewRepository.delete(productReview);
+                setRatingProduct(productReview.getProduct().getProductId());
                 return ResponseEntity
                         .status(HttpStatusCode.valueOf(200))
                         .body(
@@ -190,11 +191,14 @@ public class ProductReviewServiceImpl implements ProductReviewService {
         return  null;
     }
 
-    private Double setRatingProduct(Long productId){
+    private void setRatingProduct(Long productId){
         List<ProductReviewEntity> reviews = productReviewRepository.findByProduct_ProductId(productId);
+        Optional<ProductEntity> productEntity = productRepository.findById(productId);
+        if(productEntity.isPresent()){
+            ProductEntity product = productEntity.get();
 
         if (reviews.isEmpty()) {
-            return null;
+            product.setVoteStart(null);
         }
 
         int totalRating = 0;
@@ -202,7 +206,9 @@ public class ProductReviewServiceImpl implements ProductReviewService {
         for (ProductReviewEntity review : reviews) {
             totalRating += review.getRating();
         }
-        return (double) totalRating / reviews.size();
+            product.setVoteStart((double) totalRating / reviews.size());
+        productRepository.save(product);
+        }
     }
     @Override
     public ResponseEntity<?> updateRating(ProductReviewUpdateRequest productReviewUpdateRequest) {
@@ -213,7 +219,7 @@ public class ProductReviewServiceImpl implements ProductReviewService {
                 productReview.setRating(productReview.getRating());
                 productReview.setComment(productReview.getComment());
                 ProductReviewEntity finalProductReview = productReviewRepository.save(productReview);
-
+                setRatingProduct(productReview.getProduct().getProductId());
                 ProductReviewResponse productReviewResponse = convertToProductReviewResponse(finalProductReview);
                 ResponseData<Object> data = ResponseData.builder().data(productReviewResponse).build();
                 return ResponseEntity
