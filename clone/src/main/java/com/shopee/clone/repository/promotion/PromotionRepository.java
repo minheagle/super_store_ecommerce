@@ -16,5 +16,6 @@ public interface PromotionRepository extends JpaRepository<PromotionEntity,Long>
     @Query("Select pn From PromotionEntity pn Where pn.isActive=True And " +
             "((pn.startDate >= :currentDate And pn.endDate <= :currentDate) Or (pn.startDate <= :currentDate And pn.endDate <= :currentDate))")
     List<PromotionEntity> findAllByIsActiveAvailable(@Param("currentDate") LocalDate currentDate);
-    List<PromotionEntity> findAllBySeller_created(SellerEntity seller);
+    @Query("Select pn From PromotionEntity pn Where pn.seller_created=:seller")
+    List<PromotionEntity> findAllBySeller_created(@Param("seller") SellerEntity seller);
 }
