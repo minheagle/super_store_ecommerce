@@ -180,22 +180,20 @@ public class PromotionServiceImpl implements IPromotionService {
                 }
 
                 List<PromotionResponse> promotionResponses = promotionList.stream()
-                        .map(promotionEntity -> {
-                            return PromotionResponse
-                                    .builder()
-                                    .promotionId(promotionEntity.getPromotionId())
-                                    .name(promotionEntity.getName())
-                                    .description(promotionEntity.getDescription())
-                                    .startDate(promotionEntity.getStartDate())
-                                    .endDate(promotionEntity.getEndDate())
-                                    .seller(modelMapper.map(promotionEntity.getSeller_created(), Seller.class))
-                                    .discountType(promotionEntity.getDiscountType())
-                                    .discountValue(promotionEntity.getDiscountValue())
-                                    .minPurchaseAmount(promotionEntity.getMinPurchaseAmount())
-                                    .isActive(promotionEntity.getIsActive())
-                                    .usageLimitPerUser(promotionEntity.getUsageLimitPerUser())
-                                    .build();
-                        }).toList();
+                        .map(promotionEntity -> PromotionResponse
+                                .builder()
+                                .promotionId(promotionEntity.getPromotionId())
+                                .name(promotionEntity.getName())
+                                .description(promotionEntity.getDescription())
+                                .startDate(promotionEntity.getStartDate())
+                                .endDate(promotionEntity.getEndDate())
+                                .seller(modelMapper.map(promotionEntity.getSeller_created(), Seller.class))
+                                .discountType(promotionEntity.getDiscountType())
+                                .discountValue(promotionEntity.getDiscountValue())
+                                .minPurchaseAmount(promotionEntity.getMinPurchaseAmount())
+                                .isActive(promotionEntity.getIsActive())
+                                .usageLimitPerUser(promotionEntity.getUsageLimitPerUser())
+                                .build()).toList();
 
                 ResponseData<List<PromotionResponse>> listPromotionAvailable = new ResponseData<>();
                 listPromotionAvailable.setData(promotionResponses);
@@ -392,6 +390,7 @@ public class PromotionServiceImpl implements IPromotionService {
                                         .build()
                         );
             }
+
             UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
 
             List<PromotionBeLongUserEntity> listPromotionOfUser = promotionBeLongUserRepository.getPromotionOfUser(user);
