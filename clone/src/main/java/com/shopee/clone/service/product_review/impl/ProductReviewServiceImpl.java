@@ -39,32 +39,47 @@ public class ProductReviewServiceImpl implements ProductReviewService {
         try{
             Optional<UserEntity> userEntity = userService.findUserByID(productReviewRequest.getUserId());
             Optional<ProductEntity> productEntity = productRepository.findById(productReviewRequest.getProductId());
+
             if(productEntity.isPresent() && userEntity.isPresent()) {
                 UserEntity user = userEntity.get();
                 ProductEntity product = productEntity.get();
 
-                ProductReviewEntity productReviewEntity =
-                        ProductReviewEntity.
-                                builder()
-                                .user(user)
-                                .comment(productReviewRequest.getComment())
-                                .product(product)
-                                .rating(productReviewRequest.getVoteStar())
-                                .build();
+                ProductReviewEntity productReview = productReviewRepository.findByProductAndUser(product,user);
+                if(productReview==null){
+                    ProductReviewEntity productReviewEntity =
+                            ProductReviewEntity.
+                                    builder()
+                                    .user(user)
+                                    .comment(productReviewRequest.getComment())
+                                    .product(product)
+                                    .rating(productReviewRequest.getVoteStar())
+                                    .build();
 
-                ProductReviewEntity finalProductReview = productReviewRepository.save(productReviewEntity);
-                imgProductReviewService.saveAllImageProduct(productReviewRequest.getImageProductReviewFile(),finalProductReview);
-                setRatingProduct(productReviewRequest.getProductId());
+                    ProductReviewEntity finalProductReview = productReviewRepository.save(productReviewEntity);
+                    imgProductReviewService.saveAllImageProduct(productReviewRequest.getImageProductReviewFile(),finalProductReview);
+                    setRatingProduct(productReviewRequest.getProductId());
+                    return ResponseEntity
+                            .status(HttpStatusCode.valueOf(200))
+                            .body(
+                                    ResponseObject
+                                            .builder()
+                                            .status("SUCCESS")
+                                            .message("Create rating success!")
+                                            .results("")
+                                            .build()
+                            );
+                }
                 return ResponseEntity
-                        .status(HttpStatusCode.valueOf(200))
+                        .status(HttpStatusCode.valueOf(404))
                         .body(
                                 ResponseObject
                                         .builder()
-                                        .status("SUCCESS")
-                                        .message("Create rating success!")
-                                        .results("")
+                                        .status("FAIL")
+                                        .message("Users have rated this product")
+                                        .results("PLS update rating")
                                         .build()
                         );
+
             }
         }catch (Exception e){
             return ResponseEntity
@@ -198,7 +213,7 @@ public class ProductReviewServiceImpl implements ProductReviewService {
             ProductEntity product = productEntity.get();
 
         if (reviews.isEmpty()) {
-            product.setVoteStart(null);
+            product.setVoteStar(null);
         }
 
         int totalRating = 0;
@@ -206,7 +221,7 @@ public class ProductReviewServiceImpl implements ProductReviewService {
         for (ProductReviewEntity review : reviews) {
             totalRating += review.getRating();
         }
-            product.setVoteStart((double) totalRating / reviews.size());
+            product.setVoteStar((double) totalRating / reviews.size());
         productRepository.save(product);
         }
     }

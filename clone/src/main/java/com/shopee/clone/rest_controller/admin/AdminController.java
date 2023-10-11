@@ -16,7 +16,7 @@ public class AdminController {
     }
     @GetMapping("/list-seller")
     public ResponseEntity<?> getListSeller(){
-        return userService.getListUser();
+        return userService.getListSeller();
     }
     @GetMapping("/ban-user/{id}")
     public ResponseEntity<?> banUser(@PathVariable Long id){
