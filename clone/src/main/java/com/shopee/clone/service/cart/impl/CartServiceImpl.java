@@ -27,11 +27,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import java.util.*;
 
 @Service
 public class CartServiceImpl implements CartService {
-    private static final String DELIVERY_API_URL = "http://192.168.1.113:8080/api/v1/delivery/cost";
+    private static final String DELIVERY_API_URL = "http://192.168.2.67:8080/api/v1/delivery/cost";
     @Autowired
     private RestTemplate restTemplate;
     @Autowired
@@ -392,13 +394,8 @@ public class CartServiceImpl implements CartService {
                         cartResponse.stream().map(c -> {
                     CheckOutResponse checkOutResponse = new CheckOutResponse();
                     checkOutResponse.setCartResponse(c);
-//                    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(DELIVERY_API_URL)
-//                            .queryParam("deliveryAddress",checkOutRequest.getShipAddress() );
-//                    Double shipMoney =
-//                            restTemplate
-//                                    .getForObject
-//                                            (builder.toUriString()
-//                                                    , Double.class);
+                            String apiUrl = DELIVERY_API_URL + "?deliveryAddress=" + checkOutRequest.getShipAddress();
+//                            Double shipMoney = restTemplate.getForObject(apiUrl, Double.class);
 //                    checkOutResponse.setShipMoney(shipMoney);
                     return checkOutResponse;
                 }).toList();

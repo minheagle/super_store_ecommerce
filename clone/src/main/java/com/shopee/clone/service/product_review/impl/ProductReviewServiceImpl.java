@@ -222,7 +222,7 @@ public class ProductReviewServiceImpl implements ProductReviewService {
                                 ResponseObject
                                         .builder()
                                         .status("SUCCESS")
-                                        .message("Create rating success!")
+                                        .message("Update rating success!")
                                         .results(data)
                                         .build()
                         );

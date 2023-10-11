@@ -5,7 +5,6 @@ import com.shopee.clone.DTO.cart.ProductItemMatchToCart;
 import com.shopee.clone.DTO.order.request.*;
 import com.shopee.clone.DTO.order.response.OrderDetailResponse;
 import com.shopee.clone.DTO.order.response.OrderResponse;
-import com.shopee.clone.DTO.order.response.ResponseDataCheckOut;
 import com.shopee.clone.DTO.product.response.*;
 import com.shopee.clone.DTO.seller.response.Seller;
 import com.shopee.clone.entity.AddressEntity;
@@ -397,6 +396,15 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    public Double getTotalByOrderNumber(List<OrderEntity> orderList){
+        AtomicReference<Double> total = new AtomicReference<>(0D);
+        orderList.forEach(o->{
+            o.getOrderDetails().forEach(od->{
+                total.updateAndGet(v -> v + od.getUnitPrice() * od.getQuantity());
+            });
+        });
+        return total.get();
+    }
     private int randomOrderNumber() {
         Random random = new Random();
         int min = 100; // Số nhỏ nhất có 5 chữ số
@@ -602,6 +610,16 @@ public class OrderServiceImpl implements OrderService {
         List<ProductEntity> list = orderDetailRepository.findMostSoldProduct();
         return list.stream().map(ProductEntity::getProductId).toList();
     }
+
+//    @Override
+//    public List<OrderEntity> findAllByOrderNumber(Integer orderNumber) {
+//        return orderRepository.findAllByOrderNumber(orderNumber);
+//    }
+//
+//    @Override
+//    public List<OrderEntity> findAllBySellerOnMonth(Long sellerId) {
+//        return null;
+//    }
 
     //    @Scheduled(fixedRate = 120000) // Lên lịch chạy mỗi 2 phút (120,000 milliseconds)
 //    public void sayHello() {
