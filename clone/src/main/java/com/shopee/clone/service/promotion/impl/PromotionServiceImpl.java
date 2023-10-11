@@ -4,6 +4,7 @@ import com.shopee.clone.DTO.ResponseData;
 import com.shopee.clone.DTO.promotion.request.PromotionRequestCreate;
 import com.shopee.clone.DTO.promotion.response.PromotionOfUserResponse;
 import com.shopee.clone.DTO.promotion.response.PromotionResponse;
+import com.shopee.clone.DTO.promotion.response.TypeDiscountResponse;
 import com.shopee.clone.DTO.seller.response.Seller;
 import com.shopee.clone.entity.SellerEntity;
 import com.shopee.clone.entity.UserEntity;
@@ -147,10 +148,11 @@ public class PromotionServiceImpl implements IPromotionService {
 
     //Function check existPromotionByName And Check Available Date.
     @Override
-    public Boolean isValidPromotion(String name) {
+    public Boolean isValidPromotion(String name, Integer purchasedAmount) {
         PromotionEntity promotion = promotionRepository.findByName(name);
         LocalDate currentDate = LocalDate.now();
-        if((promotion != null) && (currentDate.isBefore(promotion.getEndDate()) || currentDate.equals(promotion.getEndDate()))
+        if(promotion != null && purchasedAmount >= promotion.getMinPurchaseAmount()
+                && (currentDate.isBefore(promotion.getEndDate()) || currentDate.equals(promotion.getEndDate()))
             && (currentDate.equals(promotion.getStartDate()) || currentDate.isAfter(promotion.getStartDate()))){
             return Boolean.TRUE;
         }
@@ -226,8 +228,8 @@ public class PromotionServiceImpl implements IPromotionService {
 
     //Function Check Available Usage
     @Override
-    public Boolean checkValidUsage(Long userId, String promotionName) {
-        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName)){
+    public Boolean checkValidUsage(Long userId, String promotionName, Integer purchasedAmount) {
+        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName,purchasedAmount)){
 
 //            PromotionEntity promotion = promotionRepository.findByName(promotionName);
             UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
@@ -246,8 +248,8 @@ public class PromotionServiceImpl implements IPromotionService {
     }
 
     @Override
-    public Boolean minusUsage(Long userId,String promotionName) {
-        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName)){
+    public Boolean minusUsage(Long userId,String promotionName, Integer purchasedAmount) {
+        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName, purchasedAmount)){
 
 //            PromotionEntity promotion = promotionRepository.findByName(promotionName);
             UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
@@ -265,8 +267,8 @@ public class PromotionServiceImpl implements IPromotionService {
     }
 
     @Override
-    public Boolean plusUsage(Long userId,String promotionName) {
-        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName)){
+    public Boolean plusUsage(Long userId,String promotionName, Integer purchasedAmount) {
+        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName, purchasedAmount)){
 
 //            PromotionEntity promotion = promotionRepository.findByName(promotionName);
             UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
@@ -431,5 +433,18 @@ public class PromotionServiceImpl implements IPromotionService {
                                     .build()
                     );
         }
+    }
+
+    @Override
+    public TypeDiscountResponse getTypeDiscount(String promotionName) {
+        PromotionEntity promotion = promotionRepository.findByName(promotionName);
+        if(promotion != null){
+            return TypeDiscountResponse
+                    .builder()
+                    .discountType(promotion.getDiscountType())
+                    .discountValue(promotion.getDiscountValue())
+                    .build();
+        }
+        return null;
     }
 }
