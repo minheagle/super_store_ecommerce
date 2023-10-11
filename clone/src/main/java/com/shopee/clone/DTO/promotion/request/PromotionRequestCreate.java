@@ -15,15 +15,10 @@ public class PromotionRequestCreate {
     private String name;
     @NotBlank
     private String description;
-    @NotBlank
     private LocalDate startDate;
-    @NotBlank
     private LocalDate endDate;
-    @NotBlank
     private Long sellerId;
-    @NotBlank
     private EDiscountType discountType;
-    @NotBlank
     private Integer discountValue;
     private Integer minPurchaseAmount;
     private Boolean isActive;
