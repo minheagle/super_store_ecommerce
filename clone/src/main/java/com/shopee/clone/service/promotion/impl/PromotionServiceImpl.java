@@ -285,37 +285,57 @@ public class PromotionServiceImpl implements IPromotionService {
         return Boolean.FALSE;
     }
     @Override
-    public ResponseEntity<?> getAllPromotionAvailable() {
+    public ResponseEntity<?> getAllPromotionAvailable(Long userId) {
         try{
             LocalDate currentDate = LocalDate.now();
             List<PromotionEntity> promotionEntities = promotionRepository.findAllByIsActiveAvailable(currentDate);
-            List<PromotionResponse> promotionResponses = promotionEntities.stream()
-                    .map(promotionEntity -> {
-                        return PromotionResponse
-                                .builder()
-                                .promotionId(promotionEntity.getPromotionId())
-                                .name(promotionEntity.getName())
-                                .description(promotionEntity.getDescription())
-                                .startDate(promotionEntity.getStartDate())
-                                .endDate(promotionEntity.getEndDate())
-                                .seller(modelMapper.map(promotionEntity.getSeller_created(), Seller.class))
-                                .discountType(promotionEntity.getDiscountType())
-                                .discountValue(promotionEntity.getDiscountValue())
-                                .minPurchaseAmount(promotionEntity.getMinPurchaseAmount())
-                                .isActive(promotionEntity.getIsActive())
-                                .usageLimitPerUser(promotionEntity.getUsageLimitPerUser())
-                                .build();
-                    }).toList();
+
+            UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
+            List<PromotionEntity> listPromotionUserHas = promotionBeLongUserRepository.getAllPromotionUserHas(user);
+
+            List<PromotionResponse> promotionResponses = new ArrayList<>();
+            for(PromotionEntity promotion : promotionEntities){
+                if(!listPromotionUserHas.contains(promotion)){
+
+                    PromotionResponse promotionResult = PromotionResponse
+                            .builder()
+                            .promotionId(promotion.getPromotionId())
+                            .name(promotion.getName())
+                            .description(promotion.getDescription())
+                            .startDate(promotion.getStartDate())
+                            .endDate(promotion.getEndDate())
+                            .seller(modelMapper.map(promotion.getSeller_created(), Seller.class))
+                            .discountType(promotion.getDiscountType())
+                            .discountValue(promotion.getDiscountValue())
+                            .minPurchaseAmount(promotion.getMinPurchaseAmount())
+                            .isActive(promotion.getIsActive())
+                            .usageLimitPerUser(promotion.getUsageLimitPerUser())
+                            .build();
+                    promotionResponses.add(promotionResult);
+                }
+            }
 
             ResponseData<List<PromotionResponse>> promotionDataResponses= new ResponseData<>();
             promotionDataResponses.setData(promotionResponses);
+            if(promotionDataResponses.getData().size() > 0){
+                return ResponseEntity
+                        .status(HttpStatusCode.valueOf(200))
+                        .body(
+                                ResponseObject
+                                        .builder()
+                                        .status("SUCCESS")
+                                        .message("Get All Promotion success")
+                                        .results(promotionDataResponses)
+                                        .build()
+                        );
+            }
             return ResponseEntity
-                    .status(HttpStatusCode.valueOf(200))
+                    .status(HttpStatusCode.valueOf(204))
                     .body(
                             ResponseObject
                                     .builder()
                                     .status("SUCCESS")
-                                    .message("Get All Promotion success")
+                                    .message("Not Have Promotion Available")
                                     .results(promotionDataResponses)
                                     .build()
                     );
