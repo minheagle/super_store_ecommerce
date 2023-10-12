@@ -39,32 +39,47 @@ public class ProductReviewServiceImpl implements ProductReviewService {
         try{
             Optional<UserEntity> userEntity = userService.findUserByID(productReviewRequest.getUserId());
             Optional<ProductEntity> productEntity = productRepository.findById(productReviewRequest.getProductId());
+
             if(productEntity.isPresent() && userEntity.isPresent()) {
                 UserEntity user = userEntity.get();
                 ProductEntity product = productEntity.get();
 
-                ProductReviewEntity productReviewEntity =
-                        ProductReviewEntity.
-                                builder()
-                                .user(user)
-                                .comment(productReviewRequest.getComment())
-                                .product(product)
-                                .rating(productReviewRequest.getVoteStar())
-                                .build();
+                ProductReviewEntity productReview = productReviewRepository.findByProductAndUser(product,user);
+                if(productReview==null){
+                    ProductReviewEntity productReviewEntity =
+                            ProductReviewEntity.
+                                    builder()
+                                    .user(user)
+                                    .comment(productReviewRequest.getComment())
+                                    .product(product)
+                                    .rating(productReviewRequest.getVoteStar())
+                                    .build();
 
-                ProductReviewEntity finalProductReview = productReviewRepository.save(productReviewEntity);
-                imgProductReviewService.saveAllImageProduct(productReviewRequest.getImageProductReviewFile(),finalProductReview);
-
+                    ProductReviewEntity finalProductReview = productReviewRepository.save(productReviewEntity);
+                    imgProductReviewService.saveAllImageProduct(productReviewRequest.getImageProductReviewFile(),finalProductReview);
+                    setRatingProduct(productReviewRequest.getProductId());
+                    return ResponseEntity
+                            .status(HttpStatusCode.valueOf(200))
+                            .body(
+                                    ResponseObject
+                                            .builder()
+                                            .status("SUCCESS")
+                                            .message("Create rating success!")
+                                            .results("")
+                                            .build()
+                            );
+                }
                 return ResponseEntity
-                        .status(HttpStatusCode.valueOf(200))
+                        .status(HttpStatusCode.valueOf(404))
                         .body(
                                 ResponseObject
                                         .builder()
-                                        .status("SUCCESS")
-                                        .message("Create rating success!")
-                                        .results("")
+                                        .status("FAIL")
+                                        .message("Users have rated this product")
+                                        .results("PLS update rating")
                                         .build()
                         );
+
             }
         }catch (Exception e){
             return ResponseEntity
@@ -164,6 +179,7 @@ public class ProductReviewServiceImpl implements ProductReviewService {
                 ProductReviewEntity productReview = productReviewEntity.get();
                 imgProductReviewService.delete(productReview.getImageProductReview());
                 productReviewRepository.delete(productReview);
+                setRatingProduct(productReview.getProduct().getProductId());
                 return ResponseEntity
                         .status(HttpStatusCode.valueOf(200))
                         .body(
@@ -190,11 +206,14 @@ public class ProductReviewServiceImpl implements ProductReviewService {
         return  null;
     }
 
-    private Double setRatingProduct(Long productId){
+    private void setRatingProduct(Long productId){
         List<ProductReviewEntity> reviews = productReviewRepository.findByProduct_ProductId(productId);
+        Optional<ProductEntity> productEntity = productRepository.findById(productId);
+        if(productEntity.isPresent()){
+            ProductEntity product = productEntity.get();
 
         if (reviews.isEmpty()) {
-            return null;
+            product.setVoteStar(null);
         }
 
         int totalRating = 0;
@@ -202,7 +221,9 @@ public class ProductReviewServiceImpl implements ProductReviewService {
         for (ProductReviewEntity review : reviews) {
             totalRating += review.getRating();
         }
-        return (double) totalRating / reviews.size();
+            product.setVoteStar((double) totalRating / reviews.size());
+        productRepository.save(product);
+        }
     }
     @Override
     public ResponseEntity<?> updateRating(ProductReviewUpdateRequest productReviewUpdateRequest) {
@@ -213,7 +234,7 @@ public class ProductReviewServiceImpl implements ProductReviewService {
                 productReview.setRating(productReview.getRating());
                 productReview.setComment(productReview.getComment());
                 ProductReviewEntity finalProductReview = productReviewRepository.save(productReview);
-
+                setRatingProduct(productReview.getProduct().getProductId());
                 ProductReviewResponse productReviewResponse = convertToProductReviewResponse(finalProductReview);
                 ResponseData<Object> data = ResponseData.builder().data(productReviewResponse).build();
                 return ResponseEntity
@@ -222,7 +243,7 @@ public class ProductReviewServiceImpl implements ProductReviewService {
                                 ResponseObject
                                         .builder()
                                         .status("SUCCESS")
-                                        .message("Create rating success!")
+                                        .message("Update rating success!")
                                         .results(data)
                                         .build()
                         );

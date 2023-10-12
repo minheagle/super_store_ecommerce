@@ -32,4 +32,6 @@ public interface UserService {
     ResponseEntity<?> becomeSellerService(Long userId,BecomeSellerRequest becomeSellerRequest);
 
     ResponseEntity<?> addAddress(Long id, UpdateAddressDTO updateAddressDTO);
+
+    ResponseEntity<?> getListSeller();
 }

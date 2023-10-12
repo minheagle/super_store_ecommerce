@@ -33,6 +33,8 @@ public class OrderEntity {
     private AddressEntity address;
     @OneToMany(mappedBy = "order",fetch = FetchType.EAGER)
     private List<OrderDetailEntity> orderDetails;
+    private String promotionName;
+    private Double discount;
     private Date date;
     private Boolean paymentStatus;
     private Double shipMoney;

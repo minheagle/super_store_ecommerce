@@ -148,7 +148,7 @@ public class PromotionServiceImpl implements IPromotionService {
 
     //Function check existPromotionByName And Check Available Date.
     @Override
-    public Boolean isValidPromotion(String name, Integer purchasedAmount) {
+    public Boolean isValidPromotion(String name, Double purchasedAmount) {
         PromotionEntity promotion = promotionRepository.findByName(name);
         LocalDate currentDate = LocalDate.now();
         if(promotion != null && purchasedAmount >= promotion.getMinPurchaseAmount()
@@ -228,7 +228,7 @@ public class PromotionServiceImpl implements IPromotionService {
 
     //Function Check Available Usage
     @Override
-    public Boolean checkValidUsage(Long userId, String promotionName, Integer purchasedAmount) {
+    public Boolean checkValidUsage(Long userId, String promotionName, Double purchasedAmount) {
         if(userRepository.existsById(userId) && this.isValidPromotion(promotionName,purchasedAmount)){
 
 //            PromotionEntity promotion = promotionRepository.findByName(promotionName);
@@ -248,7 +248,7 @@ public class PromotionServiceImpl implements IPromotionService {
     }
 
     @Override
-    public Boolean minusUsage(Long userId,String promotionName, Integer purchasedAmount) {
+    public Boolean minusUsage(Long userId,String promotionName, Double purchasedAmount) {
         if(userRepository.existsById(userId) && this.isValidPromotion(promotionName, purchasedAmount)){
 
 //            PromotionEntity promotion = promotionRepository.findByName(promotionName);
@@ -267,7 +267,7 @@ public class PromotionServiceImpl implements IPromotionService {
     }
 
     @Override
-    public Boolean plusUsage(Long userId,String promotionName, Integer purchasedAmount) {
+    public Boolean plusUsage(Long userId,String promotionName, Double purchasedAmount) {
         if(userRepository.existsById(userId) && this.isValidPromotion(promotionName, purchasedAmount)){
 
 //            PromotionEntity promotion = promotionRepository.findByName(promotionName);
@@ -467,4 +467,5 @@ public class PromotionServiceImpl implements IPromotionService {
         }
         return null;
     }
+
 }

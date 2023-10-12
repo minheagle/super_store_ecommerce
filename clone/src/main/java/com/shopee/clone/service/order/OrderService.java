@@ -2,6 +2,7 @@ package com.shopee.clone.service.order;
 
 import com.shopee.clone.DTO.order.request.OrderRequest;
 import com.shopee.clone.DTO.product.response.ProductResponseDTO;
+import com.shopee.clone.entity.order.OrderEntity;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -27,6 +28,14 @@ public interface OrderService{
     int randomOrder();
     ResponseEntity<?> callApi();
     List<Long> getTopSellingProduct();
-
+//    List<OrderEntity> findAllByOrderNumber(Integer orderNumber);
+//    List<OrderEntity> getAllOrderWithShopOnDay(Long sellerId);
+//    List<OrderEntity> getAllOrderWithShopOnMonth(Long sellerId);
+//    Double getTotalOnDay();
+//    Double getTotalOnMonth();
+//    Double getTotalWithShopOnDay(Long sellerId);
+//    Double getTotalWithShopOnMonth(Long sellerId);
+//    Double getOrderCancelWithShop(Long sellerId);
+//    Double getAllTotalWithS
     List<Long> findTopUsersByOrderCountInCurrentMonth();
 }

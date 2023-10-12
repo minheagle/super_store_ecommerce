@@ -15,7 +15,10 @@ public class OrderResponse {
     private Seller seller;
     private Integer orderNumber;
     private List<OrderDetailResponse> orderDetailList;
+    private Double amount;
     private Double shipMoney;
+    private Double discount;
+    private Double total;
     private String deliveryAddress;
     private Boolean payment;
     private Date date;

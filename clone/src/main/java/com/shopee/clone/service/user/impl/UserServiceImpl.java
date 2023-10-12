@@ -3,6 +3,7 @@ package com.shopee.clone.service.user.impl;
 import com.shopee.clone.DTO.ResponseData;
 import com.shopee.clone.DTO.auth.user.*;
 import com.shopee.clone.DTO.seller.SellerDTO;
+import com.shopee.clone.DTO.seller.response.Seller;
 import com.shopee.clone.DTO.upload_file.ImageUploadResult;
 import com.shopee.clone.entity.*;
 import com.shopee.clone.repository.RoleRepository;
@@ -453,6 +454,20 @@ public class UserServiceImpl implements UserService {
                             .build());
 
         }
+    }
+
+    @Override
+    public ResponseEntity<?> getListSeller() {
+        List<Seller> list = sellerRepository.findAll().stream().map(sellerEntity ->
+                mapper.map(sellerEntity,Seller.class)).toList();
+        ResponseData<Object> data = ResponseData.builder().data(list).build();
+        return ResponseEntity.ok().body(
+                ResponseObject.builder()
+                        .status("SUCCESS")
+                        .message("Get user successfully")
+                        .results(data)
+                        .build()
+        );
     }
 
     @Override
