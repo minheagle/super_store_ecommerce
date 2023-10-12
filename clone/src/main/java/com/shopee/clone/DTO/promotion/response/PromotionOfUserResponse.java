@@ -1,6 +1,7 @@
 package com.shopee.clone.DTO.promotion.response;
 
 import com.shopee.clone.DTO.seller.response.Seller;
+import com.shopee.clone.entity.SellerEntity;
 import com.shopee.clone.entity.payment.EDiscountType;
 import lombok.*;
 import java.time.LocalDate;

@@ -13,8 +13,7 @@ import java.util.List;
 @Repository
 public interface PromotionRepository extends JpaRepository<PromotionEntity,Long> {
     PromotionEntity findByName(String name);
-    @Query("Select pn From PromotionEntity pn Where pn.isActive=True And " +
-            "((pn.startDate >= :currentDate And pn.endDate <= :currentDate) Or (pn.startDate <= :currentDate And pn.endDate <= :currentDate))")
+    @Query("Select pn From PromotionEntity pn Where pn.isActive=True And pn.endDate >= :currentDate")
     List<PromotionEntity> findAllByIsActiveAvailable(@Param("currentDate") LocalDate currentDate);
     @Query("Select pn From PromotionEntity pn Where pn.seller_created=:seller")
     List<PromotionEntity> findAllBySeller_created(@Param("seller") SellerEntity seller);

@@ -4,6 +4,7 @@ import com.shopee.clone.DTO.ResponseData;
 import com.shopee.clone.DTO.promotion.request.PromotionRequestCreate;
 import com.shopee.clone.DTO.promotion.response.PromotionOfUserResponse;
 import com.shopee.clone.DTO.promotion.response.PromotionResponse;
+import com.shopee.clone.DTO.promotion.response.TypeDiscountResponse;
 import com.shopee.clone.DTO.seller.response.Seller;
 import com.shopee.clone.entity.SellerEntity;
 import com.shopee.clone.entity.UserEntity;
@@ -145,10 +146,14 @@ public class PromotionServiceImpl implements IPromotionService {
         return null;
     }
 
+    //Function check existPromotionByName And Check Available Date.
     @Override
-    public Boolean isValidPromotion(String name) {
+    public Boolean isValidPromotion(String name, Integer purchasedAmount) {
         PromotionEntity promotion = promotionRepository.findByName(name);
-        if((promotion != null) && LocalDate.now().isBefore(promotion.getEndDate())){
+        LocalDate currentDate = LocalDate.now();
+        if(promotion != null && purchasedAmount >= promotion.getMinPurchaseAmount()
+                && (currentDate.isBefore(promotion.getEndDate()) || currentDate.equals(promotion.getEndDate()))
+            && (currentDate.equals(promotion.getStartDate()) || currentDate.isAfter(promotion.getStartDate()))){
             return Boolean.TRUE;
         }
         return Boolean.FALSE;
@@ -176,34 +181,21 @@ public class PromotionServiceImpl implements IPromotionService {
                     promotionList.add(promotion);
                 }
 
-//                List<PromotionEntity> promotionList = listPromotionId.stream()
-//                        .map(promotionId -> {
-//                            PromotionEntity promotion = promotionRepository.findById(promotionId)
-//                                    .orElseThrow(NoSuchElementException::new);
-//                            promotion.setUserEntities(Set.of(user));
-//                            return promotion;
-//                        }).toList();
-//                promotionRepository.saveAll(promotionList);
-//                user.setPromotionEntities(Set.copyOf(promotionList));
-//                userRepository.save(user);
-
                 List<PromotionResponse> promotionResponses = promotionList.stream()
-                        .map(promotionEntity -> {
-                            return PromotionResponse
-                                    .builder()
-                                    .promotionId(promotionEntity.getPromotionId())
-                                    .name(promotionEntity.getName())
-                                    .description(promotionEntity.getDescription())
-                                    .startDate(promotionEntity.getStartDate())
-                                    .endDate(promotionEntity.getEndDate())
-                                    .seller(modelMapper.map(promotionEntity.getSeller_created(), Seller.class))
-                                    .discountType(promotionEntity.getDiscountType())
-                                    .discountValue(promotionEntity.getDiscountValue())
-                                    .minPurchaseAmount(promotionEntity.getMinPurchaseAmount())
-                                    .isActive(promotionEntity.getIsActive())
-                                    .usageLimitPerUser(promotionEntity.getUsageLimitPerUser())
-                                    .build();
-                        }).toList();
+                        .map(promotionEntity -> PromotionResponse
+                                .builder()
+                                .promotionId(promotionEntity.getPromotionId())
+                                .name(promotionEntity.getName())
+                                .description(promotionEntity.getDescription())
+                                .startDate(promotionEntity.getStartDate())
+                                .endDate(promotionEntity.getEndDate())
+                                .seller(modelMapper.map(promotionEntity.getSeller_created(), Seller.class))
+                                .discountType(promotionEntity.getDiscountType())
+                                .discountValue(promotionEntity.getDiscountValue())
+                                .minPurchaseAmount(promotionEntity.getMinPurchaseAmount())
+                                .isActive(promotionEntity.getIsActive())
+                                .usageLimitPerUser(promotionEntity.getUsageLimitPerUser())
+                                .build()).toList();
 
                 ResponseData<List<PromotionResponse>> listPromotionAvailable = new ResponseData<>();
                 listPromotionAvailable.setData(promotionResponses);
@@ -234,9 +226,10 @@ public class PromotionServiceImpl implements IPromotionService {
         return null;
     }
 
+    //Function Check Available Usage
     @Override
-    public Boolean checkValidUsage(Long userId, String promotionName) {
-        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName)){
+    public Boolean checkValidUsage(Long userId, String promotionName, Integer purchasedAmount) {
+        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName,purchasedAmount)){
 
 //            PromotionEntity promotion = promotionRepository.findByName(promotionName);
             UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
@@ -255,8 +248,8 @@ public class PromotionServiceImpl implements IPromotionService {
     }
 
     @Override
-    public Boolean minusUsage(Long userId,String promotionName) {
-        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName)){
+    public Boolean minusUsage(Long userId,String promotionName, Integer purchasedAmount) {
+        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName, purchasedAmount)){
 
 //            PromotionEntity promotion = promotionRepository.findByName(promotionName);
             UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
@@ -274,8 +267,8 @@ public class PromotionServiceImpl implements IPromotionService {
     }
 
     @Override
-    public Boolean plusUsage(Long userId,String promotionName) {
-        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName)){
+    public Boolean plusUsage(Long userId,String promotionName, Integer purchasedAmount) {
+        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName, purchasedAmount)){
 
 //            PromotionEntity promotion = promotionRepository.findByName(promotionName);
             UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
@@ -292,22 +285,57 @@ public class PromotionServiceImpl implements IPromotionService {
         return Boolean.FALSE;
     }
     @Override
-    public ResponseEntity<?> getAllPromotionAvailable() {
+    public ResponseEntity<?> getAllPromotionAvailable(Long userId) {
         try{
             LocalDate currentDate = LocalDate.now();
             List<PromotionEntity> promotionEntities = promotionRepository.findAllByIsActiveAvailable(currentDate);
-            List<PromotionResponse> promotionResponseList = promotionEntities.stream()
-                    .map(promotionEntity -> modelMapper.map(promotionEntity, PromotionResponse.class)).toList();
+
+            UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
+            List<PromotionEntity> listPromotionUserHas = promotionBeLongUserRepository.getAllPromotionUserHas(user);
+
+            List<PromotionResponse> promotionResponses = new ArrayList<>();
+            for(PromotionEntity promotion : promotionEntities){
+                if(!listPromotionUserHas.contains(promotion)){
+
+                    PromotionResponse promotionResult = PromotionResponse
+                            .builder()
+                            .promotionId(promotion.getPromotionId())
+                            .name(promotion.getName())
+                            .description(promotion.getDescription())
+                            .startDate(promotion.getStartDate())
+                            .endDate(promotion.getEndDate())
+                            .seller(modelMapper.map(promotion.getSeller_created(), Seller.class))
+                            .discountType(promotion.getDiscountType())
+                            .discountValue(promotion.getDiscountValue())
+                            .minPurchaseAmount(promotion.getMinPurchaseAmount())
+                            .isActive(promotion.getIsActive())
+                            .usageLimitPerUser(promotion.getUsageLimitPerUser())
+                            .build();
+                    promotionResponses.add(promotionResult);
+                }
+            }
 
             ResponseData<List<PromotionResponse>> promotionDataResponses= new ResponseData<>();
-            promotionDataResponses.setData(promotionResponseList);
+            promotionDataResponses.setData(promotionResponses);
+            if(promotionDataResponses.getData().size() > 0){
+                return ResponseEntity
+                        .status(HttpStatusCode.valueOf(200))
+                        .body(
+                                ResponseObject
+                                        .builder()
+                                        .status("SUCCESS")
+                                        .message("Get All Promotion success")
+                                        .results(promotionDataResponses)
+                                        .build()
+                        );
+            }
             return ResponseEntity
-                    .status(HttpStatusCode.valueOf(200))
+                    .status(HttpStatusCode.valueOf(204))
                     .body(
                             ResponseObject
                                     .builder()
                                     .status("SUCCESS")
-                                    .message("Get All Promotion success")
+                                    .message("Not Have Promotion Available")
                                     .results(promotionDataResponses)
                                     .build()
                     );
@@ -372,7 +400,7 @@ public class PromotionServiceImpl implements IPromotionService {
     @Override
     public ResponseEntity<?> getPromotionOfUser(Long userId) {
         try{
-            if(userRepository.existsById(userId)){
+            if(!userRepository.existsById(userId)){
                 return ResponseEntity
                         .status(HttpStatusCode.valueOf(403))
                         .body(
@@ -384,6 +412,7 @@ public class PromotionServiceImpl implements IPromotionService {
                                         .build()
                         );
             }
+
             UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
 
             List<PromotionBeLongUserEntity> listPromotionOfUser = promotionBeLongUserRepository.getPromotionOfUser(user);
@@ -424,5 +453,18 @@ public class PromotionServiceImpl implements IPromotionService {
                                     .build()
                     );
         }
+    }
+
+    @Override
+    public TypeDiscountResponse getTypeDiscount(String promotionName) {
+        PromotionEntity promotion = promotionRepository.findByName(promotionName);
+        if(promotion != null){
+            return TypeDiscountResponse
+                    .builder()
+                    .discountType(promotion.getDiscountType())
+                    .discountValue(promotion.getDiscountValue())
+                    .build();
+        }
+        return null;
     }
 }

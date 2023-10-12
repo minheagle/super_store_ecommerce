@@ -13,6 +13,7 @@ import lombok.*;
 @Builder
 public class PromotionBeLongUserEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne

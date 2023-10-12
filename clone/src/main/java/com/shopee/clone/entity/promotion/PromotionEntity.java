@@ -1,7 +1,6 @@
 package com.shopee.clone.entity.promotion;
 
 import com.shopee.clone.entity.SellerEntity;
-import com.shopee.clone.entity.UserEntity;
 import com.shopee.clone.entity.payment.EDiscountType;
 import jakarta.persistence.*;
 import lombok.*;

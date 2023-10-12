@@ -39,9 +39,10 @@ public class PromotionRestController {
         return promotionService.editStatusPromotion(promotionId,status);
     }
 
-    @GetMapping("")
-    public ResponseEntity<?> getAllAvailablePromotion(){
-        return promotionService.getAllPromotionAvailable();
+    //This Function Service View ALl Available Promotion For User Choose
+    @GetMapping("available/{id}")
+    public ResponseEntity<?> getAllAvailablePromotion(@PathVariable(name = "id") Long userId){
+        return promotionService.getAllPromotionAvailable(userId);
     }
 
     @GetMapping("seller/{id}")
