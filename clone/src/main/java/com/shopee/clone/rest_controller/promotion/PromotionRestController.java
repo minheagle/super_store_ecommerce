@@ -40,9 +40,9 @@ public class PromotionRestController {
     }
 
     //This Function Service View ALl Available Promotion For User Choose
-    @GetMapping("")
-    public ResponseEntity<?> getAllAvailablePromotion(){
-        return promotionService.getAllPromotionAvailable();
+    @GetMapping("available/{id}")
+    public ResponseEntity<?> getAllAvailablePromotion(@PathVariable(name = "id") Long userId){
+        return promotionService.getAllPromotionAvailable(userId);
     }
 
     @GetMapping("seller/{id}")

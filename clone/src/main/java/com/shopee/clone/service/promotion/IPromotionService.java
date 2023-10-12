@@ -16,7 +16,7 @@ public interface IPromotionService {
     Boolean checkValidUsage(Long userId, String promotionName, Integer purchasedAmount);
     Boolean minusUsage(Long userId, String promotionName, Integer purchasedAmount);
     Boolean plusUsage(Long userId, String promotionName, Integer purchasedAmount);
-    ResponseEntity<?> getAllPromotionAvailable();
+    ResponseEntity<?> getAllPromotionAvailable(Long userId);
     ResponseEntity<?> getAllPromotionBySellerId(Long sellerId);
     ResponseEntity<?> getPromotionOfUser(Long userId);
     TypeDiscountResponse getTypeDiscount(String promotionName);
