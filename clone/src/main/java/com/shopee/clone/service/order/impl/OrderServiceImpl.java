@@ -6,6 +6,7 @@ import com.shopee.clone.DTO.order.request.*;
 import com.shopee.clone.DTO.order.response.OrderDetailResponse;
 import com.shopee.clone.DTO.order.response.OrderResponse;
 import com.shopee.clone.DTO.product.response.*;
+import com.shopee.clone.DTO.promotion.response.TypeDiscountResponse;
 import com.shopee.clone.DTO.seller.response.Seller;
 import com.shopee.clone.entity.AddressEntity;
 import com.shopee.clone.entity.ProductEntity;
@@ -13,13 +14,19 @@ import com.shopee.clone.entity.SellerEntity;
 import com.shopee.clone.entity.UserEntity;
 import com.shopee.clone.entity.cart.CartEntity;
 import com.shopee.clone.entity.order.*;
+import com.shopee.clone.entity.payment.EDiscountType;
+import com.shopee.clone.entity.promotion.PromotionBeLongUserEntity;
+import com.shopee.clone.entity.promotion.PromotionEntity;
 import com.shopee.clone.repository.AddressRepository;
 import com.shopee.clone.repository.SellerRepository;
 import com.shopee.clone.repository.cart.CartRepository;
 import com.shopee.clone.repository.order.OrderDetailRepository;
 import com.shopee.clone.repository.order.OrderRepository;
+import com.shopee.clone.repository.promotion.PromotionBeLongUserRepository;
+import com.shopee.clone.repository.promotion.PromotionRepository;
 import com.shopee.clone.service.order.OrderService;
 import com.shopee.clone.service.productItem.impl.ProductItemService;
+import com.shopee.clone.service.promotion.IPromotionService;
 import com.shopee.clone.service.user.UserService;
 import com.shopee.clone.util.ResponseObject;
 import org.modelmapper.ModelMapper;
@@ -44,6 +51,8 @@ public class OrderServiceImpl implements OrderService {
     private OrderRepository orderRepository;
     @Autowired
     private  CartRepository cartRepository;
+    @Autowired
+    private IPromotionService promotionService;
     @Autowired
     private RestTemplate restTemplate;
     @Autowired
@@ -77,10 +86,24 @@ public class OrderServiceImpl implements OrderService {
                 orderRequest.getListOrderBelongToSeller().forEach(o ->{
                     UserEntity user = userOptional.get();
                     AddressEntity address = addressOptional.get();
-                    OrderEntity orderEntity = new OrderEntity();
 
+                    Boolean check = promotionService.checkValidUsage(user.getId(),o.getPromotionName(),o.getAmount());
+                    OrderEntity orderEntity = new OrderEntity();
+                    if (check) {
+                        orderEntity.setPromotionName(o.getPromotionName());
+                        TypeDiscountResponse discountResponse = promotionService.getTypeDiscount(o.getPromotionName());
+                        if(EDiscountType.DISCOUNT_PERCENT.equals(discountResponse.getDiscountType())){
+                            orderEntity.setDiscount((discountResponse.getDiscountValue() * o.getAmount())/100);
+                        }else if (EDiscountType.FIXED_AMOUNT.equals(discountResponse.getDiscountType())){
+                            orderEntity.setDiscount(discountResponse.getDiscountValue().doubleValue());
+                        }else if (EDiscountType.FREE_SHIP.equals(discountResponse.getDiscountType())){
+                            orderEntity.setDiscount(o.getShipMoney());
+                        }
+                        promotionService.minusUsage(user.getId(), o.getPromotionName(),o.getAmount());
+                    }
                     orderEntity.setUser(user);
                     orderEntity.setAddress(address);
+                    orderEntity.setShipMoney(20000D);
                     orderEntity.setOrderNumber(finalOrderNumber);
                     orderEntity.setDate(Date.from(Instant.now()));
                     orderEntity.setPaymentStatus(orderRequest.getPaymentStatus());
@@ -226,6 +249,10 @@ public class OrderServiceImpl implements OrderService {
         orderResponse.setSeller(mapper.map(order.getSeller(),Seller.class));
         orderResponse.setPayment(order.getPaymentStatus());
         orderResponse.setOrderNumber(order.getOrderNumber());
+        orderResponse.setDiscount(order.getDiscount());
+        Double amount = amount(order.getOrderDetails());
+        orderResponse.setAmount(amount);
+        orderResponse.setTotal(amount + order.getShipMoney() - order.getDiscount());
         orderResponse.setDate(order.getDate());
         orderResponse.setShipMoney(order.getShipMoney());
         orderResponse.setStatus(order.getStatus().name());
@@ -235,6 +262,14 @@ public class OrderServiceImpl implements OrderService {
         order.getOrderDetails().stream().map(this::convertOrderDetailToODResponse).toList();
         orderResponse.setOrderDetailList(orderDetailResponseList);
         return orderResponse;
+    }
+
+    private Double amount(List<OrderDetailEntity> orderDetails) {
+        AtomicReference<Double> amount = new AtomicReference<>(0D);
+        orderDetails.forEach(oD ->{
+            amount.updateAndGet(v -> v + oD.getUnitPrice() * oD.getQuantity());
+        });
+        return amount.get();
     }
 
     private OrderDetailResponse convertOrderDetailToODResponse(OrderDetailEntity x) {
@@ -305,11 +340,12 @@ public class OrderServiceImpl implements OrderService {
     public ResponseEntity<?> cancelOrder(Long orderId) {
         try {
             Optional<OrderEntity> orderEntity = orderRepository.findById(orderId);
+
             if(orderEntity.isPresent()){
                 OrderEntity order = orderEntity.get();
 
                 order.setStatus(EOrder.Cancelled);
-
+                promotionService.plusUsage(order.getUser().getId(),order.getPromotionName(),amount(order.getOrderDetails()));
 //                Trả lại số lượng cho order
                 order.getOrderDetails().forEach(oD ->{
                     productItemService.plusQuantityInStock(oD.getProductItems().getPItemId(),oD.getQuantity());
@@ -396,12 +432,11 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    public Double getTotalByOrderNumber(List<OrderEntity> orderList){
+    public Double getTotalByOrderNumber(Integer orderNumber){
+        List<OrderEntity> orderList = orderRepository.findAllByOrderNumber(orderNumber);
         AtomicReference<Double> total = new AtomicReference<>(0D);
         orderList.forEach(o->{
-            o.getOrderDetails().forEach(od->{
-                total.updateAndGet(v -> v + od.getUnitPrice() * od.getQuantity());
-            });
+           total.updateAndGet(v -> v + (amount(o.getOrderDetails()) + o.getShipMoney() - o.getDiscount()));
         });
         return total.get();
     }
@@ -474,6 +509,7 @@ public class OrderServiceImpl implements OrderService {
                 if(order.getStatus().equals(EOrder.Pending)) {
                     order.setConfirmDate(Date.from(Instant.now()));
                     order.setStatus(EOrder.Rejection);
+                    promotionService.plusUsage(order.getUser().getId(),order.getPromotionName(),amount(order.getOrderDetails()));
                     order.getOrderDetails().forEach(oD ->{
                         productItemService.plusQuantityInStock(oD.getProductItems().getPItemId(),oD.getQuantity());
                     });
@@ -621,9 +657,9 @@ public class OrderServiceImpl implements OrderService {
 //        return null;
 //    }
 
-    //    @Scheduled(fixedRate = 120000) // Lên lịch chạy mỗi 2 phút (120,000 milliseconds)
+//        @Scheduled(fixedRate = 120000) // Lên lịch chạy mỗi 2 phút (120,000 milliseconds)
 //    public void sayHello() {
-//        callApi();
+//
 //    }
     @Scheduled(cron = "0 0 0 * * ?") // Chạy sau 12h đêm hàng ngày
     public RawEcommerceOrderCreate callApiDeliveryEveryday(){
@@ -721,5 +757,6 @@ public class OrderServiceImpl implements OrderService {
         // Truyền giá trị tháng hiện tại vào phương thức repository
         return orderRepository.findTopUserIdsByOrderCountInMonth(currentMonth);
     }
+
 
 }

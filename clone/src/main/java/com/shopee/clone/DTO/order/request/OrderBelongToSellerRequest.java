@@ -14,4 +14,6 @@ public class OrderBelongToSellerRequest {
     private Long sellerId;
     private List<Long> cartId;
     private Double shipMoney;
+    private Double amount;
+    private String promotionName;
 }

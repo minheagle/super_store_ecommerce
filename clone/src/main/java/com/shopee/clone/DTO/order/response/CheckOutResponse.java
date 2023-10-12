@@ -8,5 +8,7 @@ import lombok.Data;
 @Data
 public class CheckOutResponse {
     private CartResponse cartResponse;
+    private Double amount;
     private Double shipMoney;
+    private Double total;
 }

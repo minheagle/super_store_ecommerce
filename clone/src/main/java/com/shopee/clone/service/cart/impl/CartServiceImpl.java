@@ -20,6 +20,7 @@ import com.shopee.clone.repository.product.ProductItemRepository;
 import com.shopee.clone.service.cart.CartService;
 import com.shopee.clone.service.order.OrderService;
 import com.shopee.clone.service.productItem.impl.ProductItemService;
+import com.shopee.clone.service.promotion.IPromotionService;
 import com.shopee.clone.service.user.UserService;
 import com.shopee.clone.util.ResponseObject;
 import org.modelmapper.ModelMapper;
@@ -27,9 +28,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class CartServiceImpl implements CartService {
@@ -48,6 +49,8 @@ public class CartServiceImpl implements CartService {
     private ProductItemRepository productItemRepository;
     @Autowired
     private ProductItemService productItemService;
+    @Autowired
+    private IPromotionService promotionService;
 
     @Override
     public ResponseEntity<?> addToCart(AddToCartRequest addToCartRequest, Long uId) {
@@ -392,11 +395,15 @@ public class CartServiceImpl implements CartService {
                 List<CartResponse> cartResponse = convertCartResponses(cartList);
                 List<CheckOutResponse> checkOutResponses =
                         cartResponse.stream().map(c -> {
+                            Double amount = amount(c.getLineItems());
                     CheckOutResponse checkOutResponse = new CheckOutResponse();
+                    checkOutResponse.setAmount(amount);
                     checkOutResponse.setCartResponse(c);
                             String apiUrl = DELIVERY_API_URL + "?deliveryAddress=" + checkOutRequest.getShipAddress();
 //                            Double shipMoney = restTemplate.getForObject(apiUrl, Double.class);
 //                    checkOutResponse.setShipMoney(shipMoney);
+                    checkOutResponse.setShipMoney(1000D);
+                    checkOutResponse.setTotal(amount+ checkOutResponse.getShipMoney());
                     return checkOutResponse;
                 }).toList();
                 int orderNumber = orderService.randomOrder();
@@ -422,6 +429,14 @@ public class CartServiceImpl implements CartService {
                             .build()
                     );
         }
+    }
+
+    private Double amount(List<LineItem> lineItems) {
+        AtomicReference<Double> amount = new AtomicReference<>(0D);
+        lineItems.forEach(l->{
+            amount.updateAndGet(v -> v + l.getProduct().getProductItemResponse().getPrice() * l.getQuantity());
+        });
+        return amount.get();
     }
 //    @Override
 //    public ResponseEntity<?> checkAddress(String address) {
