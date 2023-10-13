@@ -132,7 +132,7 @@ public class ProductRestController {
         return productItemService.editProductItemById(id, itemRequestEdit);
     }
     @PutMapping("product/image-product-item")
-    public ResponseEntity<?> changeImageProductItem(@RequestBody @Valid SingleUpdateChangeImageProductItem changeImageProductItem){
+    public ResponseEntity<?> changeImageProductItem(@Valid SingleUpdateChangeImageProductItem changeImageProductItem){
         return imageProductService.changeImageProduct(changeImageProductItem);
     }
     @DeleteMapping("product/{productId}")
