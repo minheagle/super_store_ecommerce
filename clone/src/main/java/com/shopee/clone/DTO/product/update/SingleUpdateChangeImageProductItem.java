@@ -1,10 +1,12 @@
 package com.shopee.clone.DTO.product.update;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class SingleUpdateChangeImageProductItem {
     private Long imageProductItemId;
