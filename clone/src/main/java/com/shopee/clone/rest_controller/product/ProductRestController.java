@@ -74,20 +74,6 @@ public class ProductRestController {
     public ResponseEntity<?> getAllProductByCategoryId(@PathVariable Long categoryId){
         return productService.getAllProductByCategoryId(categoryId);
     }
-//    @GetMapping("")
-//    public ResponseEntity<?> getProductsPaging(@RequestParam(name = "page", required = false, defaultValue = "1") Integer page,
-//                                                @RequestParam(name = "size", required = false, defaultValue = "25") Integer size,
-//                                                @RequestParam(name = "sort", required = false, defaultValue = "ASC") String sort){
-//        Sort sortable = null;
-//        if (sort.equals("ASC")) {
-//            sortable = Sort.by("productId").ascending();
-//        }
-//        if (sort.equals("DESC")) {
-//            sortable = Sort.by("productId").descending();
-//        }
-//        Pageable pageable = PageRequest.of((page-1), size, sortable);
-//        return productService.getAllProductPaging(pageable);
-//    }
     @GetMapping("product/{id}")
     public ResponseEntity<?> getProductById(@PathVariable Long id){
         return productService.getProductById(id);

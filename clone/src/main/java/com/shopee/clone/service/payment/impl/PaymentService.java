@@ -5,12 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopee.clone.DTO.ResponseData;
 import com.shopee.clone.DTO.payment.requestAPI.PaymentRequest;
 import com.shopee.clone.DTO.payment.requestAPI.SignatureRequest;
+import com.shopee.clone.DTO.payment.requestServe.InforReturnStatusPayment;
 import com.shopee.clone.DTO.payment.requestServe.PaymentServiceRequest;
 import com.shopee.clone.DTO.payment.responseAPI.PaymentResponse;
 import com.shopee.clone.entity.UserEntity;
 import com.shopee.clone.entity.payment.PaymentEntity;
 import com.shopee.clone.repository.UserRepository;
 import com.shopee.clone.repository.payment.PaymentRepository;
+import com.shopee.clone.service.order.OrderService;
 import com.shopee.clone.service.payment.IPaymentService;
 import com.shopee.clone.util.ResponseObject;
 import org.apache.commons.lang3.StringUtils;
@@ -32,12 +34,14 @@ public class PaymentService implements IPaymentService {
     private final RestTemplate restTemplate;
     private final UserRepository userRepository;
    private final PaymentRepository paymentRepository;
+   private final OrderService orderService;
 
-    public PaymentService(RestTemplate restTemplate, UserRepository userRepository, PaymentRepository paymentRepository) {
+    public PaymentService(RestTemplate restTemplate, UserRepository userRepository, PaymentRepository paymentRepository, OrderService orderService) {
         this.restTemplate = restTemplate;
         this.userRepository = userRepository;
 
         this.paymentRepository = paymentRepository;
+        this.orderService = orderService;
     }
 
     private final String baseURL="https://api-merchant.payos.vn/";
@@ -111,7 +115,7 @@ public class PaymentService implements IPaymentService {
 
                 PaymentResponse paymentData = responseEntity.getBody();
                 //Save data
-                if(paymentData.getCode().equals("00")){
+                if(paymentData != null && paymentData.getCode().equals("00")){
                     PaymentEntity paymentEntity = PaymentEntity
                             .builder()
                             .userId(paymentServiceRequest.getUserId())
@@ -197,19 +201,16 @@ public class PaymentService implements IPaymentService {
     }
 
     @Override
-    public ResponseEntity<?> getDataPaymentSuccess(Integer code,
-                                                   String id,
-                                                   Boolean cancel,
-                                                   String status,
-                                                   Integer orderCode) {
+    public ResponseEntity<?> changePaymentStatus(InforReturnStatusPayment informationStatusPayment) {
 
-        PaymentEntity paymentEntity = paymentRepository.findByOrderNumber(orderCode);
+        PaymentEntity paymentEntity = paymentRepository.findByOrderNumber(informationStatusPayment.getOrderCode());
         ResponseData<PaymentEntity> responsePayment = new ResponseData<>();
 
-        if(code==00 && !cancel){
+        if(informationStatusPayment.getCode() == 0 && !informationStatusPayment.getCancel()){
 
             paymentEntity.setPaymentStatus(Boolean.TRUE);
             paymentRepository.save(paymentEntity);
+            orderService.changeStatusWhenCallPayment(informationStatusPayment.getOrderCode(), Boolean.TRUE);
 
 
             responsePayment.setData(paymentEntity);
@@ -224,6 +225,7 @@ public class PaymentService implements IPaymentService {
                                     .build()
                     );
         }else{
+            orderService.changeStatusWhenCallPayment(informationStatusPayment.getOrderCode(), Boolean.FALSE);
             responsePayment.setData(paymentEntity);
             return ResponseEntity
                     .status(HttpStatusCode.valueOf(200))
