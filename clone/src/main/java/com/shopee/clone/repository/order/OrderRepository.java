@@ -6,6 +6,7 @@ import com.shopee.clone.entity.order.EOrder;
 import com.shopee.clone.entity.order.OrderEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
@@ -15,6 +16,12 @@ import java.util.Optional;
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity,Long> {
     List<OrderEntity> findAllByUser(UserEntity userEntity);
+
+    @Query("SELECT o FROM OrderEntity o " +
+            "WHERE o.seller.id = :sellerId " +
+            "AND DATE(current_date()) = Date(o.date)")
+    List<OrderEntity> findOrdersBySellerAndDate(
+            @Param("sellerId") Long sellerId);
 
     List<OrderEntity> findAllBySeller(SellerEntity seller);
 

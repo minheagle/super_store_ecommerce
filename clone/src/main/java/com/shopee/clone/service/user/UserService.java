@@ -2,6 +2,7 @@ package com.shopee.clone.service.user;
 
 import com.shopee.clone.DTO.auth.user.*;
 import com.shopee.clone.entity.UserEntity;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -12,7 +13,7 @@ public interface UserService {
     Optional<UserEntity> findUserByID(Long id);
     UserEntity save(UserEntity user);
 
-    ResponseEntity<?> getListUser();
+    ResponseEntity<?> getListUser(Pageable pageable);
     void delete(Long id);
 
     ResponseEntity<?> updateUser(long userId, UserUpdateDTO userUpdateDTO);
@@ -33,5 +34,7 @@ public interface UserService {
 
     ResponseEntity<?> addAddress(Long id, UpdateAddressDTO updateAddressDTO);
 
-    ResponseEntity<?> getListSeller();
+    ResponseEntity<?> getListSeller(Pageable pageable);
+
+    ResponseEntity<?> search(String key, Pageable pageable);
 }

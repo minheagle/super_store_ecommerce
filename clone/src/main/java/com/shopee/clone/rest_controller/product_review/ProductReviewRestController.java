@@ -12,7 +12,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/v1/product_review")
+@RequestMapping("api/v1/product-review")
 public class ProductReviewRestController {
     @Autowired
     private ProductReviewService productReviewService;

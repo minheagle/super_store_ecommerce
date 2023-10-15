@@ -2,6 +2,7 @@ package com.shopee.clone.service.user.impl;
 
 import com.shopee.clone.DTO.ResponseData;
 import com.shopee.clone.DTO.auth.user.*;
+import com.shopee.clone.DTO.product.response.PaginationResponse;
 import com.shopee.clone.DTO.seller.SellerDTO;
 import com.shopee.clone.DTO.seller.response.Seller;
 import com.shopee.clone.DTO.upload_file.ImageUploadResult;
@@ -9,13 +10,10 @@ import com.shopee.clone.entity.*;
 import com.shopee.clone.repository.RoleRepository;
 import com.shopee.clone.repository.SellerRepository;
 import com.shopee.clone.repository.UserRepository;
-import com.shopee.clone.response.auth.login.ResponseLogin;
-import com.shopee.clone.response.auth.login.ResponseLoginHasRoleSeller;
 import com.shopee.clone.response.user.ResponseBecomeSeller;
 import com.shopee.clone.response.user.ResponseDetailUser;
 import com.shopee.clone.response.user.ResponseDetailUserHasRoleSeller;
 import com.shopee.clone.service.address.AddressService;
-import com.shopee.clone.service.imageProduct.IImageProductService;
 import com.shopee.clone.service.upload_cloud.IUploadImageService;
 import com.shopee.clone.service.user.UserService;
 import com.shopee.clone.util.JWTProvider;
@@ -23,16 +21,18 @@ import com.shopee.clone.util.ResponseObject;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 
@@ -457,17 +457,80 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<?> getListSeller() {
-        List<Seller> list = sellerRepository.findAll().stream().map(sellerEntity ->
-                mapper.map(sellerEntity,Seller.class)).toList();
-        ResponseData<Object> data = ResponseData.builder().data(list).build();
-        return ResponseEntity.ok().body(
-                ResponseObject.builder()
-                        .status("SUCCESS")
-                        .message("Get user successfully")
-                        .results(data)
-                        .build()
-        );
+    public ResponseEntity<?> getListSeller(Pageable pageable) {
+        try {
+            Page<SellerEntity> seller = sellerRepository.findAll(pageable);
+            List<Seller> sellerList = seller.getContent().stream().map(s->{
+                return mapper.map(s,Seller.class);
+            }).toList();
+
+            ResponseData<Object> data = ResponseData.builder().data(sellerList).build();
+            PaginationResponse paginationResponse = new PaginationResponse(
+                    seller.getTotalPages(),
+                    seller.getTotalElements(),
+                    seller.getNumber() + 1,
+                    seller.getSize()
+            );
+
+            return ResponseEntity.ok().body(
+                    ResponseObject.builder()
+                            .status("SUCCESS")
+                            .message("Get seller successfully")
+                            .results(data)
+                            .pagination(paginationResponse)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ResponseObject.builder()
+                            .status("FAIL")
+                            .message(e.getMessage())
+                            .results("")
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> search(String key, Pageable pageable) {
+        try{
+
+            // Sử dụng phân trang danh sách users trong truy vấn
+            Page<UserEntity> userPage = userRepository.searchUsers(key,pageable);
+
+            List<User> users = userPage.getContent().stream().map(u->{
+                return mapper.map(u,User.class);
+            }).toList();;
+
+            // Lấy thông tin phân trang từ đối tượng Page
+            PaginationResponse paginationResponse = new PaginationResponse(
+                    userPage.getTotalPages(),
+                    userPage.getTotalElements(),
+                    userPage.getNumber()+1,
+                    userPage.getSize());
+            ResponseData<Object> data = ResponseData.builder().data(users).build();
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(200))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("SUCCESS")
+                                    .results(data)
+                                    .pagination(paginationResponse)
+                                    .build()
+                    );
+        }catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatusCode.valueOf(404))
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("FAIL")
+                                    .message(e.getMessage())
+                                    .results("")
+                                    .build()
+                    );
+        }
     }
 
     @Override
@@ -585,17 +648,38 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<?> getListUser() {
-        List<User> list = userRepository.findAll().stream().map(userEntity ->
-                mapper.map(userEntity,User.class)).toList();
-        ResponseData<Object> data = ResponseData.builder().data(list).build();
-        return ResponseEntity.ok().body(
-                ResponseObject.builder()
-                        .status("SUCCESS")
-                        .message("Get user successfully")
-                        .results(data)
-                        .build()
-        );
+    public ResponseEntity<?> getListUser(Pageable pageable) {
+        try {
+            Page<UserEntity> users = userRepository.findAll(pageable);
+            List<User> userList = users.getContent().stream().map(u->{
+               return mapper.map(u,User.class);
+            }).toList();
+
+            ResponseData<Object> data = ResponseData.builder().data(userList).build();
+            PaginationResponse paginationResponse = new PaginationResponse(
+                    users.getTotalPages(),
+                    users.getTotalElements(),
+                    users.getNumber() + 1,
+                    users.getSize()
+            );
+
+            return ResponseEntity.ok().body(
+                    ResponseObject.builder()
+                            .status("SUCCESS")
+                            .message("Get user successfully")
+                            .results(data)
+                            .pagination(paginationResponse)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ResponseObject.builder()
+                            .status("FAIL")
+                            .message(e.getMessage())
+                            .results("")
+                            .build()
+            );
+        }
     }
 
     @Override

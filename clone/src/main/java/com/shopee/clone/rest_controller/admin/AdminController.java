@@ -1,5 +1,6 @@
 package com.shopee.clone.rest_controller.admin;
 
+import com.shopee.clone.service.order.OrderService;
 import com.shopee.clone.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,14 +11,8 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
     @Autowired
     private UserService userService;
-    @GetMapping("/list-user")
-    public ResponseEntity<?> getListUser(){
-        return userService.getListUser();
-    }
-    @GetMapping("/list-seller")
-    public ResponseEntity<?> getListSeller(){
-        return userService.getListSeller();
-    }
+    @Autowired
+    private OrderService orderService;
     @GetMapping("/ban-user/{id}")
     public ResponseEntity<?> banUser(@PathVariable Long id){
         return userService.blockUser(id);
@@ -27,5 +22,8 @@ public class AdminController {
     public ResponseEntity<?> unBanUser(@PathVariable Long id){
         return userService.unBlockUser(id);
     }
-//    @GetMapping("/data")
+    @GetMapping("/order/get-order-by-seller/{sellerId}")
+    public ResponseEntity<?> getAllOrderWithShopOnDay(@PathVariable Long sellerId){
+        return orderService.getAllOrderWithShopOnDay(sellerId);
+    }
 }
