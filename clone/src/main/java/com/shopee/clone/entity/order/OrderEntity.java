@@ -34,10 +34,10 @@ public class OrderEntity {
     @OneToMany(mappedBy = "order",fetch = FetchType.EAGER)
     private List<OrderDetailEntity> orderDetails;
     private String promotionName;
-    private Double discount;
+    private Double discount = 0.0;
     private Date date;
     private Boolean paymentStatus;
-    private Double shipMoney;
+    private Double shipMoney = 0.0;
     private LocalDateTime noteTimeRecipient;
     private int orderNumber;
     private Date confirmDate;

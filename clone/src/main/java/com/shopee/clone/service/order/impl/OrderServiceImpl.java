@@ -103,7 +103,7 @@ public class OrderServiceImpl implements OrderService {
                     }
                     orderEntity.setUser(user);
                     orderEntity.setAddress(address);
-                    orderEntity.setShipMoney(20000D);
+                    orderEntity.setShipMoney(1000D);
                     orderEntity.setOrderNumber(finalOrderNumber);
                     orderEntity.setDate(Date.from(Instant.now()));
                     orderEntity.setPaymentStatus(orderRequest.getPaymentStatus());
