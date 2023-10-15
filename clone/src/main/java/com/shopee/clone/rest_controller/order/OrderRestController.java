@@ -39,5 +39,4 @@ public class OrderRestController {
     public List<Long> findTopUsersByOrderCountInCurrentMonth(){
         return orderService.findTopUsersByOrderCountInCurrentMonth();
     }
-
 }

@@ -28,14 +28,21 @@ public interface OrderService{
     int randomOrder();
     ResponseEntity<?> callApi();
     List<Long> getTopSellingProduct();
+////    lấy danh sách các đơn hàng có cùng orderNumber
 //    List<OrderEntity> findAllByOrderNumber(Integer orderNumber);
-//    List<OrderEntity> getAllOrderWithShopOnDay(Long sellerId);
+//    lấy danh sách các đơn hàng theo seller trong 1 ngày
+    ResponseEntity<?> getAllOrderWithShopOnDay(Long sellerId);
+    //    lấy danh sách các đơn hàng theo seller trong 1 tháng
 //    List<OrderEntity> getAllOrderWithShopOnMonth(Long sellerId);
+////    Lấy tổng số tiền trong 1 ngày
 //    Double getTotalOnDay();
+////    Lấy tổng số tiền trong một tháng
 //    Double getTotalOnMonth();
-//    Double getTotalWithShopOnDay(Long sellerId);
-//    Double getTotalWithShopOnMonth(Long sellerId);
-//    Double getOrderCancelWithShop(Long sellerId);
-//    Double getAllTotalWithS
+////    Lấy tổng số tiền trong 1 ngày theo seller
+//    Double getTotalWithSellerOnDay(Long sellerId);
+////    Lấy tổng số tiền trong 1 tháng theo seller
+//    Double getTotalWithSellerOnMonth(Long sellerId);
+////    lấy ra danh sách các đơn hàng bị hủy theo từng shop
+//    Double getOrderCancelWithSeller(Long sellerId);
     List<Long> findTopUsersByOrderCountInCurrentMonth();
 }

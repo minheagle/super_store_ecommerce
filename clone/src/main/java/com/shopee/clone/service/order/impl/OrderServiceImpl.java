@@ -15,15 +15,11 @@ import com.shopee.clone.entity.UserEntity;
 import com.shopee.clone.entity.cart.CartEntity;
 import com.shopee.clone.entity.order.*;
 import com.shopee.clone.entity.payment.EDiscountType;
-import com.shopee.clone.entity.promotion.PromotionBeLongUserEntity;
-import com.shopee.clone.entity.promotion.PromotionEntity;
 import com.shopee.clone.repository.AddressRepository;
 import com.shopee.clone.repository.SellerRepository;
 import com.shopee.clone.repository.cart.CartRepository;
 import com.shopee.clone.repository.order.OrderDetailRepository;
 import com.shopee.clone.repository.order.OrderRepository;
-import com.shopee.clone.repository.promotion.PromotionBeLongUserRepository;
-import com.shopee.clone.repository.promotion.PromotionRepository;
 import com.shopee.clone.service.order.OrderService;
 import com.shopee.clone.service.productItem.impl.ProductItemService;
 import com.shopee.clone.service.promotion.IPromotionService;
@@ -645,6 +641,20 @@ public class OrderServiceImpl implements OrderService {
     public List<Long> getTopSellingProduct() {
         List<ProductEntity> list = orderDetailRepository.findMostSoldProduct();
         return list.stream().map(ProductEntity::getProductId).toList();
+    }
+
+    @Override
+    public ResponseEntity<?> getAllOrderWithShopOnDay(Long sellerId) {
+
+        List<OrderEntity> orderEntityList = orderRepository.findOrdersBySellerAndDate(sellerId);
+        List<OrderResponse> responses = orderEntityList.stream().map(this::convertOrderEntityToOrderResponse).toList();
+        ResponseData<Object> data = ResponseData.builder().data(responses).build();
+        return ResponseEntity.ok().body(ResponseObject
+                .builder()
+                .status("SUCCESS")
+                .message("call api success!")
+                .results(data)
+                .build());
     }
 
 //    @Override
