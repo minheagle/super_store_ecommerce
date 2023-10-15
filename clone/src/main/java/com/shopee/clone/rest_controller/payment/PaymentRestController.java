@@ -1,5 +1,6 @@
 package com.shopee.clone.rest_controller.payment;
 
+import com.shopee.clone.DTO.payment.requestServe.InforReturnStatusPayment;
 import com.shopee.clone.DTO.payment.requestServe.PaymentServiceRequest;
 import com.shopee.clone.service.payment.IPaymentService;
 import org.springframework.http.ResponseEntity;
@@ -14,25 +15,10 @@ public class PaymentRestController {
         this.paymentService = paymentService;
     }
 
-    @GetMapping("success")
-    public ResponseEntity<?> getDataPaymentSuccess(@RequestParam(name = "code", required = false) Integer code,
-                                                    @RequestParam(name = "id", required = false) String id,
-                                                    @RequestParam(name = "cancel", required = false) Boolean cancel,
-                                                    @RequestParam(name = "status", required = false) String status,
-                                                    @RequestParam(name = "orderCode", required = false) Integer orderCode){
-
-        return paymentService.getDataPaymentSuccess(code, id, cancel, status, orderCode);
-    }
-
-    @GetMapping("cancel")
-    public ResponseEntity<?> getDataPaymentCancel(@RequestParam(name = "code", required = false) Integer code,
-                                                   @RequestParam(name = "id", required = false) String id,
-                                                   @RequestParam(name = "cancel", required = false) Boolean cancel,
-                                                   @RequestParam(name = "status", required = false) String status,
-                                                   @RequestParam(name = "orderCode", required = false) Integer orderCode){
-
-        return paymentService.getDataPaymentSuccess(code, id, cancel, status, orderCode);
-    }
+    @PatchMapping("status")
+   public ResponseEntity<?> changePaymentStatus(@RequestBody InforReturnStatusPayment informationStatusPayment){
+        return paymentService.changePaymentStatus(informationStatusPayment);
+   }
 
     @PostMapping("")
     public ResponseEntity<?> getLinkPayment(@RequestBody PaymentServiceRequest paymentServiceRequest){
