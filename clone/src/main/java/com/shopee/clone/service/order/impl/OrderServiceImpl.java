@@ -179,6 +179,7 @@ public class OrderServiceImpl implements OrderService {
 
     }
     @Override
+    @Transactional
     public void changeStatusWhenCallPayment(Integer orderNumber, Boolean bl){
         List<OrderEntity> orderList = orderRepository.findAllByOrderNumber(orderNumber);
         orderList.forEach(o->{
