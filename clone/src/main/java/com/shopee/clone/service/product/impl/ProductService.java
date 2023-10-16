@@ -400,9 +400,9 @@ public class ProductService implements IProductService {
             productSpc = productSpc.and(ProductSpecification.filterByPrice(minPrice,maxPrice));
             productSpc = productSpc.and(ProductSpecification.filterByCategory(categoryId));
 
-
             // Sử dụng phân trang danh sách product trong truy vấn
             Page<ProductEntity> productPage = productRepository.findAll(productSpc, pageable);
+
 
             List<ProductEntity> productEntities = productPage.getContent();
 
@@ -530,6 +530,7 @@ public class ProductService implements IProductService {
                     .sellerId(productEntity.getSeller().getId())
                     .categoryId(productEntity.getCategory().getId())
                     .productItemResponseList(productItemResponseDTOList)
+                    .voteStar(productEntity.getVoteStar())
                     .build();
             productResponseDTOList.add(productResponseDTO);
         }
@@ -557,6 +558,7 @@ public class ProductService implements IProductService {
                     .sellerId(productEntity.getSeller().getId())
                     .categoryId(productEntity.getCategory().getId())
                     .productItemResponseList(productItemResponseDTOList)
+                    .voteStar(productEntity.getVoteStar())
                     .build();
             productResponseDTOList.add(productResponseDTO);
         }
