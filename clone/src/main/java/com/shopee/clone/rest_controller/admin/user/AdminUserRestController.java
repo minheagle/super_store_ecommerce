@@ -71,4 +71,9 @@ public class AdminUserRestController {
     public ResponseEntity<?> unBanUser(@PathVariable Long id){
         return userService.unBlockUser(id);
     }
+
+    @GetMapping("/{userName}")
+    public ResponseEntity<?> getUserByUserName(@PathVariable String userName){
+        return userService.findUserByUserName(userName);
+    }
 }
