@@ -44,14 +44,15 @@ public class ProductPublicRestController {
                                              @RequestParam(name = "categoryId", required = false, defaultValue = "") Long categoryId,
                                              @RequestParam(name = "page", required = false, defaultValue = "1") Integer page,
                                              @RequestParam(name = "size", required = false, defaultValue = "10") Integer size,
-                                             @RequestParam(name = "sort", required = false, defaultValue = "ASC") String sort){
+                                             @RequestParam(name = "sort", required = false, defaultValue = "DESC") String sort){
         Sort sortable = null;
         if (sort.equals("ASC")) {
-            sortable = Sort.by("minPrice").ascending();
+            sortable = Sort.by("voteStar").ascending();
         }
         if (sort.equals("DESC")) {
-            sortable = Sort.by("minPrice").descending();
+            sortable = Sort.by("voteStar").descending();
         }
+
         // Tạo đối tượng Pageable để phân trang
         Pageable pageable = PageRequest.of((page-1), size, sortable);
 
