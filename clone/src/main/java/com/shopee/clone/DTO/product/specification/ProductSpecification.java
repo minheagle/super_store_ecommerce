@@ -1,6 +1,7 @@
 package com.shopee.clone.DTO.product.specification;
 
 import com.shopee.clone.entity.ProductEntity;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 

@@ -21,4 +21,5 @@ public class ProductResponseDTO {
     private Long sellerId;
     private Long categoryId;
     private List<ProductItemResponseDTO> productItemResponseList;
+    private Double voteStar;
 }

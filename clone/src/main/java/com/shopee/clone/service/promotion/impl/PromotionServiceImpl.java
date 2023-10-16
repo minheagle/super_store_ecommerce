@@ -20,6 +20,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -61,6 +62,7 @@ public class PromotionServiceImpl implements IPromotionService {
                         .createAt(LocalDate.now())
                         .discountType(promotionRequestCreate.getDiscountType())
                         .discountValue(promotionRequestCreate.getDiscountValue())
+                        .minPurchaseAmount(promotionRequestCreate.getMinPurchaseAmount())
                         .isActive(Boolean.TRUE)
                         .usageLimitPerUser(promotionRequestCreate.getUsageLimitPerUser())
                         .build();
@@ -110,6 +112,7 @@ public class PromotionServiceImpl implements IPromotionService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<?> editStatusPromotion(Long promotionId, Boolean status) {
         try {
             if(promotionRepository.existsById(promotionId)){
@@ -118,8 +121,6 @@ public class PromotionServiceImpl implements IPromotionService {
                         .orElseThrow(NoSuchElementException::new);
                 promotionEntity.setIsActive(status);
 
-                ResponseData<PromotionEntity> promotionResponseData = new ResponseData<>();
-                promotionResponseData.setData(promotionEntity);
                 return ResponseEntity
                         .status(HttpStatusCode.valueOf(200))
                         .body(
@@ -127,7 +128,6 @@ public class PromotionServiceImpl implements IPromotionService {
                                         .builder()
                                         .status("SUCCESS")
                                         .message("Changed Status")
-                                        .results(promotionResponseData)
                                         .build()
                         );
             }
