@@ -68,6 +68,49 @@ public class CategoryPublicImpl implements CategoryPublic {
     }
 
     @Override
+    public ResponseEntity<?> getAllLeaf() {
+        try {
+            List<CategoryEntity> categoryEntityList = categoryRepository.findAllLeaf();
+            if (categoryEntityList.size() == 0){
+                return ResponseEntity
+                        .ok()
+                        .body(
+                                ResponseObject
+                                        .builder()
+                                        .status("SUCCESS")
+                                        .message("List category is empty")
+                                        .results(categoryEntityList)
+                                        .build()
+                        );
+            }
+            List<CategoryDTO> categoryDTOList = categoryEntityList
+                    .stream()
+                    .map(item -> mapper.map(item, CategoryDTO.class))
+                    .toList();
+            return ResponseEntity
+                    .ok()
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("SUCCESS")
+                                    .message("Get list category success")
+                                    .results(categoryDTOList)
+                                    .build()
+                    );
+        }catch (Exception e){
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("FAIL")
+                                    .message(e.getMessage())
+                                    .results("")
+                    );
+        }
+    }
+
+    @Override
     public ResponseEntity<?> getChildFromParent(Long parentId) {
         return null;
     }

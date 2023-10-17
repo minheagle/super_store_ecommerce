@@ -177,7 +177,7 @@ public class AuthService implements IAuthService {
         try{
             UserEntity userEntity = userRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("User not found"));
-//            userEntity.setChatId(addChatIdRequest.getChatId());
+            userEntity.setChatId(addChatIdRequest.getChatId());
             userRepository.save(userEntity);
             User user = mapper.map(userEntity, User.class);
             return ResponseEntity

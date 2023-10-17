@@ -4,5 +4,6 @@ import org.springframework.http.ResponseEntity;
 
 public interface CategoryPublic {
     ResponseEntity<?> getAll();
+    ResponseEntity<?> getAllLeaf();
     ResponseEntity<?> getChildFromParent(Long parentId);
 }
