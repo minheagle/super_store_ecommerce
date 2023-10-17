@@ -38,6 +38,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -91,9 +92,21 @@ public class OrderServiceImpl implements OrderService {
                         if(EDiscountType.DISCOUNT_PERCENT.equals(discountResponse.getDiscountType())){
                             orderEntity.setDiscount((discountResponse.getDiscountValue() * o.getAmount())/100);
                         }else if (EDiscountType.FIXED_AMOUNT.equals(discountResponse.getDiscountType())){
-                            orderEntity.setDiscount(discountResponse.getDiscountValue().doubleValue());
+                            if(discountResponse.getDiscountValue()<o.getAmount()){
+                                orderEntity.setDiscount(discountResponse.getDiscountValue().doubleValue());
+                            }else{
+                                orderEntity.setDiscount(o.getAmount());
+                            }
                         }else if (EDiscountType.FREE_SHIP.equals(discountResponse.getDiscountType())){
+                            if(discountResponse.getDiscountValue()==null){
                             orderEntity.setDiscount(o.getShipMoney());
+                            }else{
+                                if(discountResponse.getDiscountValue()<o.getShipMoney()){
+                                    orderEntity.setDiscount(discountResponse.getDiscountValue().doubleValue());
+                                }else{
+                                    orderEntity.setDiscount(o.getShipMoney());
+                                }
+                            }
                         }
                         promotionService.minusUsage(user.getId(), o.getPromotionName(),o.getAmount());
                     }
@@ -182,14 +195,19 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void changeStatusWhenCallPayment(Integer orderNumber, Boolean bl){
         List<OrderEntity> orderList = orderRepository.findAllByOrderNumber(orderNumber);
+        int newOrderNumber = getFinalOrderNumber();
         orderList.forEach(o->{
             if(bl){
                 o.setStatus(EOrder.Transferred);
             }else{
                 o.setStatus(EOrder.Pending);
+                o.setOrderNumber(newOrderNumber);
             }
-        });
+        })
+        ;
+        orderRepository.saveAll(orderList);
     }
+
 
     private int getFinalOrderNumber() {
         int orderNumber = randomOrderNumber();
@@ -251,6 +269,7 @@ public class OrderServiceImpl implements OrderService {
         orderResponse.setAmount(amount);
         orderResponse.setTotal(amount + order.getShipMoney() - order.getDiscount());
         orderResponse.setDate(order.getDate());
+        orderResponse.setPayment(order.getPaymentStatus());
         orderResponse.setShipMoney(order.getShipMoney());
         orderResponse.setStatus(order.getStatus().name());
         Optional<AddressEntity> address = addressRepository.findById(order.getAddress().getId());
@@ -658,6 +677,86 @@ public class OrderServiceImpl implements OrderService {
                 .build());
     }
 
+    @Override
+    public Double getTotalOnDay() {
+        LocalDate today = LocalDate.now();
+        Date startDate = Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(today.atStartOfDay(ZoneId.systemDefault()).plusDays(1).toInstant());
+
+        List<EOrder> statuses = Arrays.asList(EOrder.Shipped, EOrder.Processing, EOrder.Pending, EOrder.Awaiting_Payment, EOrder.Transferred);
+        List<OrderEntity> orders = orderRepository.findByStatusInAndDateBetween(statuses, startDate, endDate);
+
+        double totalAmount = 0.0;
+
+        for (OrderEntity order : orders) {
+            // Tính tổng tiền từ các đơn hàng
+            totalAmount += amount(order.getOrderDetails()) + order.getShipMoney() - order.getDiscount();
+        }
+
+        return totalAmount;
+    }
+
+    @Override
+    public Double getTotalOnMonth(int year, int month) {
+        LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
+        LocalDate lastDayOfMonth = firstDayOfMonth.with(TemporalAdjusters.lastDayOfMonth());
+
+        Date startDate = Date.from(firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(lastDayOfMonth.atStartOfDay(ZoneId.systemDefault()).plusDays(1).toInstant());
+
+        List<EOrder> statuses = Arrays.asList(EOrder.Shipped, EOrder.Processing, EOrder.Pending, EOrder.Awaiting_Payment, EOrder.Transferred);
+        List<OrderEntity> orders = orderRepository.findByStatusInAndDateBetween(statuses, startDate, endDate);
+
+        double totalAmount = 0.0;
+
+        for (OrderEntity order : orders) {
+            // Tính tổng tiền từ các đơn hàng
+            totalAmount += amount(order.getOrderDetails()) + order.getShipMoney() - order.getDiscount();
+        }
+
+        return totalAmount;
+    }
+
+    @Override
+    public Double getTotalWithSellerOnDay(Long sellerId) {
+        LocalDate today = LocalDate.now();
+        Date startDate = Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(today.atStartOfDay(ZoneId.systemDefault()).plusDays(1).toInstant());
+
+        List<EOrder> statuses = Arrays.asList(EOrder.Shipped, EOrder.Processing, EOrder.Pending, EOrder.Awaiting_Payment, EOrder.Transferred);
+        List<OrderEntity> orders = orderRepository.findBySeller_IdAndStatusInAndDateBetween(sellerId, statuses, startDate, endDate);
+
+        double totalAmount = 0.0;
+
+        for (OrderEntity order : orders) {
+            // Tính tổng tiền từ các đơn hàng
+            totalAmount += amount(order.getOrderDetails()) + order.getShipMoney() - order.getDiscount();
+        }
+
+        return totalAmount;
+    }
+
+    @Override
+    public Double getTotalWithSellerOnMonth(Long sellerId, int year, int month) {
+        LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
+        LocalDate lastDayOfMonth = firstDayOfMonth.with(TemporalAdjusters.lastDayOfMonth());
+
+        Date startDate = Date.from(firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(lastDayOfMonth.atStartOfDay(ZoneId.systemDefault()).plusDays(1).toInstant());
+
+        List<EOrder> statuses = Arrays.asList(EOrder.Shipped, EOrder.Processing, EOrder.Pending, EOrder.Awaiting_Payment, EOrder.Transferred);
+        List<OrderEntity> orders = orderRepository.findBySeller_IdAndStatusInAndDateBetween(sellerId, statuses, startDate, endDate);
+
+        double totalAmount = 0.0;
+
+        for (OrderEntity order : orders) {
+            // Tính tổng tiền từ các đơn hàng
+            totalAmount += amount(order.getOrderDetails()) + order.getShipMoney() - order.getDiscount();
+        }
+
+        return totalAmount;
+    }
+
 //    @Override
 //    public List<OrderEntity> findAllByOrderNumber(Integer orderNumber) {
 //        return orderRepository.findAllByOrderNumber(orderNumber);
@@ -668,9 +767,11 @@ public class OrderServiceImpl implements OrderService {
 //        return null;
 //    }
 
-//        @Scheduled(fixedRate = 120000) // Lên lịch chạy mỗi 2 phút (120,000 milliseconds)
+//        @Scheduled(fixedRate = 1810000) // Lên lịch chạy mỗi 2 phút (120,000 milliseconds)
 //    public void sayHello() {
 //
+//            System.out.println("====================");
+//            System.out.println(getOrderBySellerAndStatusProcessing(2L));
 //    }
     @Scheduled(cron = "0 0 0 * * ?") // Chạy sau 12h đêm hàng ngày
     public RawEcommerceOrderCreate callApiDeliveryEveryday(){
@@ -769,5 +870,158 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findTopUserIdsByOrderCountInMonth(currentMonth);
     }
 
+    @Override
+    public ResponseEntity<?> getOrderBySellerAndStatusPending(Long sellerId) {
+        try {
+            Optional<SellerEntity> sellerOptional = sellerRepository.findById(sellerId);
+            if(sellerOptional.isPresent()){
+                SellerEntity seller = sellerOptional.get();
+
+                List<OrderEntity> orderList =  orderRepository.findAllBySellerAndStatusIn(seller, Arrays.asList(EOrder.Pending, EOrder.Awaiting_Payment,EOrder.Transferred));
+
+                List<OrderResponse> list = new ArrayList<>();
+                orderList.forEach(o->{
+//              Trả về Json
+                    OrderResponse orderResponse = convertOrderEntityToOrderResponse(o);
+                    list.add(orderResponse);
+                });
+
+                ResponseData<Object> data = ResponseData.builder().data(list).build();
+
+                return ResponseEntity.ok().body(ResponseObject
+                        .builder()
+                        .status("SUCCESS")
+                        .message("Get Order by Seller success!")
+                        .results(data)
+                        .build());
+            }
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message("Seller not exist!")
+                            .results("")
+                            .build()
+                    );
+
+        }
+        catch (Exception e){
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message(e.getMessage())
+                            .results("")
+                            .build()
+                    );
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getOrderBySellerAndStatusProcessing(Long sellerId) {
+        try {
+            Optional<SellerEntity> sellerOptional = sellerRepository.findById(sellerId);
+            if(sellerOptional.isPresent()){
+                SellerEntity seller = sellerOptional.get();
+
+                List<OrderEntity> orderList =  orderRepository.findAllBySellerAndStatus(seller, EOrder.Processing);
+
+                List<OrderResponse> list = new ArrayList<>();
+                orderList.forEach(o->{
+//              Trả về Json
+                    OrderResponse orderResponse = convertOrderEntityToOrderResponse(o);
+                    list.add(orderResponse);
+                });
+
+                ResponseData<Object> data = ResponseData.builder().data(list).build();
+
+                return ResponseEntity.ok().body(ResponseObject
+                        .builder()
+                        .status("SUCCESS")
+                        .message("Get Order by Seller success!")
+                        .results(data)
+                        .build());
+            }
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message("Seller not exist!")
+                            .results("")
+                            .build()
+                    );
+
+        }
+        catch (Exception e){
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message(e.getMessage())
+                            .results("")
+                            .build()
+                    );
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getOrderBySellerAndStatusCancel(Long sellerId) {
+        try {
+            Optional<SellerEntity> sellerOptional = sellerRepository.findById(sellerId);
+            if(sellerOptional.isPresent()){
+                SellerEntity seller = sellerOptional.get();
+
+                List<OrderEntity> orderList =  orderRepository.findAllBySellerAndStatusIn(seller, Arrays.asList(EOrder.Cancelled,EOrder.Rejection));
+
+                List<OrderResponse> list = new ArrayList<>();
+                orderList.forEach(o->{
+//              Trả về Json
+                    OrderResponse orderResponse = convertOrderEntityToOrderResponse(o);
+                    list.add(orderResponse);
+                });
+
+                ResponseData<Object> data = ResponseData.builder().data(list).build();
+
+                return ResponseEntity.ok().body(ResponseObject
+                        .builder()
+                        .status("SUCCESS")
+                        .message("Get Order by Seller success!")
+                        .results(data)
+                        .build());
+            }
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message("Seller not exist!")
+                            .results("")
+                            .build()
+                    );
+
+        }
+        catch (Exception e){
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject.builder()
+                            .status("FAIL")
+                            .message(e.getMessage())
+                            .results("")
+                            .build()
+                    );
+        }
+    }
+
+    @Override
+    public void changeStatusWhenDeliverySuccess(Long orderId) {
+            Optional<OrderEntity> orderEntity = orderRepository.findById(orderId);
+            if(orderEntity.isPresent()){
+                OrderEntity order = orderEntity.get();
+                order.setStatus(EOrder.Completed);
+                orderRepository.save(order);
+            }
+        }
 
 }

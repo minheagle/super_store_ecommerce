@@ -26,6 +26,20 @@ public class ConfirmOrderRestController {
         return orderService.rejectionOrder(sellerId,orderId);
     }
 
+    @GetMapping("/pending/{sellerId}")
+    public ResponseEntity<?> getOrderByPending(@PathVariable Long sellerId){
+        return orderService.getOrderBySellerAndStatusPending(sellerId);
+    }
+    @GetMapping("/processing/{sellerId}")
+    public ResponseEntity<?> getOrderByProcessing(@PathVariable Long sellerId){
+        return orderService.getOrderBySellerAndStatusProcessing(sellerId);
+    }
+    @GetMapping("/cancel/{sellerId}")
+    public ResponseEntity<?> getOrderByCancel(@PathVariable Long sellerId){
+        return orderService.getOrderBySellerAndStatusCancel(sellerId);
+    }
+
+
     @GetMapping("/get-all-order-confirm")
     public ResponseEntity<?> getAllOrderConfirm(){
         return orderService.getAllOrderConfirm();

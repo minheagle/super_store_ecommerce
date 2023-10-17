@@ -28,21 +28,25 @@ public interface OrderService{
     int randomOrder();
     ResponseEntity<?> callApi();
     List<Long> getTopSellingProduct();
-////    lấy danh sách các đơn hàng có cùng orderNumber
-//    List<OrderEntity> findAllByOrderNumber(Integer orderNumber);
+
 //    lấy danh sách các đơn hàng theo seller trong 1 ngày
     ResponseEntity<?> getAllOrderWithShopOnDay(Long sellerId);
-    //    lấy danh sách các đơn hàng theo seller trong 1 tháng
-//    List<OrderEntity> getAllOrderWithShopOnMonth(Long sellerId);
-////    Lấy tổng số tiền trong 1 ngày
-//    Double getTotalOnDay();
-////    Lấy tổng số tiền trong một tháng
-//    Double getTotalOnMonth();
-////    Lấy tổng số tiền trong 1 ngày theo seller
-//    Double getTotalWithSellerOnDay(Long sellerId);
-////    Lấy tổng số tiền trong 1 tháng theo seller
-//    Double getTotalWithSellerOnMonth(Long sellerId);
-////    lấy ra danh sách các đơn hàng bị hủy theo từng shop
-//    Double getOrderCancelWithSeller(Long sellerId);
+//    Lấy tổng số tiền trong 1 ngày
+    Double getTotalOnDay();
+//    Lấy tổng số tiền trong một tháng
+    Double getTotalOnMonth(int year, int month);
+
+    //    Lấy tổng số tiền trong 1 ngày theo seller
+    Double getTotalWithSellerOnDay(Long sellerId);
+//    Lấy tổng số tiền trong 1 tháng theo seller
+    Double getTotalWithSellerOnMonth(Long sellerId, int year, int month);
     List<Long> findTopUsersByOrderCountInCurrentMonth();
+
+    ResponseEntity<?> getOrderBySellerAndStatusPending(Long sellerId);
+
+    ResponseEntity<?> getOrderBySellerAndStatusProcessing(Long sellerId);
+
+    ResponseEntity<?> getOrderBySellerAndStatusCancel(Long sellerId);
+
+    void changeStatusWhenDeliverySuccess(Long orderId);
 }
