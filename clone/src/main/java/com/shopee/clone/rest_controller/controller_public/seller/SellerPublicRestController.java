@@ -1,11 +1,14 @@
 package com.shopee.clone.rest_controller.controller_public.seller;
 
+import com.shopee.clone.DTO.fieldErrorDTO.FieldError;
+import com.shopee.clone.DTO.seller.request.SellerRequestUpdate;
 import com.shopee.clone.service.seller.SellerService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequestMapping("/api/v1/public/sellers")
@@ -19,5 +22,21 @@ public class SellerPublicRestController {
     @GetMapping("/{sellerId}")
     public ResponseEntity<?> getDetailSeller(@PathVariable("sellerId") Long sellerId){
         return sellerService.responseGetSellerById(sellerId);
+    }
+    @PutMapping("private-information")
+    public ResponseEntity<?> updatePrivateInformation(@RequestBody @Valid SellerRequestUpdate sellerRequestUpdate,
+                                                      BindingResult bindingResult){
+        if(bindingResult.hasErrors()) {
+            FieldError.throwErrorHandler(bindingResult);
+        }
+        return sellerService.updatePrivateInformation(sellerRequestUpdate);
+    }
+    @PatchMapping("/{id}/avatar")
+    public ResponseEntity<?> updateStoreAvatar(@PathVariable(name = "id") Long storeId, @RequestBody MultipartFile storeAvatar){
+        return sellerService.updateStoreAvatar(storeId, storeAvatar);
+    }
+    @PatchMapping("/{id}/background")
+    public ResponseEntity<?> updateStoreBackground(@PathVariable(name = "id") Long storeId, @RequestBody MultipartFile storeBackground){
+        return sellerService.updateStoreBackground(storeId, storeBackground);
     }
 }

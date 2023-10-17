@@ -27,10 +27,17 @@ public class SellerEntity {
     private Long userId;
     @Column(name = "store_address")
     private String storeAddress;
+
+    @Column(name = "img_avatar_public_id")
+    private String imgAvatarPublicId;
     @Column(name = "store_avatar_url")
     private String storeAvatarUrl;
+
+    @Column(name = "img_background_public_id")
+    private String imgBackgroundPublicId;
     @Column(name = "store_background_url")
     private String storeBackgroundUrl;
+
     @Column(name = "created_at")
     private Date createdAt;
     @Column(name = "number_follower")
