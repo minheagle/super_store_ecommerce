@@ -36,4 +36,12 @@ public interface OrderRepository extends JpaRepository<OrderEntity,Long> {
     List<Long> findTopUserIdsByOrderCountInMonth(int month);
 
     List<OrderEntity> findAllByOrderNumber(Integer orderNumber);
+
+    List<OrderEntity> findAllBySellerAndStatusIn(SellerEntity seller, List<EOrder> list);
+
+    List<OrderEntity> findAllBySellerAndStatus(SellerEntity seller, EOrder eOrder);
+
+    List<OrderEntity> findByStatusInAndDateBetween(List<EOrder> statuses, Date startDate, Date endDate);
+
+    List<OrderEntity> findBySeller_IdAndStatusInAndDateBetween(Long sellerId, List<EOrder> statuses, Date startDate, Date endDate);
 }

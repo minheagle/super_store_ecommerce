@@ -37,6 +37,15 @@ public class OrderRestController {
 
     @GetMapping("order/top-user")
     public List<Long> findTopUsersByOrderCountInCurrentMonth(){
-        return orderService.findTopUsersByOrderCountInCurrentMonth();
+            return orderService.findTopUsersByOrderCountInCurrentMonth();
+    }
+    @PostMapping("order/change-status")
+    public void changeStatus(@RequestParam Integer orderNumber, @RequestParam Boolean paymentStatus){
+        orderService.changeStatusWhenCallPayment(orderNumber, paymentStatus);
+    }
+
+    @PostMapping("order/delivery-success")
+    public void changeStatusWhenDeliverySuccess(@RequestParam Long orderId){
+        orderService.changeStatusWhenDeliverySuccess(orderId);
     }
 }
