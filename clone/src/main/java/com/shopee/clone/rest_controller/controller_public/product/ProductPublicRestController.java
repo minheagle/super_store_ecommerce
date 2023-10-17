@@ -44,12 +44,19 @@ public class ProductPublicRestController {
                                              @RequestParam(name = "categoryId", required = false, defaultValue = "") Long categoryId,
                                              @RequestParam(name = "page", required = false, defaultValue = "1") Integer page,
                                              @RequestParam(name = "size", required = false, defaultValue = "10") Integer size,
-                                             @RequestParam(name = "sort", required = false, defaultValue = "DESC") String sort){
+                                             @RequestParam(name = "sort", required = false, defaultValue = "new-product") String sort){
         Sort sortable = null;
-        if (sort.equals("ASC")) {
+        if(sort.equalsIgnoreCase("old-product")){
+            sortable = Sort.by("productId").ascending();
+        }
+        if(sort.equalsIgnoreCase("new-product")){
+            sortable = Sort.by("productId").descending();
+        }
+
+        if (sort.equalsIgnoreCase("rating-asc")) {
             sortable = Sort.by("voteStar").ascending();
         }
-        if (sort.equals("DESC")) {
+        if (sort.equalsIgnoreCase("rating-desc")) {
             sortable = Sort.by("voteStar").descending();
         }
 

@@ -43,8 +43,7 @@ public class ImageProductService implements IImageProductService {
                             .imgPublicId(result.getPublic_id())
                             .imgProductUrl(result.getSecure_url())
                             .productItem(productItem)
-                            .build())
-                    .collect(Collectors.toList());
+                            .build()).toList();
             List<ImageProductEntity> imageProductEntities = imageProducts.stream()
                     .map(imageProduct -> modelMapper.map(imageProduct,ImageProductEntity.class)).collect(Collectors.toList());
             imageProductRepository.saveAll(imageProductEntities);
