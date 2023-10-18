@@ -1,5 +1,6 @@
 package com.shopee.clone.rest_controller.order;
 
+import com.shopee.clone.DTO.order.request.DeliveryStatusRequest;
 import com.shopee.clone.DTO.order.request.OrderRequest;
 import com.shopee.clone.service.order.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,8 +45,4 @@ public class OrderRestController {
         orderService.changeStatusWhenCallPayment(orderNumber, paymentStatus);
     }
 
-    @PostMapping("order/delivery-success")
-    public void changeStatusWhenDeliverySuccess(@RequestParam Long orderId){
-        orderService.changeStatusWhenDeliverySuccess(orderId);
-    }
 }

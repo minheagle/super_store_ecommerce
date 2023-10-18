@@ -1,5 +1,6 @@
 package com.shopee.clone.service.order;
 
+import com.shopee.clone.DTO.order.request.DeliveryStatusRequest;
 import com.shopee.clone.DTO.order.request.OrderRequest;
 import com.shopee.clone.DTO.product.response.ProductResponseDTO;
 import com.shopee.clone.entity.order.OrderEntity;
@@ -47,6 +48,5 @@ public interface OrderService{
     ResponseEntity<?> getOrderBySellerAndStatusProcessing(Long sellerId);
 
     ResponseEntity<?> getOrderBySellerAndStatusCancel(Long sellerId);
-
-    void changeStatusWhenDeliverySuccess(Long orderId);
+    void changeStatusWhenDelivery(DeliveryStatusRequest deliveryStatusRequest);
 }

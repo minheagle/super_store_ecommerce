@@ -1015,11 +1015,15 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void changeStatusWhenDeliverySuccess(Long orderId) {
-            Optional<OrderEntity> orderEntity = orderRepository.findById(orderId);
+    public void changeStatusWhenDelivery(DeliveryStatusRequest deliveryStatusRequest) {
+            Optional<OrderEntity> orderEntity = orderRepository.findBySeller_IdAndOrderNumber(deliveryStatusRequest.getSellerId(),deliveryStatusRequest.getOrderNumber());
             if(orderEntity.isPresent()){
                 OrderEntity order = orderEntity.get();
-                order.setStatus(EOrder.Completed);
+                if(deliveryStatusRequest.getStatus()){
+                    order.setStatus(EOrder.Completed);
+                }else{
+                    order.setStatus(EOrder.Fail);
+                }
                 orderRepository.save(order);
             }
         }

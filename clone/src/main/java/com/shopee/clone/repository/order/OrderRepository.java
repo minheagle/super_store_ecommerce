@@ -44,4 +44,6 @@ public interface OrderRepository extends JpaRepository<OrderEntity,Long> {
     List<OrderEntity> findByStatusInAndDateBetween(List<EOrder> statuses, Date startDate, Date endDate);
 
     List<OrderEntity> findBySeller_IdAndStatusInAndDateBetween(Long sellerId, List<EOrder> statuses, Date startDate, Date endDate);
+
+    Optional<OrderEntity> findBySeller_IdAndOrderNumber(Long sellerId, Integer orderNumber);
 }
