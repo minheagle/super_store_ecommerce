@@ -1,5 +1,6 @@
 package com.shopee.clone.repository.order;
 
+import com.shopee.clone.entity.ProductEntity;
 import com.shopee.clone.entity.SellerEntity;
 import com.shopee.clone.entity.UserEntity;
 import com.shopee.clone.entity.order.EOrder;
@@ -46,4 +47,5 @@ public interface OrderRepository extends JpaRepository<OrderEntity,Long> {
     List<OrderEntity> findBySeller_IdAndStatusInAndDateBetween(Long sellerId, List<EOrder> statuses, Date startDate, Date endDate);
 
     Optional<OrderEntity> findBySeller_IdAndOrderNumber(Long sellerId, Integer orderNumber);
+
 }

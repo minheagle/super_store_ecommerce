@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductReviewRequest {
+    private Long orderId;
     private Long userId;
     private Long productId;
     @Min(1)

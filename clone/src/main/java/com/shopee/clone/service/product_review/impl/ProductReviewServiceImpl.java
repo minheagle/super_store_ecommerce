@@ -6,10 +6,16 @@ import com.shopee.clone.DTO.product_review.ProductReviewResponse;
 import com.shopee.clone.DTO.product_review.ProductReviewUpdateRequest;
 import com.shopee.clone.entity.ProductEntity;
 import com.shopee.clone.entity.UserEntity;
+import com.shopee.clone.entity.order.EOrder;
+import com.shopee.clone.entity.order.OrderDetailEntity;
+import com.shopee.clone.entity.order.OrderEntity;
 import com.shopee.clone.entity.product_review.ImageProductReviewEntity;
 import com.shopee.clone.entity.product_review.ProductReviewEntity;
+import com.shopee.clone.repository.order.OrderDetailRepository;
+import com.shopee.clone.repository.order.OrderRepository;
 import com.shopee.clone.repository.product.ProductRepository;
 import com.shopee.clone.repository.product_review.ProductReviewRepository;
+import com.shopee.clone.service.order.OrderService;
 import com.shopee.clone.service.product_review.ProductReviewService;
 import com.shopee.clone.service.product_review.img_product_review.ImgProductReviewService;
 import com.shopee.clone.service.user.UserService;
@@ -27,6 +33,10 @@ import java.util.Optional;
 public class ProductReviewServiceImpl implements ProductReviewService {
     @Autowired
     private ProductReviewRepository productReviewRepository;
+    @Autowired
+    private OrderRepository orderRepository;
+    @Autowired
+    private OrderService orderService;
     @Autowired
     private UserService userService;
     @Autowired
@@ -46,39 +56,68 @@ public class ProductReviewServiceImpl implements ProductReviewService {
 
                 ProductReviewEntity productReview = productReviewRepository.findByProductAndUser(product,user);
                 if(productReview==null){
-                    ProductReviewEntity productReviewEntity =
-                            ProductReviewEntity.
-                                    builder()
-                                    .user(user)
-                                    .comment(productReviewRequest.getComment())
-                                    .product(product)
-                                    .rating(productReviewRequest.getVoteStar())
-                                    .build();
+                    Optional<OrderEntity> orderEntity = orderRepository.findById(productReviewRequest.getOrderId());
+                    if(orderEntity.isPresent()){
+                        if(orderEntity.get().getStatus().equals(EOrder.Completed)){
+                            boolean check =orderService.checkExistProductInListOrderDetail(orderEntity.get().getOrderDetails(),product);
+                            if(check){
+                                ProductReviewEntity productReviewEntity =
+                                        ProductReviewEntity.
+                                                builder()
+                                                .user(user)
+                                                .comment(productReviewRequest.getComment())
+                                                .product(product)
+                                                .rating(productReviewRequest.getVoteStar())
+                                                .build();
 
-                    ProductReviewEntity finalProductReview = productReviewRepository.save(productReviewEntity);
-                    imgProductReviewService.saveAllImageProduct(productReviewRequest.getImageProductReviewFile(),finalProductReview);
-                    setRatingProduct(productReviewRequest.getProductId());
+                                ProductReviewEntity finalProductReview = productReviewRepository.save(productReviewEntity);
+                                imgProductReviewService.saveAllImageProduct(productReviewRequest.getImageProductReviewFile(),finalProductReview);
+                                setRatingProduct(productReviewRequest.getProductId());
+                                return ResponseEntity
+                                        .status(HttpStatusCode.valueOf(200))
+                                        .body(
+                                                ResponseObject
+                                                        .builder()
+                                                        .status("SUCCESS")
+                                                        .message("Create rating success!")
+                                                        .results("")
+                                                        .build()
+                                        );
+                            }
+                            return ResponseEntity
+                                    .status(HttpStatusCode.valueOf(404))
+                                    .body(
+                                            ResponseObject
+                                                    .builder()
+                                                    .status("FAIL")
+                                                    .message("Product haven't in order!")
+                                                    .results("You kidding me?")
+                                                    .build()
+                                    );
+                        }return ResponseEntity
+                                .status(HttpStatusCode.valueOf(404))
+                                .body(
+                                        ResponseObject
+                                                .builder()
+                                                .status("FAIL")
+                                                .message("You not rating when order success!")
+                                                .results("")
+                                                .build()
+                                );
+
+                    }
+                }else{
                     return ResponseEntity
-                            .status(HttpStatusCode.valueOf(200))
+                            .status(HttpStatusCode.valueOf(404))
                             .body(
                                     ResponseObject
                                             .builder()
-                                            .status("SUCCESS")
-                                            .message("Create rating success!")
-                                            .results("")
+                                            .status("FAIL")
+                                            .message("Users have rated this product")
+                                            .results("PLS update rating")
                                             .build()
                             );
                 }
-                return ResponseEntity
-                        .status(HttpStatusCode.valueOf(404))
-                        .body(
-                                ResponseObject
-                                        .builder()
-                                        .status("FAIL")
-                                        .message("Users have rated this product")
-                                        .results("PLS update rating")
-                                        .build()
-                        );
 
             }
         }catch (Exception e){

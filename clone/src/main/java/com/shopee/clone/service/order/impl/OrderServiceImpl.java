@@ -1028,4 +1028,14 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
+    @Override
+    public boolean checkExistProductInListOrderDetail(List<OrderDetailEntity> orderDetails, ProductEntity product) {
+        for(OrderDetailEntity oD : orderDetails){
+            if(oD.getProductItems().getProduct().equals(product)){
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

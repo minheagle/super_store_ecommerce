@@ -3,6 +3,8 @@ package com.shopee.clone.service.order;
 import com.shopee.clone.DTO.order.request.DeliveryStatusRequest;
 import com.shopee.clone.DTO.order.request.OrderRequest;
 import com.shopee.clone.DTO.product.response.ProductResponseDTO;
+import com.shopee.clone.entity.ProductEntity;
+import com.shopee.clone.entity.order.OrderDetailEntity;
 import com.shopee.clone.entity.order.OrderEntity;
 import org.springframework.http.ResponseEntity;
 
@@ -49,4 +51,6 @@ public interface OrderService{
 
     ResponseEntity<?> getOrderBySellerAndStatusCancel(Long sellerId);
     void changeStatusWhenDelivery(DeliveryStatusRequest deliveryStatusRequest);
+
+    boolean checkExistProductInListOrderDetail(List<OrderDetailEntity> orderDetails, ProductEntity product);
 }
