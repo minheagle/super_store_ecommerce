@@ -19,4 +19,9 @@ public class CategoryPublicRestController {
     public ResponseEntity<?> getAllCategory(){
         return categoryPublic.getAll();
     }
+
+    @GetMapping("/all-leaf")
+    public ResponseEntity<?> getAllLeafCategory(){
+        return categoryPublic.getAllLeaf();
+    }
 }

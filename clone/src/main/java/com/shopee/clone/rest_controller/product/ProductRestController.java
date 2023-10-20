@@ -2,6 +2,7 @@ package com.shopee.clone.rest_controller.product;
 
 import com.shopee.clone.DTO.fieldErrorDTO.FieldError;
 import com.shopee.clone.DTO.product.request.*;
+import com.shopee.clone.DTO.product.response.ProductResponseDTO;
 import com.shopee.clone.DTO.product.update.ProductItemRequestEdit;
 import com.shopee.clone.DTO.product.update.ProductRequestEdit;
 import com.shopee.clone.DTO.product.update.SingleUpdateChangeImageProductItem;
@@ -17,6 +18,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -95,12 +98,19 @@ public class ProductRestController {
                                              @RequestParam(name = "categoryId", required = false, defaultValue = "") Long categoryId,
                                              @RequestParam(name = "page", required = false, defaultValue = "1") Integer page,
                                              @RequestParam(name = "size", required = false, defaultValue = "10") Integer size,
-                                             @RequestParam(name = "sort", required = false, defaultValue = "DESC") String sort){
+                                             @RequestParam(name = "sort", required = false, defaultValue = "new-product") String sort){
         Sort sortable = null;
-        if (sort.equals("ASC")) {
+        if(sort.equalsIgnoreCase("old-product")){
+            sortable = Sort.by("productId").ascending();
+        }
+        if(sort.equalsIgnoreCase("new-product")){
+            sortable = Sort.by("productId").descending();
+        }
+
+        if (sort.equalsIgnoreCase("rating-asc")) {
             sortable = Sort.by("voteStar").ascending();
         }
-        if (sort.equals("DESC")) {
+        if (sort.equalsIgnoreCase("rating-desc")) {
             sortable = Sort.by("voteStar").descending();
         }
 

@@ -166,7 +166,6 @@ public class PromotionServiceImpl implements IPromotionService {
 
                 UserEntity user = userRepository.findById(userId)
                         .orElseThrow(NoSuchElementException::new);
-
                 List<PromotionEntity> promotionList = new ArrayList<>();
                 for(Long promotionId : listPromotionId){
                     PromotionEntity promotion = promotionRepository.findById(promotionId)
@@ -330,7 +329,7 @@ public class PromotionServiceImpl implements IPromotionService {
                         );
             }
             return ResponseEntity
-                    .status(HttpStatusCode.valueOf(204))
+                    .status(HttpStatusCode.valueOf(200))
                     .body(
                             ResponseObject
                                     .builder()
