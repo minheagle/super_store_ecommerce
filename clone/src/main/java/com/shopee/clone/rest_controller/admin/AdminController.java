@@ -26,4 +26,23 @@ public class AdminController {
     public ResponseEntity<?> getAllOrderWithShopOnDay(@PathVariable Long sellerId){
         return orderService.getAllOrderWithShopOnDay(sellerId);
     }
+    @GetMapping("order/get-total-on-day")
+    public Double getTotalOnDay(){
+        return orderService.getTotalOnDay();
+    }
+    @GetMapping("order/get-total-on-month")
+    public Double getTotalOnMonth(@RequestParam(defaultValue = "2023") int year,
+                                  @RequestParam(defaultValue = "10") int month){
+        return orderService.getTotalOnMonth(year,month);
+    }
+    @GetMapping("order/get-total-by-seller-on-month/{sellerId}")
+    public Double getTotalBySellerOnMonth(@PathVariable Long sellerId,
+                                          @RequestParam(defaultValue = "2023") int year,
+                                          @RequestParam(defaultValue = "10") int month){
+        return orderService.getTotalWithSellerOnMonth(sellerId,year,month);
+    }
+    @GetMapping("order/get-total-by-seller-on-day/{sellerId}")
+    public Double getTotalBySellerOnMonth(@PathVariable Long sellerId){
+        return orderService.getTotalWithSellerOnDay(sellerId);
+    }
 }

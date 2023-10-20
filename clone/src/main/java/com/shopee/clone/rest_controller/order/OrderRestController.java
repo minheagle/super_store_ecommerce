@@ -1,6 +1,5 @@
 package com.shopee.clone.rest_controller.order;
 
-import com.shopee.clone.DTO.order.request.DeliveryStatusRequest;
 import com.shopee.clone.DTO.order.request.OrderRequest;
 import com.shopee.clone.service.order.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +42,10 @@ public class OrderRestController {
     @PostMapping("order/change-status")
     public void changeStatus(@RequestParam Integer orderNumber, @RequestParam Boolean paymentStatus){
         orderService.changeStatusWhenCallPayment(orderNumber, paymentStatus);
+    }
+    @GetMapping("order/get-total/{orderNumber}")
+    public Double getTotalOrderNumber(@PathVariable Integer orderNumber){
+        return orderService.getTotalByOrderNumber(orderNumber);
     }
 
 }

@@ -63,7 +63,15 @@ public class CartServiceImpl implements CartService {
                 if (productItem.isPresent()) {
                     Long check = findCartItemId(cartEntities, productItem.get());
                     if(check!=null) {
-                        updateQuantity(check,addToCartRequest.getQuantity());
+                        boolean result = updateQuantity(check,addToCartRequest.getQuantity());
+                        if(!result){
+                            return ResponseEntity.ok().body(ResponseObject
+                                    .builder()
+                                    .status("Fail")
+                                    .message("product quantity invalid !")
+                                    .results("")
+                                    .build());
+                        }
                         cartEntities = cartRepository.findByUser(user.get());
                         List<CartResponse> cartRepositories = convertCartResponses(cartEntities);
                         ResponseData<Object> response = ResponseData.builder().data(cartRepositories).build();
@@ -124,7 +132,7 @@ public class CartServiceImpl implements CartService {
 
     }
 
-    public void updateQuantity(Long cartId,Integer quantity) {
+    public boolean updateQuantity(Long cartId,Integer quantity) {
         try{
             Optional<CartEntity> cartOptional = cartRepository.findById(cartId);
             if(cartOptional.isPresent()){
@@ -135,11 +143,14 @@ public class CartServiceImpl implements CartService {
                 if(check){
                     cart.setQuantity(cart.getQuantity()+quantity);
                     cartRepository.save(cart);
+                    return true;
                 }
+                return false;
             }
         }catch (Exception e){
             throw new RuntimeException(e.getMessage());
         }
+        return false;
     }
 
     private Long findCartItemId(List<CartEntity> cartEntities, ProductItemEntity productItemEntity) {
@@ -232,7 +243,7 @@ public class CartServiceImpl implements CartService {
                         .badRequest()
                         .body(ResponseObject.builder()
                                 .status("FAIL")
-                                .message("Invalid quantity!")
+                                    .message("Invalid quantity!")
                                 .results("")
                                 .build()
                         );

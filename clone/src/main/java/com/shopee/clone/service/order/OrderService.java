@@ -53,4 +53,6 @@ public interface OrderService{
     void changeStatusWhenDelivery(DeliveryStatusRequest deliveryStatusRequest);
 
     boolean checkExistProductInListOrderDetail(List<OrderDetailEntity> orderDetails, ProductEntity product);
+
+    Double getTotalByOrderNumber(Integer orderNumber);
 }
