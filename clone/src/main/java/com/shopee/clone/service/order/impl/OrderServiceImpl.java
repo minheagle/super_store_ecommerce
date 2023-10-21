@@ -359,24 +359,32 @@ public class OrderServiceImpl implements OrderService {
 
             if(orderEntity.isPresent()){
                 OrderEntity order = orderEntity.get();
-
-                order.setStatus(EOrder.Cancelled);
-                promotionService.plusUsage(order.getUser().getId(),order.getPromotionName(),amount(order.getOrderDetails()));
+                if(order.getStatus().equals(EOrder.Pending) || order.getStatus().equals(EOrder.Awaiting_Payment)|| order.getStatus().equals(EOrder.Transferred)){
+                    order.setStatus(EOrder.Cancelled);
+                    promotionService.plusUsage(order.getUser().getId(),order.getPromotionName(),amount(order.getOrderDetails()));
 //                Trả lại số lượng cho order
-                order.getOrderDetails().forEach(oD ->{
-                    productItemService.plusQuantityInStock(oD.getProductItems().getPItemId(),oD.getQuantity());
-                });
-                orderRepository.save(order);
+                    order.getOrderDetails().forEach(oD ->{
+                        productItemService.plusQuantityInStock(oD.getProductItems().getPItemId(),oD.getQuantity());
+                    });
+                    orderRepository.save(order);
 //              Trả về Json
-                OrderResponse orderResponse = convertOrderEntityToOrderResponse(order);
+                    OrderResponse orderResponse = convertOrderEntityToOrderResponse(order);
 
-                ResponseData<Object> data = ResponseData.builder().data(orderResponse).build();
+                    ResponseData<Object> data = ResponseData.builder().data(orderResponse).build();
 
-                return ResponseEntity.ok().body(ResponseObject
+                    return ResponseEntity.ok().body(ResponseObject
+                            .builder()
+                            .status("SUCCESS")
+                            .message("Cancel Order success!")
+                            .results(data)
+                            .build());
+                }
+
+                return ResponseEntity.badRequest().body(ResponseObject
                         .builder()
-                        .status("SUCCESS")
-                        .message("Cancel Order success!")
-                        .results(data)
+                        .status("Fail")
+                        .message("You can't cancel order because order do ship!")
+                        .results("")
                         .build());
             }
             return ResponseEntity
@@ -408,7 +416,7 @@ public class OrderServiceImpl implements OrderService {
             if(orderOptional.isPresent()){
                 OrderEntity order = orderOptional.get();
 
-                if(order.getStatus().equals(EOrder.Pending) || order.getStatus().equals(EOrder.Awaiting_Payment)) {
+                if(order.getStatus().equals(EOrder.Pending) || order.getStatus().equals(EOrder.Awaiting_Payment) || order.getStatus().equals(EOrder.Transferred)) {
                     order.setConfirmDate(Date.from(Instant.now()));
                     order.setStatus(EOrder.Processing);
                     orderRepository.save(order);
@@ -447,7 +455,7 @@ public class OrderServiceImpl implements OrderService {
                     );
         }
     }
-
+    @Override
     public Double getTotalByOrderNumber(Integer orderNumber){
         List<OrderEntity> orderList = orderRepository.findAllByOrderNumber(orderNumber);
         AtomicReference<Double> total = new AtomicReference<>(0D);
@@ -1015,13 +1023,27 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void changeStatusWhenDeliverySuccess(Long orderId) {
-            Optional<OrderEntity> orderEntity = orderRepository.findById(orderId);
+    public void changeStatusWhenDelivery(DeliveryStatusRequest deliveryStatusRequest) {
+            Optional<OrderEntity> orderEntity = orderRepository.findBySeller_IdAndOrderNumber(deliveryStatusRequest.getSellerId(),deliveryStatusRequest.getOrderNumber());
             if(orderEntity.isPresent()){
                 OrderEntity order = orderEntity.get();
-                order.setStatus(EOrder.Completed);
+                if(deliveryStatusRequest.getStatus()){
+                    order.setStatus(EOrder.Completed);
+                }else{
+                    order.setStatus(EOrder.Fail);
+                }
                 orderRepository.save(order);
             }
         }
+
+    @Override
+    public boolean checkExistProductInListOrderDetail(List<OrderDetailEntity> orderDetails, ProductEntity product) {
+        for(OrderDetailEntity oD : orderDetails){
+            if(oD.getProductItems().getProduct().equals(product)){
+                return true;
+            }
+        }
+        return false;
+    }
 
 }

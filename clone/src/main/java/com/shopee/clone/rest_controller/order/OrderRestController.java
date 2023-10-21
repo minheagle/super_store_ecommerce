@@ -43,9 +43,9 @@ public class OrderRestController {
     public void changeStatus(@RequestParam Integer orderNumber, @RequestParam Boolean paymentStatus){
         orderService.changeStatusWhenCallPayment(orderNumber, paymentStatus);
     }
-
-    @PostMapping("order/delivery-success")
-    public void changeStatusWhenDeliverySuccess(@RequestParam Long orderId){
-        orderService.changeStatusWhenDeliverySuccess(orderId);
+    @GetMapping("order/get-total/{orderNumber}")
+    public Double getTotalOrderNumber(@PathVariable Integer orderNumber){
+        return orderService.getTotalByOrderNumber(orderNumber);
     }
+
 }

@@ -19,8 +19,8 @@ public enum EOrder {
     Rejection,
 //    Đơn hàng đã bị hủy bỏ và không được xử lý hoặc giao hàng.
     Cancelled,
-//    Khách hàng đã được hoàn tiền cho đơn hàng.
-    Refunded,
+//    Khách hàng khong nhan duoc hang
+    Fail,
 //    Đơn hàng đã hoàn thành, tất cả các quy trình đã được thực hiện và thanh toán đã được xác nhận.
     Completed
 }
