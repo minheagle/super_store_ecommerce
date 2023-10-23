@@ -15,11 +15,13 @@ import com.shopee.clone.entity.UserEntity;
 import com.shopee.clone.entity.cart.CartEntity;
 import com.shopee.clone.entity.order.*;
 import com.shopee.clone.entity.payment.EDiscountType;
+import com.shopee.clone.entity.promotion.PromotionEntity;
 import com.shopee.clone.repository.AddressRepository;
 import com.shopee.clone.repository.SellerRepository;
 import com.shopee.clone.repository.cart.CartRepository;
 import com.shopee.clone.repository.order.OrderDetailRepository;
 import com.shopee.clone.repository.order.OrderRepository;
+import com.shopee.clone.repository.promotion.PromotionRepository;
 import com.shopee.clone.service.order.OrderService;
 import com.shopee.clone.service.productItem.impl.ProductItemService;
 import com.shopee.clone.service.promotion.IPromotionService;
@@ -64,6 +66,8 @@ public class OrderServiceImpl implements OrderService {
     private  ProductItemService productItemService;
     @Autowired
     private  UserService userService;
+    @Autowired
+    private PromotionRepository promotionRepository;
 
     @Transactional
     @Override
@@ -84,11 +88,13 @@ public class OrderServiceImpl implements OrderService {
                     UserEntity user = userOptional.get();
                     AddressEntity address = addressOptional.get();
 
-                    Boolean check = promotionService.checkValidUsage(user.getId(),o.getPromotionName(),o.getAmount(),o.getSellerId());
+                    Boolean check = promotionService.checkValidUsage(user.getId(),o.getPromotionId(),o.getAmount(),o.getSellerId());
+                    PromotionEntity promotion = promotionRepository.findById(o.getPromotionId())
+                            .orElseThrow(NoSuchElementException::new);
                     OrderEntity orderEntity = new OrderEntity();
                     if (check) {
-                        orderEntity.setPromotionName(o.getPromotionName());
-                        TypeDiscountResponse discountResponse = promotionService.getTypeDiscount(o.getPromotionName());
+                        orderEntity.setPromotionId(promotion.getPromotionId());
+                        TypeDiscountResponse discountResponse = promotionService.getTypeDiscount(promotion.getName());
                         if(EDiscountType.DISCOUNT_PERCENT.equals(discountResponse.getDiscountType())){
                             orderEntity.setDiscount((discountResponse.getDiscountValue() * o.getAmount())/100);
                         }else if (EDiscountType.FIXED_AMOUNT.equals(discountResponse.getDiscountType())){
@@ -108,7 +114,7 @@ public class OrderServiceImpl implements OrderService {
                                 }
                             }
                         }
-                        promotionService.minusUsage(user.getId(), o.getPromotionName(),o.getAmount(), o.getSellerId());
+                        promotionService.minusUsage(user.getId(), o.getPromotionId(),o.getAmount(), o.getSellerId());
                     }
                     orderEntity.setUser(user);
                     orderEntity.setAddress(address);
@@ -361,7 +367,7 @@ public class OrderServiceImpl implements OrderService {
                 OrderEntity order = orderEntity.get();
                 if(order.getStatus().equals(EOrder.Pending) || order.getStatus().equals(EOrder.Awaiting_Payment)|| order.getStatus().equals(EOrder.Transferred)){
                     order.setStatus(EOrder.Cancelled);
-                    promotionService.plusUsage(order.getUser().getId(),order.getPromotionName(),amount(order.getOrderDetails()),order.getSeller().getId());
+                    promotionService.plusUsage(order.getUser().getId(),order.getPromotionId(),amount(order.getOrderDetails()),order.getSeller().getId());
 //                Trả lại số lượng cho order
                     order.getOrderDetails().forEach(oD ->{
                         productItemService.plusQuantityInStock(oD.getProductItems().getPItemId(),oD.getQuantity());
@@ -533,7 +539,7 @@ public class OrderServiceImpl implements OrderService {
                 if(order.getStatus().equals(EOrder.Pending)) {
                     order.setConfirmDate(Date.from(Instant.now()));
                     order.setStatus(EOrder.Rejection);
-                    promotionService.plusUsage(order.getUser().getId(),order.getPromotionName(),amount(order.getOrderDetails()), sellerId);
+                    promotionService.plusUsage(order.getUser().getId(),order.getPromotionId(),amount(order.getOrderDetails()), sellerId);
                     order.getOrderDetails().forEach(oD ->{
                         productItemService.plusQuantityInStock(oD.getProductItems().getPItemId(),oD.getQuantity());
                     });
