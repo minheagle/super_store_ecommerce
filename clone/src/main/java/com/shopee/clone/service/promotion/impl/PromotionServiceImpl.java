@@ -23,10 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class PromotionServiceImpl implements IPromotionService {
@@ -148,10 +145,11 @@ public class PromotionServiceImpl implements IPromotionService {
 
     //Function check existPromotionByName And Check Available Date.
     @Override
-    public Boolean isValidPromotion(String name, Double purchasedAmount) {
+    public Boolean isValidPromotion(String name, Double purchasedAmount, Long seller_id) {
         PromotionEntity promotion = promotionRepository.findByName(name);
         LocalDate currentDate = LocalDate.now();
-        if(promotion != null && purchasedAmount >= promotion.getMinPurchaseAmount()
+        if(promotion != null && Objects.equals(promotion.getSeller_created().getId(), seller_id)
+                    && purchasedAmount >= promotion.getMinPurchaseAmount()
                 && (currentDate.isBefore(promotion.getEndDate()) || currentDate.equals(promotion.getEndDate()))
             && (currentDate.equals(promotion.getStartDate()) || currentDate.isAfter(promotion.getStartDate()))){
             return Boolean.TRUE;
@@ -227,8 +225,8 @@ public class PromotionServiceImpl implements IPromotionService {
 
     //Function Check Available Usage
     @Override
-    public Boolean checkValidUsage(Long userId, String promotionName, Double purchasedAmount) {
-        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName,purchasedAmount)){
+    public Boolean checkValidUsage(Long userId, String promotionName, Double purchasedAmount, Long seller_id) {
+        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName,purchasedAmount, seller_id)){
 
 //            PromotionEntity promotion = promotionRepository.findByName(promotionName);
             UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
@@ -247,8 +245,8 @@ public class PromotionServiceImpl implements IPromotionService {
     }
 
     @Override
-    public Boolean minusUsage(Long userId,String promotionName, Double purchasedAmount) {
-        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName, purchasedAmount)){
+    public Boolean minusUsage(Long userId,String promotionName, Double purchasedAmount, Long seller_id) {
+        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName, purchasedAmount, seller_id)){
 
 //            PromotionEntity promotion = promotionRepository.findByName(promotionName);
             UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
@@ -266,8 +264,8 @@ public class PromotionServiceImpl implements IPromotionService {
     }
 
     @Override
-    public Boolean plusUsage(Long userId,String promotionName, Double purchasedAmount) {
-        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName, purchasedAmount)){
+    public Boolean plusUsage(Long userId,String promotionName, Double purchasedAmount, Long seller_id) {
+        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName, purchasedAmount, seller_id)){
 
 //            PromotionEntity promotion = promotionRepository.findByName(promotionName);
             UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);

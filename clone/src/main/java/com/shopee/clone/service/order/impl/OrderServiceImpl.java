@@ -84,7 +84,7 @@ public class OrderServiceImpl implements OrderService {
                     UserEntity user = userOptional.get();
                     AddressEntity address = addressOptional.get();
 
-                    Boolean check = promotionService.checkValidUsage(user.getId(),o.getPromotionName(),o.getAmount());
+                    Boolean check = promotionService.checkValidUsage(user.getId(),o.getPromotionName(),o.getAmount(),o.getSellerId());
                     OrderEntity orderEntity = new OrderEntity();
                     if (check) {
                         orderEntity.setPromotionName(o.getPromotionName());
@@ -108,7 +108,7 @@ public class OrderServiceImpl implements OrderService {
                                 }
                             }
                         }
-                        promotionService.minusUsage(user.getId(), o.getPromotionName(),o.getAmount());
+                        promotionService.minusUsage(user.getId(), o.getPromotionName(),o.getAmount(), o.getSellerId());
                     }
                     orderEntity.setUser(user);
                     orderEntity.setAddress(address);
@@ -361,7 +361,7 @@ public class OrderServiceImpl implements OrderService {
                 OrderEntity order = orderEntity.get();
                 if(order.getStatus().equals(EOrder.Pending) || order.getStatus().equals(EOrder.Awaiting_Payment)|| order.getStatus().equals(EOrder.Transferred)){
                     order.setStatus(EOrder.Cancelled);
-                    promotionService.plusUsage(order.getUser().getId(),order.getPromotionName(),amount(order.getOrderDetails()));
+                    promotionService.plusUsage(order.getUser().getId(),order.getPromotionName(),amount(order.getOrderDetails()),order.getSeller().getId());
 //                Trả lại số lượng cho order
                     order.getOrderDetails().forEach(oD ->{
                         productItemService.plusQuantityInStock(oD.getProductItems().getPItemId(),oD.getQuantity());
@@ -533,7 +533,7 @@ public class OrderServiceImpl implements OrderService {
                 if(order.getStatus().equals(EOrder.Pending)) {
                     order.setConfirmDate(Date.from(Instant.now()));
                     order.setStatus(EOrder.Rejection);
-                    promotionService.plusUsage(order.getUser().getId(),order.getPromotionName(),amount(order.getOrderDetails()));
+                    promotionService.plusUsage(order.getUser().getId(),order.getPromotionName(),amount(order.getOrderDetails()), sellerId);
                     order.getOrderDetails().forEach(oD ->{
                         productItemService.plusQuantityInStock(oD.getProductItems().getPItemId(),oD.getQuantity());
                     });
