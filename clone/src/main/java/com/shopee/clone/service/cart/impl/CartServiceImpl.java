@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class CartServiceImpl implements CartService {
-    private static final String DELIVERY_API_URL = "http://192.168.2.67:8080/api/v1/delivery/cost";
+    private static final String DELIVERY_API_URL = "https://deliverysystembe-production.up.railway.app/api/v1/delivery/cost";
     @Autowired
     private RestTemplate restTemplate;
     @Autowired
@@ -412,8 +412,7 @@ public class CartServiceImpl implements CartService {
                     checkOutResponse.setCartResponse(c);
                             String apiUrl = DELIVERY_API_URL + "?deliveryAddress=" + checkOutRequest.getShipAddress();
 //                            Double shipMoney = restTemplate.getForObject(apiUrl, Double.class);
-//                    checkOutResponse.setShipMoney(shipMoney);
-                    checkOutResponse.setShipMoney(1000D);
+                    checkOutResponse.setShipMoney(20000D);
                     checkOutResponse.setTotal(amount+ checkOutResponse.getShipMoney());
                     return checkOutResponse;
                 }).toList();

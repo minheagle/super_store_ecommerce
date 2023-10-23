@@ -237,11 +237,6 @@ public class PromotionServiceImpl implements IPromotionService {
             //User get setPromotion
             Set<PromotionBeLongUserEntity> setPromotionBeLongUser = user.getPromotionEntities();
             for(PromotionBeLongUserEntity promotionWithUser: setPromotionBeLongUser){
-//                if(setPromotionBeLongUser.contains(promotionWithUser)){
-//                    if(promotionWithUser.getUsageAvailable() > 0){
-//                        return Boolean.TRUE;
-//                    }
-//                }
                 if(Objects.equals(promotionWithUser.getPromotion(),promotionFromInput)){
                     if(promotionWithUser.getUsageAvailable() > 0){
                         return Boolean.TRUE;
