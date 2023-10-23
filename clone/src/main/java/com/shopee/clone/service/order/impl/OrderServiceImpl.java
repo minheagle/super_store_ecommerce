@@ -76,8 +76,6 @@ public class OrderServiceImpl implements OrderService {
             if(userOptional.isPresent() && addressOptional.isPresent()){
                 int finalOrderNumber = getFinalOrderNumber();
 
-//              xu ly  dieu kien thanh toan
-
 //              Chạy vòng lặp để lưu các đơn hàng theo từng shop
 
                 orderRequest.getListOrderBelongToSeller().forEach(o ->{
@@ -112,7 +110,7 @@ public class OrderServiceImpl implements OrderService {
                     }
                     orderEntity.setUser(user);
                     orderEntity.setAddress(address);
-                    orderEntity.setShipMoney(1000D);
+                    orderEntity.setShipMoney(o.getShipMoney());
                     orderEntity.setOrderNumber(finalOrderNumber);
                     orderEntity.setDate(Date.from(Instant.now()));
                     orderEntity.setPaymentStatus(orderRequest.getPaymentStatus());
@@ -645,7 +643,7 @@ public class OrderServiceImpl implements OrderService {
     private Date getYesterday() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DAY_OF_MONTH, -1); // Lấy ngày hôm qua
+        calendar.add(Calendar.DAY_OF_MONTH, 0); // Lấy ngày hôm qua
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
@@ -784,89 +782,97 @@ public class OrderServiceImpl implements OrderService {
     @Scheduled(cron = "0 0 0 * * ?") // Chạy sau 12h đêm hàng ngày
     public RawEcommerceOrderCreate callApiDeliveryEveryday(){
         List<OrderEntity> orderEntityList = summarizeOrdersYesterday();
-//      Tạo một request để gọi qua api delivery
-        RawEcommerceOrderCreate rawEcommerceOrderCreate = new RawEcommerceOrderCreate();
+        if(!orderEntityList.isEmpty()){
+//            Tạo một request để gọi qua api delivery
+            RawEcommerceOrderCreate rawEcommerceOrderCreate = new RawEcommerceOrderCreate();
 
-        List<SellerEntity> sellerList = new ArrayList<>();
-        List<RawEcommerceRequest> rawEcommerceRequestList = new ArrayList<>();
-        orderEntityList.forEach(o->{
-            AtomicReference<Double> total = new AtomicReference<>(0D);
-            SellerEntity seller = o.getSeller();
-            if(!sellerList.contains(seller)){
-                sellerList.add(seller);
-                RawEcommerceRequest rawEcommerceRequest = new RawEcommerceRequest();
-                PickupInformationRequest pickupInformationRequest = new PickupInformationRequest();
-                pickupInformationRequest.setPickupAddress(seller.getStoreAddress());
-                pickupInformationRequest.setShopId(seller.getId());
-                pickupInformationRequest.setShopName(seller.getStoreName());
+            List<SellerEntity> sellerList = new ArrayList<>();
+            List<RawEcommerceRequest> rawEcommerceRequestList = new ArrayList<>();
+            orderEntityList.forEach(o->{
+                AtomicReference<Double> total = new AtomicReference<>(0D);
+                SellerEntity seller = o.getSeller();
+                if(!sellerList.contains(seller)){
+                    sellerList.add(seller);
+                    RawEcommerceRequest rawEcommerceRequest = new RawEcommerceRequest();
+                    PickupInformationRequest pickupInformationRequest = new PickupInformationRequest();
+                    pickupInformationRequest.setPickupAddress(seller.getStoreAddress());
+                    pickupInformationRequest.setShopId(seller.getId());
+                    pickupInformationRequest.setShopName(seller.getStoreName());
 //              Truyền sdt của shop
-                pickupInformationRequest.setPhoneContact("0123456789");
+                    pickupInformationRequest.setPhoneContact(seller.getStorePhoneNumber());
 //              Truyền thông tin của shop
-                rawEcommerceRequest.setPickupInformationRequest(pickupInformationRequest);
-                List<DeliveryInformationRequest> deliveryInformationRequests = new ArrayList<>();
-                DeliveryInformationRequest deliveryInformationRequest = new DeliveryInformationRequest();
-                deliveryInformationRequest.setDeliveryAddress(o.getAddress().getAddressName());
-                deliveryInformationRequest.setOrderDate(o.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-                deliveryInformationRequest.setOrderNumber(o.getId().toString());
-                deliveryInformationRequest.setRecipientName(o.getUser().getFullName());
-                deliveryInformationRequest.setPhoneNumber(o.getUser().getPhone());
-                deliveryInformationRequest.setEmail(o.getUser().getEmail());
-                deliveryInformationRequest.setPaymentSt(o.getPaymentStatus());
-                deliveryInformationRequest.setNoteTimeRecipient(o.getNoteTimeRecipient());
-                List<ItemTransportRequest> itemTransportRequestList = new ArrayList<>();
-                o.getOrderDetails().forEach(oD->{
-                    ItemTransportRequest item = new ItemTransportRequest();
-                    item.setQuantity(oD.getQuantity());
-                    item.setProductName(oD.getProductItems().getProduct().getProductName());
-                    item.setUnitPrice(oD.getUnitPrice());
-                    total.updateAndGet(v -> v + item.getUnitPrice() * item.getQuantity());
-                    itemTransportRequestList.add(item);
-                });
-                deliveryInformationRequest.setItemTransportRequestList(itemTransportRequestList);
-                deliveryInformationRequests.add(deliveryInformationRequest);
-                rawEcommerceRequest.setDeliveryInformationRequestList(deliveryInformationRequests);
+                    rawEcommerceRequest.setPickupInformationRequest(pickupInformationRequest);
+                    List<DeliveryInformationRequest> deliveryInformationRequests = new ArrayList<>();
+                    DeliveryInformationRequest deliveryInformationRequest = new DeliveryInformationRequest();
+                    deliveryInformationRequest.setDeliveryAddress(o.getAddress().getAddressName());
+                    deliveryInformationRequest.setOrderDate(o.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+                    deliveryInformationRequest.setOrderNumber(o.getId().toString());
+                    deliveryInformationRequest.setRecipientName(o.getUser().getFullName());
+                    deliveryInformationRequest.setPhoneNumber(o.getUser().getPhone());
+                    deliveryInformationRequest.setEmail(o.getUser().getEmail());
+                    deliveryInformationRequest.setPaymentSt(o.getPaymentStatus());
+                    deliveryInformationRequest.setNoteTimeRecipient(o.getNoteTimeRecipient());
+                    List<ItemTransportRequest> itemTransportRequestList = new ArrayList<>();
+                    o.getOrderDetails().forEach(oD->{
+                        ItemTransportRequest item = new ItemTransportRequest();
+                        item.setQuantity(oD.getQuantity());
+                        item.setProductName(oD.getProductItems().getProduct().getProductName());
+                        item.setUnitPrice(oD.getUnitPrice());
+                        total.updateAndGet(v -> v + item.getUnitPrice() * item.getQuantity());
+                        itemTransportRequestList.add(item);
+                    });
+                    deliveryInformationRequest.setItemTransportRequestList(itemTransportRequestList);
+                    deliveryInformationRequests.add(deliveryInformationRequest);
+                    rawEcommerceRequest.setDeliveryInformationRequestList(deliveryInformationRequests);
 
-                if(rawEcommerceRequest.getTotalAmount()==null){
-                   Double amount=0D;
-                    rawEcommerceRequest.setTotalAmount(total.get()+ amount);
-                }else{
-                rawEcommerceRequest.setTotalAmount(total.get()+ rawEcommerceRequest.getTotalAmount());}
-                rawEcommerceRequestList.add(rawEcommerceRequest);
-            }else {
-                rawEcommerceOrderCreate.getRawEcommerceRequestList().forEach(r ->{
-                    if(r.getPickupInformationRequest().getShopId().equals(seller.getId())){
-                        DeliveryInformationRequest deliveryInformationRequest = new DeliveryInformationRequest();
-                        deliveryInformationRequest.setDeliveryAddress(o.getAddress().getAddressName());
-                        deliveryInformationRequest.setOrderDate(o.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-                        deliveryInformationRequest.setOrderNumber(o.getId().toString());
-                        deliveryInformationRequest.setRecipientName(o.getUser().getFullName());
-                        deliveryInformationRequest.setPhoneNumber(o.getUser().getPhone());
-                        deliveryInformationRequest.setEmail(o.getUser().getEmail());
-                        deliveryInformationRequest.setPaymentSt(o.getPaymentStatus());
-                        deliveryInformationRequest.setNoteTimeRecipient(o.getNoteTimeRecipient());
-                        List<ItemTransportRequest> itemTransportRequestList = new ArrayList<>();
-                        o.getOrderDetails().forEach(oD->{
-                            ItemTransportRequest item = new ItemTransportRequest();
-                            item.setQuantity(oD.getQuantity());
-                            item.setProductName(oD.getProductItems().getProduct().getProductName());
-                            item.setUnitPrice(oD.getUnitPrice());
-                            total.updateAndGet(v -> v + item.getUnitPrice() * item.getQuantity());
-                            itemTransportRequestList.add(item);
-                        });
-                        deliveryInformationRequest.setItemTransportRequestList(itemTransportRequestList);
-                        r.setTotalAmount(total.get()+ r.getTotalAmount());
+                    if(rawEcommerceRequest.getTotalAmount()==null){
+                        Double amount=0D;
+                        rawEcommerceRequest.setTotalAmount(total.get()+ amount);
+                    }else{
+                        rawEcommerceRequest.setTotalAmount(total.get()+ rawEcommerceRequest.getTotalAmount());
                     }
-                });
-            }
+                    rawEcommerceRequestList.add(rawEcommerceRequest);
+                }else {
+                    rawEcommerceRequestList.forEach(r ->{
+                        if(r.getPickupInformationRequest().getShopId().equals(seller.getId())){
+                            DeliveryInformationRequest deliveryInformationRequest = new DeliveryInformationRequest();
+                            deliveryInformationRequest.setDeliveryAddress(o.getAddress().getAddressName());
+                            deliveryInformationRequest.setOrderDate(o.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+                            deliveryInformationRequest.setOrderNumber(o.getId().toString());
+                            deliveryInformationRequest.setRecipientName(o.getUser().getFullName());
+                            deliveryInformationRequest.setPhoneNumber(o.getUser().getPhone());
+                            deliveryInformationRequest.setEmail(o.getUser().getEmail());
+                            deliveryInformationRequest.setPaymentSt(o.getPaymentStatus());
+                            deliveryInformationRequest.setNoteTimeRecipient(o.getNoteTimeRecipient());
+                            List<ItemTransportRequest> itemTransportRequestList = new ArrayList<>();
+                            o.getOrderDetails().forEach(oD->{
+                                ItemTransportRequest item = new ItemTransportRequest();
+                                item.setQuantity(oD.getQuantity());
+                                item.setProductName(oD.getProductItems().getProduct().getProductName());
+                                item.setUnitPrice(oD.getUnitPrice());
+                                total.updateAndGet(v -> v + item.getUnitPrice() * item.getQuantity());
+                                itemTransportRequestList.add(item);
+                            });
+                            deliveryInformationRequest.setItemTransportRequestList(itemTransportRequestList);
+                            r.setTotalAmount(total.get()+ r.getTotalAmount());
+
+                            r.getDeliveryInformationRequestList().add(deliveryInformationRequest);
+
+                        }
+                    });
+                }
 //          Thay đổi trạng thái của order
-            o.setStatus(EOrder.Shipped);
-            orderRepository.save(o);
-        });
+                o.setStatus(EOrder.Shipped);
+                orderRepository.save(o);
+            });
 
-        rawEcommerceOrderCreate.setRawEcommerceRequestList(rawEcommerceRequestList);
+            rawEcommerceOrderCreate.setRawEcommerceRequestList(rawEcommerceRequestList);
 
-        restTemplate.postForObject("http://192.168.1.113:8080/api/v1/delivery/receive-order", rawEcommerceOrderCreate, Object.class);
-        return rawEcommerceOrderCreate;
+            restTemplate.postForObject("https://deliverysystembe-production.up.railway.app/api/v1/delivery/receive-order", rawEcommerceOrderCreate, Object.class);
+            return rawEcommerceOrderCreate;
+        }
+        return null;
+//
     }
 
     public List<Long> findTopUsersByOrderCountInCurrentMonth() {
