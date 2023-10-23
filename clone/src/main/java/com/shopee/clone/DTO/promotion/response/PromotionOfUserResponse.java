@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @Setter
 @Builder
 public class PromotionOfUserResponse {
+    private Long promotionId;
     private String name;
     private String description;
     private LocalDate startDate;

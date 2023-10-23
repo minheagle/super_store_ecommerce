@@ -29,7 +29,7 @@ public class AuthRestController {
 
     @Validated
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterDTO registerDTO,BindingResult bindingResult){
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterDTO registerDTO ,BindingResult bindingResult){
         // Kiểm tra dữ liệu và xử lý lỗi nếu cần
         registerDTOValidate.validate(registerDTO, bindingResult);
 

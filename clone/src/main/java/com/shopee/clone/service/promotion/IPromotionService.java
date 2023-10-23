@@ -10,14 +10,14 @@ import java.util.List;
 public interface IPromotionService {
     ResponseEntity<?> createPromotion(PromotionRequestCreate promotionRequestCreate);
     ResponseEntity<?> editStatusPromotion(Long promotionId, Boolean status);
-    Boolean isValidPromotion(String name, Double purchasedAmount);
+    Boolean isValidPromotion(Long promotionId, Double purchasedAmount, Long seller_id);
     ResponseEntity<?> addPromotionBeLongUser(Long userId, List<Long> listPromotionId);
     //Call To this Service is Enough
-    Boolean checkValidUsage(Long userId, String promotionName, Double purchasedAmount);
-    Boolean minusUsage(Long userId, String promotionName, Double purchasedAmount);
-    Boolean plusUsage(Long userId, String promotionName, Double purchasedAmount);
+    Boolean checkValidUsage(Long userId, Long promotionId, Double purchasedAmount, Long seller_id);
+    Boolean minusUsage(Long userId, Long promotionId, Double purchasedAmount, Long seller_id);
+    Boolean plusUsage(Long userId, Long promotionId, Double purchasedAmount, Long seller_id);
     ResponseEntity<?> getAllPromotionAvailable(Long userId);
     ResponseEntity<?> getAllPromotionBySellerId(Long sellerId);
     ResponseEntity<?> getPromotionOfUser(Long userId);
-    TypeDiscountResponse getTypeDiscount(String promotionName);
+    TypeDiscountResponse getTypeDiscount(Long promotionId);
 }

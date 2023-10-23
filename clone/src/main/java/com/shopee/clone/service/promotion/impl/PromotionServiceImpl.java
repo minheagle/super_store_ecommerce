@@ -23,10 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class PromotionServiceImpl implements IPromotionService {
@@ -148,10 +145,12 @@ public class PromotionServiceImpl implements IPromotionService {
 
     //Function check existPromotionByName And Check Available Date.
     @Override
-    public Boolean isValidPromotion(String name, Double purchasedAmount) {
-        PromotionEntity promotion = promotionRepository.findByName(name);
+    public Boolean isValidPromotion(Long promotionId, Double purchasedAmount, Long seller_id) {
+        PromotionEntity promotion = promotionRepository.findById(promotionId)
+                .orElseThrow(NoSuchElementException::new);
         LocalDate currentDate = LocalDate.now();
-        if(promotion != null && purchasedAmount >= promotion.getMinPurchaseAmount()
+        if(promotion != null && Objects.equals(promotion.getSeller_created().getId(), seller_id)
+                    && purchasedAmount >= promotion.getMinPurchaseAmount()
                 && (currentDate.isBefore(promotion.getEndDate()) || currentDate.equals(promotion.getEndDate()))
             && (currentDate.equals(promotion.getStartDate()) || currentDate.isAfter(promotion.getStartDate()))){
             return Boolean.TRUE;
@@ -227,8 +226,8 @@ public class PromotionServiceImpl implements IPromotionService {
 
     //Function Check Available Usage
     @Override
-    public Boolean checkValidUsage(Long userId, String promotionName, Double purchasedAmount) {
-        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName,purchasedAmount)){
+    public Boolean checkValidUsage(Long userId, Long promotionId, Double purchasedAmount, Long seller_id) {
+        if(userRepository.existsById(userId) && this.isValidPromotion(promotionId,purchasedAmount, seller_id)){
 
 //            PromotionEntity promotion = promotionRepository.findByName(promotionName);
             UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
@@ -247,8 +246,8 @@ public class PromotionServiceImpl implements IPromotionService {
     }
 
     @Override
-    public Boolean minusUsage(Long userId,String promotionName, Double purchasedAmount) {
-        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName, purchasedAmount)){
+    public Boolean minusUsage(Long userId,Long promotionId, Double purchasedAmount, Long seller_id) {
+        if(userRepository.existsById(userId) && this.isValidPromotion(promotionId, purchasedAmount, seller_id)){
 
 //            PromotionEntity promotion = promotionRepository.findByName(promotionName);
             UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
@@ -266,8 +265,8 @@ public class PromotionServiceImpl implements IPromotionService {
     }
 
     @Override
-    public Boolean plusUsage(Long userId,String promotionName, Double purchasedAmount) {
-        if(userRepository.existsById(userId) && this.isValidPromotion(promotionName, purchasedAmount)){
+    public Boolean plusUsage(Long userId, Long promotionId, Double purchasedAmount, Long seller_id) {
+        if(userRepository.existsById(userId) && this.isValidPromotion(promotionId, purchasedAmount, seller_id)){
 
 //            PromotionEntity promotion = promotionRepository.findByName(promotionName);
             UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
@@ -294,7 +293,7 @@ public class PromotionServiceImpl implements IPromotionService {
 
             List<PromotionResponse> promotionResponses = new ArrayList<>();
             for(PromotionEntity promotion : promotionEntities){
-                if(!listPromotionUserHas.contains(promotion)){
+                if(!(listPromotionUserHas.contains(promotion))){
 
                     PromotionResponse promotionResult = PromotionResponse
                             .builder()
@@ -313,6 +312,7 @@ public class PromotionServiceImpl implements IPromotionService {
                     promotionResponses.add(promotionResult);
                 }
             }
+            System.out.println(promotionResponses.size());
 
             ResponseData<List<PromotionResponse>> promotionDataResponses= new ResponseData<>();
             promotionDataResponses.setData(promotionResponses);
@@ -419,6 +419,7 @@ public class PromotionServiceImpl implements IPromotionService {
             List<PromotionOfUserResponse> promotionOfUserResponseList = listPromotionOfUser.stream()
                     .map(promotionBeLongUserEntity -> PromotionOfUserResponse
                             .builder()
+                            .promotionId(promotionBeLongUserEntity.getPromotion().getPromotionId())
                             .name(promotionBeLongUserEntity.getPromotion().getName())
                             .description(promotionBeLongUserEntity.getPromotion().getDescription())
                             .startDate(promotionBeLongUserEntity.getPromotion().getStartDate())
@@ -437,7 +438,7 @@ public class PromotionServiceImpl implements IPromotionService {
                             ResponseObject
                                     .builder()
                                     .status("SUCCESS")
-                                    .message("Get Promotions By Seller success")
+                                    .message("Get Promotions By User success")
                                     .results(responseData)
                                     .build()
                     );
@@ -455,8 +456,8 @@ public class PromotionServiceImpl implements IPromotionService {
     }
 
     @Override
-    public TypeDiscountResponse getTypeDiscount(String promotionName) {
-        PromotionEntity promotion = promotionRepository.findByName(promotionName);
+    public TypeDiscountResponse getTypeDiscount(Long promotionId) {
+        PromotionEntity promotion = promotionRepository.findById(promotionId).orElseThrow(() -> new NoSuchElementException());
         if(promotion != null){
             return TypeDiscountResponse
                     .builder()
