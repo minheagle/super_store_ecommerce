@@ -256,13 +256,15 @@ public class PromotionServiceImpl implements IPromotionService {
     public Boolean minusUsage(Long userId,Long promotionId, Double purchasedAmount, Long seller_id) {
         if(userRepository.existsById(userId) && this.isValidPromotion(promotionId, purchasedAmount, seller_id)){
 
-//            PromotionEntity promotion = promotionRepository.findByName(promotionName);
+            PromotionEntity promotionFromInput = promotionRepository.findById(promotionId)
+                    .orElseThrow(NoSuchElementException::new);
+
             UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
 
             //User get setPromotion
             Set<PromotionBeLongUserEntity> setPromotionBeLongUser = user.getPromotionEntities();
             for(PromotionBeLongUserEntity promotionWithUser: setPromotionBeLongUser){
-                if(setPromotionBeLongUser.contains(promotionWithUser)){
+                if(Objects.equals(promotionWithUser.getPromotion(), promotionFromInput)){
                     promotionWithUser.setUsageAvailable(promotionWithUser.getUsageAvailable()-1);
                     return Boolean.TRUE;
                 }
@@ -275,13 +277,15 @@ public class PromotionServiceImpl implements IPromotionService {
     public Boolean plusUsage(Long userId, Long promotionId, Double purchasedAmount, Long seller_id) {
         if(userRepository.existsById(userId) && this.isValidPromotion(promotionId, purchasedAmount, seller_id)){
 
-//            PromotionEntity promotion = promotionRepository.findByName(promotionName);
+            PromotionEntity promotionFromInput = promotionRepository.findById(promotionId)
+                    .orElseThrow(NoSuchElementException::new);
+
             UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
 
             //User get setPromotion
             Set<PromotionBeLongUserEntity> setPromotionBeLongUser = user.getPromotionEntities();
             for(PromotionBeLongUserEntity promotionWithUser: setPromotionBeLongUser){
-                if(setPromotionBeLongUser.contains(promotionWithUser)){
+                if(Objects.equals(promotionWithUser.getPromotion(), promotionFromInput)){
                     promotionWithUser.setUsageAvailable(promotionWithUser.getUsageAvailable()+1);
                     return Boolean.TRUE;
                 }
