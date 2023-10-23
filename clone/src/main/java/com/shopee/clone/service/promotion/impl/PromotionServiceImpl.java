@@ -229,13 +229,20 @@ public class PromotionServiceImpl implements IPromotionService {
     public Boolean checkValidUsage(Long userId, Long promotionId, Double purchasedAmount, Long seller_id) {
         if(userRepository.existsById(userId) && this.isValidPromotion(promotionId,purchasedAmount, seller_id)){
 
-//            PromotionEntity promotion = promotionRepository.findByName(promotionName);
+            PromotionEntity promotionFromInput = promotionRepository.findById(promotionId)
+                    .orElseThrow(NoSuchElementException::new);
+
             UserEntity user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
 
             //User get setPromotion
             Set<PromotionBeLongUserEntity> setPromotionBeLongUser = user.getPromotionEntities();
             for(PromotionBeLongUserEntity promotionWithUser: setPromotionBeLongUser){
-                if(setPromotionBeLongUser.contains(promotionWithUser)){
+//                if(setPromotionBeLongUser.contains(promotionWithUser)){
+//                    if(promotionWithUser.getUsageAvailable() > 0){
+//                        return Boolean.TRUE;
+//                    }
+//                }
+                if(Objects.equals(promotionWithUser.getPromotion(),promotionFromInput)){
                     if(promotionWithUser.getUsageAvailable() > 0){
                         return Boolean.TRUE;
                     }
