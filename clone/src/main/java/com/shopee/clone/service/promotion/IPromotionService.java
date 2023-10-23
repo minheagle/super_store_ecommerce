@@ -19,5 +19,5 @@ public interface IPromotionService {
     ResponseEntity<?> getAllPromotionAvailable(Long userId);
     ResponseEntity<?> getAllPromotionBySellerId(Long sellerId);
     ResponseEntity<?> getPromotionOfUser(Long userId);
-    TypeDiscountResponse getTypeDiscount(String promotionName);
+    TypeDiscountResponse getTypeDiscount(Long promotionId);
 }

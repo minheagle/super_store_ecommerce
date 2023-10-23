@@ -293,7 +293,7 @@ public class PromotionServiceImpl implements IPromotionService {
 
             List<PromotionResponse> promotionResponses = new ArrayList<>();
             for(PromotionEntity promotion : promotionEntities){
-                if(!listPromotionUserHas.contains(promotion)){
+                if(!(listPromotionUserHas.contains(promotion))){
 
                     PromotionResponse promotionResult = PromotionResponse
                             .builder()
@@ -312,6 +312,7 @@ public class PromotionServiceImpl implements IPromotionService {
                     promotionResponses.add(promotionResult);
                 }
             }
+            System.out.println(promotionResponses.size());
 
             ResponseData<List<PromotionResponse>> promotionDataResponses= new ResponseData<>();
             promotionDataResponses.setData(promotionResponses);
@@ -418,6 +419,7 @@ public class PromotionServiceImpl implements IPromotionService {
             List<PromotionOfUserResponse> promotionOfUserResponseList = listPromotionOfUser.stream()
                     .map(promotionBeLongUserEntity -> PromotionOfUserResponse
                             .builder()
+                            .promotionId(promotionBeLongUserEntity.getPromotion().getPromotionId())
                             .name(promotionBeLongUserEntity.getPromotion().getName())
                             .description(promotionBeLongUserEntity.getPromotion().getDescription())
                             .startDate(promotionBeLongUserEntity.getPromotion().getStartDate())
@@ -436,7 +438,7 @@ public class PromotionServiceImpl implements IPromotionService {
                             ResponseObject
                                     .builder()
                                     .status("SUCCESS")
-                                    .message("Get Promotions By Seller success")
+                                    .message("Get Promotions By User success")
                                     .results(responseData)
                                     .build()
                     );
@@ -454,8 +456,8 @@ public class PromotionServiceImpl implements IPromotionService {
     }
 
     @Override
-    public TypeDiscountResponse getTypeDiscount(String promotionName) {
-        PromotionEntity promotion = promotionRepository.findByName(promotionName);
+    public TypeDiscountResponse getTypeDiscount(Long promotionId) {
+        PromotionEntity promotion = promotionRepository.findById(promotionId).orElseThrow(() -> new NoSuchElementException());
         if(promotion != null){
             return TypeDiscountResponse
                     .builder()

@@ -89,12 +89,12 @@ public class OrderServiceImpl implements OrderService {
                     AddressEntity address = addressOptional.get();
 
                     Boolean check = promotionService.checkValidUsage(user.getId(),o.getPromotionId(),o.getAmount(),o.getSellerId());
-                    PromotionEntity promotion = promotionRepository.findById(o.getPromotionId())
-                            .orElseThrow(NoSuchElementException::new);
+//                    PromotionEntity promotion = promotionRepository.findById(o.getPromotionId())
+//                            .orElseThrow(NoSuchElementException::new);
                     OrderEntity orderEntity = new OrderEntity();
                     if (check) {
-                        orderEntity.setPromotionId(promotion.getPromotionId());
-                        TypeDiscountResponse discountResponse = promotionService.getTypeDiscount(promotion.getName());
+                        orderEntity.setPromotionId(o.getPromotionId());
+                        TypeDiscountResponse discountResponse = promotionService.getTypeDiscount(o.getPromotionId());
                         if(EDiscountType.DISCOUNT_PERCENT.equals(discountResponse.getDiscountType())){
                             orderEntity.setDiscount((discountResponse.getDiscountValue() * o.getAmount())/100);
                         }else if (EDiscountType.FIXED_AMOUNT.equals(discountResponse.getDiscountType())){
