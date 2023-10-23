@@ -411,8 +411,8 @@ public class CartServiceImpl implements CartService {
                     checkOutResponse.setAmount(amount);
                     checkOutResponse.setCartResponse(c);
                             String apiUrl = DELIVERY_API_URL + "?deliveryAddress=" + checkOutRequest.getShipAddress();
-                            Double shipMoney = restTemplate.getForObject(apiUrl, Double.class);
-                    checkOutResponse.setShipMoney(shipMoney);
+//                            Double shipMoney = restTemplate.getForObject(apiUrl, Double.class);
+                    checkOutResponse.setShipMoney(20000D);
                     checkOutResponse.setTotal(amount+ checkOutResponse.getShipMoney());
                     return checkOutResponse;
                 }).toList();
