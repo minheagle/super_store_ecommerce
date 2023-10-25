@@ -1,5 +1,6 @@
 package com.shopee.clone.service.seller.impl;
 
+import com.shopee.clone.DTO.seller.SellerDTO;
 import com.shopee.clone.DTO.seller.request.SellerRequestUpdate;
 import com.shopee.clone.DTO.seller.response.Seller;
 import com.shopee.clone.DTO.upload_file.ImageUploadResult;
@@ -50,8 +51,8 @@ public class SellerServiceImpl implements SellerService {
     public ResponseEntity<?> responseGetSellerById(Long sellerId) {
         try{
             SellerEntity sellerEntity = getBySellerId(sellerId);
-            Seller seller = mapper.map(sellerEntity, Seller.class);
-            DetailSellerResponse<Seller> detailSellerResponse = new DetailSellerResponse<>(seller);
+            SellerDTO seller = mapper.map(sellerEntity, SellerDTO.class);
+            DetailSellerResponse<SellerDTO> detailSellerResponse = new DetailSellerResponse<>(seller);
             return ResponseEntity
                     .ok()
                     .body(
@@ -101,7 +102,7 @@ public class SellerServiceImpl implements SellerService {
             sellerEntity.setStoreBankAccountNumber(sellerRequestUpdate.getStoreBankAccountNumber());
 
             return ResponseEntity
-                    .badRequest()
+                    .ok()
                     .body(
                             ResponseObject
                                     .builder()
@@ -149,7 +150,7 @@ public class SellerServiceImpl implements SellerService {
             seller.setStoreAvatarUrl(resultUploadAvatar.getSecure_url());
 
             return ResponseEntity
-                    .badRequest()
+                    .ok()
                     .body(
                             ResponseObject
                                     .builder()
@@ -196,7 +197,7 @@ public class SellerServiceImpl implements SellerService {
             seller.setStoreBackgroundUrl(resultUploadBackground.getSecure_url());
 
             return ResponseEntity
-                    .badRequest()
+                    .ok()
                     .body(
                             ResponseObject
                                     .builder()
