@@ -359,7 +359,7 @@ public class OrderServiceImpl implements OrderService {
     public ResponseEntity<?> cancelOrder(Long orderId) {
         try {
             Optional<OrderEntity> orderEntity = orderRepository.findById(orderId);
-            orderEntity.get().getId();
+            System.out.println(orderEntity.get().getPromotionId());
             if(orderEntity.isPresent()){
                 OrderEntity order = orderEntity.get();
                 if(order.getStatus().equals(EOrder.Pending) || order.getStatus().equals(EOrder.Awaiting_Payment)|| order.getStatus().equals(EOrder.Transferred)){
