@@ -360,24 +360,19 @@ public class ProductItemService implements IProductItemService {
     public Boolean minusQuantityInStock(Long productItemId, Integer qtyMakeOrder) {
         ProductItemEntity productItem = itemRepository.findById(productItemId)
                 .orElseThrow(NoSuchElementException::new);
-        if(productItem.getQtyInStock() >= qtyMakeOrder){
-            productItem.setQtyInStock(productItem.getQtyInStock() - qtyMakeOrder);
-            itemRepository.save(productItem);
-            return true;
-        }
-        return false;
+        productItem.setQtyInStock(productItem.getQtyInStock() - qtyMakeOrder);
+        itemRepository.save(productItem);
+        return true;
     }
 
     @Override
     public Boolean plusQuantityInStock(Long productItemId, Integer qtyMakeOrder) {
         ProductItemEntity productItem = itemRepository.findById(productItemId)
                 .orElseThrow(NoSuchElementException::new);
-        if(productItem.getQtyInStock() >= qtyMakeOrder){
-            productItem.setQtyInStock(productItem.getQtyInStock() + qtyMakeOrder);
-            itemRepository.save(productItem);
-            return true;
-        }
-        return false;
+
+        productItem.setQtyInStock(productItem.getQtyInStock() + qtyMakeOrder);
+        itemRepository.save(productItem);
+        return true;
     }
 
     @Override
