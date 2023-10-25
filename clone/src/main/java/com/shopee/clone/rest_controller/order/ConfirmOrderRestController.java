@@ -39,7 +39,6 @@ public class ConfirmOrderRestController {
         return orderService.getOrderBySellerAndStatusCancel(sellerId);
     }
 
-
     @GetMapping("/get-all-order-confirm")
     public ResponseEntity<?> getAllOrderConfirm(){
         return orderService.getAllOrderConfirm();
