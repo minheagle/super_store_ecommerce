@@ -360,9 +360,12 @@ public class ProductItemService implements IProductItemService {
     public Boolean minusQuantityInStock(Long productItemId, Integer qtyMakeOrder) {
         ProductItemEntity productItem = itemRepository.findById(productItemId)
                 .orElseThrow(NoSuchElementException::new);
-        productItem.setQtyInStock(productItem.getQtyInStock() - qtyMakeOrder);
-        itemRepository.save(productItem);
-        return true;
+        if(productItem.getQtyInStock() >= qtyMakeOrder){
+            productItem.setQtyInStock(productItem.getQtyInStock() - qtyMakeOrder);
+            itemRepository.save(productItem);
+            return true;
+        }
+        return false;
     }
 
     @Override
