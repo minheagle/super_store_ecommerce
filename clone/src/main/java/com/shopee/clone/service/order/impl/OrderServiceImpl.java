@@ -359,13 +359,14 @@ public class OrderServiceImpl implements OrderService {
     public ResponseEntity<?> cancelOrder(Long orderId) {
         try {
             Optional<OrderEntity> orderEntity = orderRepository.findById(orderId);
-            System.out.println(orderEntity.get().getPromotionId());
             if(orderEntity.isPresent()){
                 OrderEntity order = orderEntity.get();
                 if(order.getStatus().equals(EOrder.Pending) || order.getStatus().equals(EOrder.Awaiting_Payment)|| order.getStatus().equals(EOrder.Transferred)){
                     order.setStatus(EOrder.Cancelled);
-                    promotionService.plusUsage(order.getUser().getId(),order.getPromotionId(),amount(order.getOrderDetails()),order.getSeller().getId());
-//                Trả lại số lượng cho order
+                    if(order.getPromotionId()!=null){
+                        promotionService.plusUsage(order.getUser().getId(),order.getPromotionId(),amount(order.getOrderDetails()),order.getSeller().getId());
+                    }
+                   //                Trả lại số lượng cho order
                     order.getOrderDetails().forEach(oD ->{
                         productItemService.plusQuantityInStock(oD.getProductItems().getPItemId(),oD.getQuantity());
                     });
@@ -536,21 +537,15 @@ public class OrderServiceImpl implements OrderService {
                 if(order.getStatus().equals(EOrder.Pending)) {
                     order.setConfirmDate(Date.from(Instant.now()));
                     order.setStatus(EOrder.Rejection);
-                    promotionService.plusUsage(order.getUser().getId(),order.getPromotionId(),amount(order.getOrderDetails()), sellerId);
+                    if(order.getPromotionId()!=null){
+                        promotionService.plusUsage(order.getUser().getId(),order.getPromotionId(),amount(order.getOrderDetails()), sellerId);
+                    }
                     order.getOrderDetails().forEach(oD ->{
                         productItemService.plusQuantityInStock(oD.getProductItems().getPItemId(),oD.getQuantity());
                     });
                     orderRepository.save(order);
                     return getOrderBySeller(sellerId);
-//              Trả về Json
-//                    ResponseData<Object> data = ResponseData.builder().data().build();
 //
-//                    return ResponseEntity.ok().body(ResponseObject
-//                            .builder()
-//                            .status("SUCCESS")
-//                            .message("Confirm Order success!")
-//                            .results(data)
-//                            .build());
                 }
                 return ResponseEntity
                         .badRequest()
