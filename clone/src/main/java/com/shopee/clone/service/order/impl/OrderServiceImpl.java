@@ -78,11 +78,10 @@ public class OrderServiceImpl implements OrderService {
             Optional<AddressEntity> addressOptional = addressRepository.findById(orderRequest.getAddressId());
 
             if(userOptional.isPresent() && addressOptional.isPresent()){
-                int finalOrderNumber = getFinalOrderNumber();
-
 //              Chạy vòng lặp để lưu các đơn hàng theo từng shop
 
                 orderRequest.getListOrderBelongToSeller().forEach(o ->{
+                    int finalOrderNumber = getFinalOrderNumber();
                     UserEntity user = userOptional.get();
                     AddressEntity address = addressOptional.get();
 
@@ -360,7 +359,7 @@ public class OrderServiceImpl implements OrderService {
     public ResponseEntity<?> cancelOrder(Long orderId) {
         try {
             Optional<OrderEntity> orderEntity = orderRepository.findById(orderId);
-
+            orderEntity.get().getId();
             if(orderEntity.isPresent()){
                 OrderEntity order = orderEntity.get();
                 if(order.getStatus().equals(EOrder.Pending) || order.getStatus().equals(EOrder.Awaiting_Payment)|| order.getStatus().equals(EOrder.Transferred)){
