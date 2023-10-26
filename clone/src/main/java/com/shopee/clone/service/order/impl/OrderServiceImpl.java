@@ -85,33 +85,35 @@ public class OrderServiceImpl implements OrderService {
                     UserEntity user = userOptional.get();
                     AddressEntity address = addressOptional.get();
 
-                    Boolean check = promotionService.checkValidUsage(user.getId(),o.getPromotionId(),o.getAmount(),o.getSellerId());
+                    OrderEntity orderEntity = new OrderEntity();
+                    if(o.getPromotionId() != null) {
+                        Boolean check = promotionService.checkValidUsage(user.getId(), o.getPromotionId(), o.getAmount(), o.getSellerId());
 //                    PromotionEntity promotion = promotionRepository.findById(o.getPromotionId())
 //                            .orElseThrow(NoSuchElementException::new);
-                    OrderEntity orderEntity = new OrderEntity();
-                    if (check) {
-                        orderEntity.setPromotionId(o.getPromotionId());
-                        TypeDiscountResponse discountResponse = promotionService.getTypeDiscount(o.getPromotionId());
-                        if(EDiscountType.DISCOUNT_PERCENT.equals(discountResponse.getDiscountType())){
-                            orderEntity.setDiscount((discountResponse.getDiscountValue() * o.getAmount())/100);
-                        }else if (EDiscountType.FIXED_AMOUNT.equals(discountResponse.getDiscountType())){
-                            if(discountResponse.getDiscountValue()<o.getAmount()){
-                                orderEntity.setDiscount(discountResponse.getDiscountValue().doubleValue());
-                            }else{
-                                orderEntity.setDiscount(o.getAmount());
-                            }
-                        }else if (EDiscountType.FREE_SHIP.equals(discountResponse.getDiscountType())){
-                            if(discountResponse.getDiscountValue()==null){
-                            orderEntity.setDiscount(o.getShipMoney());
-                            }else{
-                                if(discountResponse.getDiscountValue()<o.getShipMoney()){
+                        if (check) {
+                            orderEntity.setPromotionId(o.getPromotionId());
+                            TypeDiscountResponse discountResponse = promotionService.getTypeDiscount(o.getPromotionId());
+                            if (EDiscountType.DISCOUNT_PERCENT.equals(discountResponse.getDiscountType())) {
+                                orderEntity.setDiscount((discountResponse.getDiscountValue() * o.getAmount()) / 100);
+                            } else if (EDiscountType.FIXED_AMOUNT.equals(discountResponse.getDiscountType())) {
+                                if (discountResponse.getDiscountValue() < o.getAmount()) {
                                     orderEntity.setDiscount(discountResponse.getDiscountValue().doubleValue());
-                                }else{
+                                } else {
+                                    orderEntity.setDiscount(o.getAmount());
+                                }
+                            } else if (EDiscountType.FREE_SHIP.equals(discountResponse.getDiscountType())) {
+                                if (discountResponse.getDiscountValue() == null) {
                                     orderEntity.setDiscount(o.getShipMoney());
+                                } else {
+                                    if (discountResponse.getDiscountValue() < o.getShipMoney()) {
+                                        orderEntity.setDiscount(discountResponse.getDiscountValue().doubleValue());
+                                    } else {
+                                        orderEntity.setDiscount(o.getShipMoney());
+                                    }
                                 }
                             }
+                            promotionService.minusUsage(user.getId(), o.getPromotionId(), o.getAmount(), o.getSellerId());
                         }
-                        promotionService.minusUsage(user.getId(), o.getPromotionId(),o.getAmount(), o.getSellerId());
                     }
                     orderEntity.setUser(user);
                     orderEntity.setAddress(address);

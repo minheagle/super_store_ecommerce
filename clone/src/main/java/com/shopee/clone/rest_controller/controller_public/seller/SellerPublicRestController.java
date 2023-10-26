@@ -23,6 +23,11 @@ public class SellerPublicRestController {
     public ResponseEntity<?> getDetailSeller(@PathVariable("sellerId") Long sellerId){
         return sellerService.responseGetSellerById(sellerId);
     }
+
+    @GetMapping("/detail/{storeName}")
+    public ResponseEntity<?> getDetailByStoreName(@PathVariable("storeName") String storeName){
+        return sellerService.getByStoreName(storeName);
+    }
     @PutMapping("private-information")
     public ResponseEntity<?> updatePrivateInformation(@RequestBody @Valid SellerRequestUpdate sellerRequestUpdate,
                                                       BindingResult bindingResult){

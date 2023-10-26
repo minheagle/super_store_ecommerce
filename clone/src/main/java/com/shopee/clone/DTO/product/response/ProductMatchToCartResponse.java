@@ -9,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class ProductMatchToCartResponse {
+    private Long productId;
     private String productName;
     private String description;
     private Boolean status;

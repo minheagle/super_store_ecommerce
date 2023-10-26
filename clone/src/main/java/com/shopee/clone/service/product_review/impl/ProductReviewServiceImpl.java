@@ -46,81 +46,66 @@ public class ProductReviewServiceImpl implements ProductReviewService {
 
     @Override
     public ResponseEntity<?> createRating(ProductReviewRequest productReviewRequest) {
-        try{
-            Optional<UserEntity> userEntity = userService.findUserByID(productReviewRequest.getUserId());
-            Optional<ProductEntity> productEntity = productRepository.findById(productReviewRequest.getProductId());
+        try {
+            UserEntity user = userService.findUserByID(productReviewRequest.getUserId())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            ProductEntity product = productRepository.findById(productReviewRequest.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
 
-            if(productEntity.isPresent() && userEntity.isPresent()) {
-                UserEntity user = userEntity.get();
-                ProductEntity product = productEntity.get();
+            Optional<ProductReviewEntity> productReview = productReviewRepository.findByProductAndUser(product, user);
+            if (productReview.isEmpty()) {
+                OrderEntity orderEntity = orderRepository.findById(productReviewRequest.getOrderId())
+                        .orElseThrow(() -> new RuntimeException("Order not found"));
+                if (orderEntity.getStatus().equals(EOrder.Completed)) {
+                    boolean check = orderService.checkExistProductInListOrderDetail(orderEntity.getOrderDetails(), product);
+                    if (check) {
+                        ProductReviewEntity productReviewEntity =
+                                ProductReviewEntity.
+                                        builder()
+                                        .user(user)
+                                        .comment(productReviewRequest.getComment())
+                                        .product(product)
+                                        .rating(productReviewRequest.getVoteStar())
+                                        .build();
 
-                ProductReviewEntity productReview = productReviewRepository.findByProductAndUser(product,user);
-                if(productReview==null){
-                    Optional<OrderEntity> orderEntity = orderRepository.findById(productReviewRequest.getOrderId());
-                    if(orderEntity.isPresent()){
-                        if(orderEntity.get().getStatus().equals(EOrder.Completed)){
-                            boolean check =orderService.checkExistProductInListOrderDetail(orderEntity.get().getOrderDetails(),product);
-                            if(check){
-                                ProductReviewEntity productReviewEntity =
-                                        ProductReviewEntity.
-                                                builder()
-                                                .user(user)
-                                                .comment(productReviewRequest.getComment())
-                                                .product(product)
-                                                .rating(productReviewRequest.getVoteStar())
-                                                .build();
-
-                                ProductReviewEntity finalProductReview = productReviewRepository.save(productReviewEntity);
-                                imgProductReviewService.saveAllImageProduct(productReviewRequest.getImageProductReviewFile(),finalProductReview);
-                                setRatingProduct(productReviewRequest.getProductId());
-                                return ResponseEntity
-                                        .status(HttpStatusCode.valueOf(200))
-                                        .body(
-                                                ResponseObject
-                                                        .builder()
-                                                        .status("SUCCESS")
-                                                        .message("Create rating success!")
-                                                        .results("")
-                                                        .build()
-                                        );
-                            }
-                            return ResponseEntity
-                                    .status(HttpStatusCode.valueOf(404))
-                                    .body(
-                                            ResponseObject
-                                                    .builder()
-                                                    .status("FAIL")
-                                                    .message("Product haven't in order!")
-                                                    .results("You kidding me?")
-                                                    .build()
-                                    );
-                        }return ResponseEntity
-                                .status(HttpStatusCode.valueOf(404))
+                        ProductReviewEntity finalProductReview = productReviewRepository.save(productReviewEntity);
+                        imgProductReviewService.saveAllImageProduct(productReviewRequest.getImageProductReviewFile(), finalProductReview);
+                        setRatingProduct(productReviewRequest.getProductId());
+                        return ResponseEntity
+                                .status(HttpStatusCode.valueOf(200))
                                 .body(
                                         ResponseObject
                                                 .builder()
-                                                .status("FAIL")
-                                                .message("You not rating when order success!")
+                                                .status("SUCCESS")
+                                                .message("Create rating success!")
                                                 .results("")
                                                 .build()
                                 );
-
                     }
-                }else{
                     return ResponseEntity
                             .status(HttpStatusCode.valueOf(404))
                             .body(
                                     ResponseObject
                                             .builder()
                                             .status("FAIL")
-                                            .message("Users have rated this product")
-                                            .results("PLS update rating")
+                                            .message("Product haven't in order!")
+                                            .results("You kidding me?")
                                             .build()
                             );
                 }
+                return ResponseEntity
+                        .status(HttpStatusCode.valueOf(404))
+                        .body(
+                                ResponseObject
+                                        .builder()
+                                        .status("FAIL")
+                                        .message("You not rating when order success!")
+                                        .results("")
+                                        .build()
+                        );
 
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatusCode.valueOf(404))
                     .body(
@@ -132,18 +117,18 @@ public class ProductReviewServiceImpl implements ProductReviewService {
                                     .build()
                     );
         }
-        return  null;
+        return null;
     }
 
     @Override
     public ResponseEntity<?> getRating(Long pReview) {
-        try{
+        try {
             Optional<ProductReviewEntity> productReviewEntity = productReviewRepository.findById(pReview);
-                if(productReviewEntity.isPresent()){
-                    ProductReviewEntity productReview = productReviewEntity.get();
+            if (productReviewEntity.isPresent()) {
+                ProductReviewEntity productReview = productReviewEntity.get();
 
-                    ProductReviewResponse productReviewResponse = convertToProductReviewResponse(productReview);
-                    ResponseData<Object> data = ResponseData.builder().data(productReviewResponse).build();
+                ProductReviewResponse productReviewResponse = convertToProductReviewResponse(productReview);
+                ResponseData<Object> data = ResponseData.builder().data(productReviewResponse).build();
                 return ResponseEntity
                         .status(HttpStatusCode.valueOf(200))
                         .body(
@@ -155,7 +140,7 @@ public class ProductReviewServiceImpl implements ProductReviewService {
                                         .build()
                         );
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatusCode.valueOf(404))
                     .body(
@@ -167,23 +152,23 @@ public class ProductReviewServiceImpl implements ProductReviewService {
                                     .build()
                     );
         }
-        return  null;
+        return null;
     }
 
     @Override
     public ResponseEntity<?> getALlByProduct(Long productId) {
-        try{
+        try {
             Optional<ProductEntity> productEntity = productRepository.findById(productId);
-            if(productEntity.isPresent()){
+            if (productEntity.isPresent()) {
                 ProductEntity product = productEntity.get();
 
                 List<ProductReviewEntity> productReviews = productReviewRepository.findByProduct(product);
                 List<ProductReviewResponse> productReviewResponses = new ArrayList<>();
-                productReviews.forEach(productReview->{
+                productReviews.forEach(productReview -> {
                     ProductReviewResponse productReviewResponse = convertToProductReviewResponse(productReview);
                     productReviewResponses.add(productReviewResponse);
                 });
-                  ResponseData<Object> data = ResponseData.builder().data(productReviewResponses).build();
+                ResponseData<Object> data = ResponseData.builder().data(productReviewResponses).build();
                 return ResponseEntity
                         .status(HttpStatusCode.valueOf(200))
                         .body(
@@ -195,7 +180,7 @@ public class ProductReviewServiceImpl implements ProductReviewService {
                                         .build()
                         );
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatusCode.valueOf(404))
                     .body(
@@ -207,14 +192,14 @@ public class ProductReviewServiceImpl implements ProductReviewService {
                                     .build()
                     );
         }
-        return  null;
+        return null;
     }
 
     @Override
     public ResponseEntity<?> deleteProductReview(Long productReviewId) {
-        try{
+        try {
             Optional<ProductReviewEntity> productReviewEntity = productReviewRepository.findById(productReviewId);
-            if(productReviewEntity.isPresent()){
+            if (productReviewEntity.isPresent()) {
                 ProductReviewEntity productReview = productReviewEntity.get();
                 imgProductReviewService.delete(productReview.getImageProductReview());
                 productReviewRepository.delete(productReview);
@@ -230,7 +215,7 @@ public class ProductReviewServiceImpl implements ProductReviewService {
                                         .build()
                         );
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatusCode.valueOf(401))
                     .body(
@@ -242,33 +227,34 @@ public class ProductReviewServiceImpl implements ProductReviewService {
                                     .build()
                     );
         }
-        return  null;
+        return null;
     }
 
-    private void setRatingProduct(Long productId){
+    private void setRatingProduct(Long productId) {
         List<ProductReviewEntity> reviews = productReviewRepository.findByProduct_ProductId(productId);
         Optional<ProductEntity> productEntity = productRepository.findById(productId);
-        if(productEntity.isPresent()){
+        if (productEntity.isPresent()) {
             ProductEntity product = productEntity.get();
 
-        if (reviews.isEmpty()) {
-            product.setVoteStar(null);
-        }
+            if (reviews.isEmpty()) {
+                product.setVoteStar(null);
+            }
 
-        int totalRating = 0;
+            int totalRating = 0;
 
-        for (ProductReviewEntity review : reviews) {
-            totalRating += review.getRating();
-        }
+            for (ProductReviewEntity review : reviews) {
+                totalRating += review.getRating();
+            }
             product.setVoteStar((double) totalRating / reviews.size());
-        productRepository.save(product);
+            productRepository.save(product);
         }
     }
+
     @Override
     public ResponseEntity<?> updateRating(ProductReviewUpdateRequest productReviewUpdateRequest) {
-        try{
+        try {
             Optional<ProductReviewEntity> productReviewEntity = productReviewRepository.findById(productReviewUpdateRequest.getProductReviewId());
-            if(productReviewEntity.isPresent()){
+            if (productReviewEntity.isPresent()) {
                 ProductReviewEntity productReview = productReviewEntity.get();
                 productReview.setRating(productReview.getRating());
                 productReview.setComment(productReview.getComment());
@@ -287,7 +273,7 @@ public class ProductReviewServiceImpl implements ProductReviewService {
                                         .build()
                         );
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatusCode.valueOf(404))
                     .body(
@@ -299,8 +285,18 @@ public class ProductReviewServiceImpl implements ProductReviewService {
                                     .build()
                     );
         }
-        return  null;
+        return null;
     }
+
+    @Override
+    public boolean checkRating(Long userId, Long productId) {
+        Optional<ProductReviewEntity> productReview = productReviewRepository.findByProduct_ProductIdAndUser_Id(productId, userId);
+        if (productReview.isPresent()) {
+            return true;
+        }
+        return false;
+    }
+
     private ProductReviewResponse convertToProductReviewResponse(ProductReviewEntity productReview) {
         ProductReviewResponse productReviewResponse = new ProductReviewResponse();
         productReviewResponse.setId(productReview.getId());
@@ -310,7 +306,7 @@ public class ProductReviewServiceImpl implements ProductReviewService {
         productReviewResponse.setImgAvatar(productReview.getUser().getImageUrl());
         productReviewResponse.setVoteStar(productReview.getRating());
         List<String> listImageRating =
-        productReview.getImageProductReview().stream().map(ImageProductReviewEntity::getImgProductReviewURL).toList();
+                productReview.getImageProductReview().stream().map(ImageProductReviewEntity::getImgProductReviewURL).toList();
         productReviewResponse.setImgURL(listImageRating);
         return productReviewResponse;
     }

@@ -1,10 +1,12 @@
 package com.shopee.clone.DTO.order.response;
 
 import com.shopee.clone.DTO.product.response.ProductMatchToCartResponse;
-import lombok.Data;
+import lombok.*;
 
-@Data
-
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderDetailResponse {
     private Long id;
     private ProductMatchToCartResponse product;

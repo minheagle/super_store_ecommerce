@@ -48,6 +48,8 @@ public class SellerEntity {
     private String storeBankName;
     @Column(name = "store_bank_account_number")
     private String storeBankAccountNumber;
+    @Column(name = "chat_id")
+    private String chatId;
     @OneToMany(mappedBy = "seller", fetch = FetchType.EAGER)
     private List<ProductEntity> productList;
     @OneToMany(mappedBy = "seller_created", fetch = FetchType.EAGER)

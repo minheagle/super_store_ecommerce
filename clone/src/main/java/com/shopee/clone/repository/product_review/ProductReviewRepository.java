@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ProductReviewRepository extends JpaRepository<ProductReviewEntity,Long> {
@@ -14,5 +15,7 @@ public interface ProductReviewRepository extends JpaRepository<ProductReviewEnti
 
     List<ProductReviewEntity> findByProduct_ProductId(Long productId);
 
-    ProductReviewEntity findByProductAndUser(ProductEntity product, UserEntity user);
+    Optional<ProductReviewEntity>  findByProductAndUser(ProductEntity product, UserEntity user);
+
+    Optional<ProductReviewEntity>  findByProduct_ProductIdAndUser_Id(Long productId, Long userId);
 }

@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public interface SellerService {
     SellerEntity getBySellerId(Long sellerId);
+    ResponseEntity<?> getByStoreName(String storeName);
     ResponseEntity<?> responseGetSellerById(Long sellerId);
     ResponseEntity<?> updatePrivateInformation(SellerRequestUpdate sellerRequestUpdate);
     ResponseEntity<?> updateStoreAvatar(Long storeId, MultipartFile storeAvatar);

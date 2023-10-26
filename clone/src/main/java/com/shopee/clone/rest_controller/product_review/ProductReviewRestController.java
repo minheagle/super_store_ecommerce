@@ -23,6 +23,10 @@ public class ProductReviewRestController {
         }
         return productReviewService.createRating(productReviewRequest);
     }
+    @GetMapping("/check-rating")
+    public boolean checkRating(@RequestParam Long userId, Long productId){
+        return productReviewService.checkRating(userId,productId);
+    }
     @PostMapping("/update")
     public ResponseEntity<?> updateRating(@Valid ProductReviewUpdateRequest productReviewUpdateRequest, BindingResult bindingResult){
         if(bindingResult.hasErrors()) {
@@ -38,7 +42,7 @@ public class ProductReviewRestController {
     public ResponseEntity<?> getRating(@PathVariable Long pReview){
         return productReviewService.getRating(pReview);
     }
-    @GetMapping("/get_all_by_product/{productId}")
+    @GetMapping("/get-all-by-product/{productId}")
     public ResponseEntity<?> getAllByProduct(@PathVariable Long productId){
         return productReviewService.getALlByProduct(productId);
     }

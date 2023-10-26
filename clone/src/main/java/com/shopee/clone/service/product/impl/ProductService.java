@@ -306,6 +306,7 @@ public class ProductService implements IProductService {
                             .status(productEntity.getStatus())
                             .categoryId(productEntity.getCategory().getId())
                             .productItemResponseList(productItemResponseDTOList)
+                            .voteStar(productEntity.getVoteStar())
                             .build();
                 }
                 return productResponseDTO;

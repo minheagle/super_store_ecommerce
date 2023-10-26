@@ -1,11 +1,14 @@
 package com.shopee.clone.service.seller.impl;
 
+import com.shopee.clone.DTO.ResponseData;
 import com.shopee.clone.DTO.seller.SellerDTO;
 import com.shopee.clone.DTO.seller.request.SellerRequestUpdate;
 import com.shopee.clone.DTO.seller.response.Seller;
 import com.shopee.clone.DTO.upload_file.ImageUploadResult;
 import com.shopee.clone.entity.SellerEntity;
+import com.shopee.clone.entity.UserEntity;
 import com.shopee.clone.repository.SellerRepository;
+import com.shopee.clone.repository.UserRepository;
 import com.shopee.clone.response.seller.DetailSellerResponse;
 import com.shopee.clone.service.seller.SellerService;
 import com.shopee.clone.service.upload_cloud.IUploadImageService;
@@ -24,14 +27,16 @@ import java.util.Optional;
 @Service
 public class SellerServiceImpl implements SellerService {
     private final SellerRepository sellerRepository;
+    private final UserRepository userRepository;
     private final ModelMapper mapper;
     private final IUploadImageService uploadImageService;
 
     @Value("${cloudinary.store.folder}")
     private String storeImageFolder;
 
-    public SellerServiceImpl(SellerRepository sellerRepository, ModelMapper mapper, IUploadImageService uploadImageService) {
+    public SellerServiceImpl(SellerRepository sellerRepository, UserRepository userRepository, ModelMapper mapper, IUploadImageService uploadImageService) {
         this.sellerRepository = sellerRepository;
+        this.userRepository = userRepository;
         this.mapper = mapper;
         this.uploadImageService = uploadImageService;
     }
@@ -44,6 +49,53 @@ public class SellerServiceImpl implements SellerService {
             return sellerEntity;
         }catch (Exception e){
             throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<?> getByStoreName(String storeName) {
+        try{
+            if(!sellerRepository.existsByStoreName(storeName)){
+                return ResponseEntity
+                        .badRequest()
+                        .body(
+                                ResponseObject
+                                        .builder()
+                                        .status("FAIL")
+                                        .message("Store not found !")
+                                        .results("")
+                                        .build()
+                        );
+            }
+            SellerEntity sellerEntity = sellerRepository.findByStoreName(storeName)
+                    .orElseThrow(() -> new RuntimeException("Store not found !"));
+            UserEntity userEntity = userRepository.findById(sellerEntity.getUserId())
+                    .orElseThrow(() -> new RuntimeException("User not found !"));
+            sellerEntity.setChatId(userEntity.getChatId());
+            ResponseData<SellerDTO> response = new ResponseData<>();
+            response.setData(mapper.map(sellerEntity, SellerDTO.class));
+            return ResponseEntity
+                    .ok()
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("SUCCESS")
+                                    .message("Get detail store success !")
+                                    .results(response)
+                                    .build()
+                    );
+        }catch (Exception e){
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            ResponseObject
+                                    .builder()
+                                    .status("FAIL")
+                                    .message(e.getMessage())
+                                    .results("")
+                                    .build()
+                    );
         }
     }
 

@@ -14,4 +14,6 @@ public interface ProductReviewService {
     ResponseEntity<?> deleteProductReview(Long productReviewId);
 
     ResponseEntity<?> updateRating(ProductReviewUpdateRequest productReviewUpdateRequest);
+
+    boolean checkRating(Long userId, Long productId);
 }

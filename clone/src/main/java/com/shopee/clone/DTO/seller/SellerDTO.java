@@ -23,4 +23,5 @@ public class SellerDTO {
     private String storeBankAccountNumber;
     private Date createdAt;
     private Integer numberFollower;
+    private String chatId;
 }
