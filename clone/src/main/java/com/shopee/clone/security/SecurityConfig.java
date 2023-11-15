@@ -2,6 +2,8 @@ package com.shopee.clone.security;
 
 import com.shopee.clone.security.jwt.JWTAuthenticationEntryPoint;
 import com.shopee.clone.security.jwt.JWTFilter;
+import com.shopee.clone.security.oauth2.OAuth2LoginSuccessHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,21 +28,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
     private final JWTFilter jwtFilter;
     private final UserDetailServiceImpl userDetailsService;
     private final JWTAuthenticationEntryPoint unauthorizedHandler;
     private final LogoutHandler logoutHandler;
-
-    public SecurityConfig(JWTFilter jwtFilter,
-                          UserDetailServiceImpl userDetailsService,
-                          JWTAuthenticationEntryPoint unauthorizedHandler,
-                          LogoutHandler logoutHandler) {
-        this.jwtFilter = jwtFilter;
-        this.userDetailsService = userDetailsService;
-        this.unauthorizedHandler = unauthorizedHandler;
-        this.logoutHandler = logoutHandler;
-    }
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -86,6 +80,10 @@ public class SecurityConfig {
                     auth.requestMatchers("/api/v1/public/**").permitAll();
                     auth.requestMatchers("/api/v1/admin/**").hasRole("ADMIN");
                     auth.anyRequest().authenticated();
+                })
+                .oauth2Login(oauth2 -> {
+                    oauth2.loginPage("/api/v1/auth/login/oauth2/**").permitAll();
+                    oauth2.successHandler(oAuth2LoginSuccessHandler);
                 })
                 .authenticationProvider(authenticationProvider())
                 .logout((logout) ->
