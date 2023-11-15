@@ -49,7 +49,7 @@ public class PaymentService implements IPaymentService {
     private final String apiKey="2aa24408-0509-4afd-980d-3fd58a01aa38";
     private final String secretKey="d8b5113be36e2274a79604c96143f99f01488b4b51895316284caf5d5e1f65d8";
     private final String cancelUrl = "https://super-store-hmh.vercel.app/customer/purchase/pending";
-    private final String successUrl = "https://super-store-hmh.vercel.app/customer/purchase/pending";
+    private final String successUrl = "https://super-store-hmh.vercel.app/customer/purchase/transferred";
 
     @Override
     public ResponseEntity<?> getLinkPayment(PaymentServiceRequest paymentServiceRequest) {
