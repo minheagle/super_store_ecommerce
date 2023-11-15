@@ -14,7 +14,6 @@ import com.shopee.clone.repository.UserRepository;
 import com.shopee.clone.response.auth.login.ResponseLogin;
 import com.shopee.clone.response.auth.login.ResponseLoginHasRoleSeller;
 import com.shopee.clone.security.impl.UserDetailImpl;
-import com.shopee.clone.service.address.AddressService;
 import com.shopee.clone.service.auth.IAuthService;
 import com.shopee.clone.service.user.UserService;
 import com.shopee.clone.util.JWTProvider;
@@ -42,7 +41,6 @@ public class AuthService implements IAuthService {
     private final JWTProvider jwtProvider;
     private final ModelMapper mapper;
     private final UserService userService;
-    private final AddressService addressService;
     private final SellerRepository sellerRepository;
 
     public AuthService(AuthenticationManager authenticationManager,
@@ -53,7 +51,6 @@ public class AuthService implements IAuthService {
                        JWTProvider jwtProvider,
                        ModelMapper mapper,
                        UserService userService,
-                       AddressService addressService,
                        SellerRepository sellerRepository) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
@@ -63,11 +60,11 @@ public class AuthService implements IAuthService {
         this.jwtProvider = jwtProvider;
         this.mapper = mapper;
         this.userService = userService;
-        this.addressService = addressService;
         this.sellerRepository = sellerRepository;
     }
 
     @Override
+    @Transactional
     public ResponseEntity<?> login(LoginDTO loginDTO) {
         try{
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -76,13 +73,18 @@ public class AuthService implements IAuthService {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String accessToken = jwtProvider.generateJwtToken(authentication);
             UserDetailImpl userDetail = (UserDetailImpl) authentication.getPrincipal();
-            UserEntity userEntity = userRepository.findById(userDetail.getId()).get();
+            UserEntity userEntity = userRepository.findById(userDetail.getId())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
             User userDTO = mapper.map(userEntity, User.class);
             boolean hasRoleSeller = userEntity.getRoles().stream().anyMatch(item -> item.getName().equals(ERole.ROLE_SELLER));
             if(hasRoleSeller) {
                 SellerEntity sellerEntity = sellerRepository.findByUserId(userEntity.getId())
                         .orElseThrow(() -> new RuntimeException("Seller not found"));
+                if (userEntity.getChatId() != null){
+                    sellerEntity.setChatId(userEntity.getChatId());
+                }
+                sellerRepository.save(sellerEntity);
                 SellerDTO sellerDTO = mapper.map(sellerEntity, SellerDTO.class);
                 ResponseLoginHasRoleSeller<User, SellerDTO> responseLoginHasRoleSeller = new ResponseLoginHasRoleSeller<>();
                 responseLoginHasRoleSeller.setData(userDTO);
