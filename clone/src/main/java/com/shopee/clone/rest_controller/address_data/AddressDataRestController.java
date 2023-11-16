@@ -20,10 +20,10 @@ import org.springframework.web.bind.annotation.*;
 public class AddressDataRestController {
     @Autowired
     private AddressDataService addressDataService;
-//    @GetMapping("save")
-//    private ResponseEntity<?> saveData(){
-//        return addressDataService.fetchAndSaveAddressData();
-//    }
+    @GetMapping("save")
+    private ResponseEntity<?> saveData(){
+        return addressDataService.fetchAndSaveAddressData();
+    }
     @GetMapping("/get_city/{id}")
     private ResponseEntity<?> getCity(@PathVariable Long id){
         return addressDataService.findCityById(id);

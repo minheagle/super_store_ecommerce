@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface AddressDataService {
     List<AddressDataEntity> parseResponse(String response);
-//    ResponseEntity<?> fetchAndSaveAddressData();
+    ResponseEntity<?> fetchAndSaveAddressData();
     ResponseEntity<?> getAllProvince();
     ResponseEntity<?> getProvinceByName(String provinceName);
     ResponseEntity<?> getAllDistrictByProvinceId(Long provinceId);

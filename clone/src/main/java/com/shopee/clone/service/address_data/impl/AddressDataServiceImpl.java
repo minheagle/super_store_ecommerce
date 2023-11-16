@@ -43,49 +43,49 @@ public class AddressDataServiceImpl implements AddressDataService {
     @Autowired
     private AddressDataRepository addressDataRepository;
 
-//    @Transactional
-//    @Override
-//    public ResponseEntity<?> fetchAndSaveAddressData() {
-//        try{
-//        String response = restTemplate.getForObject(API_URL, String.class);
-//        // Parse the JSON response into Address objects
-//        List<AddressDataEntity> addresses = parseResponse(response);
-//        // Save the addresses to the database
-//        addressDataRepository.saveAll(addresses);
-//
-//        for (AddressDataEntity address : addresses) {
-//            // Lưu thông tin Districts
-//            for (DistrictEntity district : address.getDistrictEntities()) {
-//                district.setAddressData(address);
-//                districtRepository.save(district);
-//
-//                // Lưu thông tin Wards trong mỗi District
-//                for (WardEntity ward : district.getWards()) {
-//                    ward.setDistrict(district);
-//                    wardRepository.save(ward);
-//                }
-//            }
-//        }
-//
-//            return ResponseEntity.ok().body(ResponseObject
-//                    .builder()
-//                    .status("SUCCESS")
-//                    .message("Create Address Data in database!")
-//                    .results("")
-//                    .build()
-//            );
-//        }catch (Exception e){
-//            return ResponseEntity
-//                    .badRequest()
-//                    .body(ResponseObject
-//                            .builder()
-//                            .status("FAIL")
-//                            .message(e.getMessage())
-//                            .results("")
-//                            .build()
-//                    );
-//        }
-//    }
+    @Transactional
+    @Override
+    public ResponseEntity<?> fetchAndSaveAddressData() {
+        try{
+        String response = restTemplate.getForObject(API_URL, String.class);
+        // Parse the JSON response into Address objects
+        List<AddressDataEntity> addresses = parseResponse(response);
+        // Save the addresses to the database
+        addressDataRepository.saveAll(addresses);
+
+        for (AddressDataEntity address : addresses) {
+            // Lưu thông tin Districts
+            for (DistrictEntity district : address.getDistrictEntities()) {
+                district.setAddressData(address);
+                districtRepository.save(district);
+
+                // Lưu thông tin Wards trong mỗi District
+                for (WardEntity ward : district.getWards()) {
+                    ward.setDistrict(district);
+                    wardRepository.save(ward);
+                }
+            }
+        }
+
+            return ResponseEntity.ok().body(ResponseObject
+                    .builder()
+                    .status("SUCCESS")
+                    .message("Create Address Data in database!")
+                    .results("")
+                    .build()
+            );
+        }catch (Exception e){
+            return ResponseEntity
+                    .badRequest()
+                    .body(ResponseObject
+                            .builder()
+                            .status("FAIL")
+                            .message(e.getMessage())
+                            .results("")
+                            .build()
+                    );
+        }
+    }
 
     @Override
     public ResponseEntity<?> getAllProvince() {
